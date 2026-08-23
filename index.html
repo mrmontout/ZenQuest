@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZenQuest</title>
+  <style>
+    :root{
+      --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
+      --card: rgba(255,255,255,.72); --line: rgba(255,255,255,.8);
+      --text:#24323a; --muted:#64748b; --shadow: 0 10px 30px rgba(88,130,126,.12);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);background:linear-gradient(180deg,var(--bg1) 0%,var(--bg2) 34%,var(--bg3) 68%,var(--bg4) 100%);min-height:100vh}
+    .wrap{max-width:1720px;margin:0 auto;padding:20px}
+    .topbar,.panel,.card,.modal-card{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:28px}
+    .topbar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;padding:14px 18px;margin-bottom:16px}
+    .brand{text-align:center}.brand h1{margin:0;font-size:44px;line-height:1;font-weight:700}.brand p{margin:6px 0 0;color:var(--muted);font-size:12px;letter-spacing:.28em;text-transform:uppercase}
+    .pill,button,input,textarea,select{font:inherit}
+    .pill{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.82);border:1px solid #e2e8f0;border-radius:999px;padding:10px 14px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+    .actions{display:flex;justify-content:flex-end}
+    .btn{border:none;cursor:pointer;border-radius:999px;padding:12px 18px;background:white;box-shadow:0 2px 10px rgba(0,0,0,.05);transition:.15s ease}
+    .btn:hover{transform:translateY(-1px)} .btn.primary{background:#0f766e;color:white} .btn.green{background:#059669;color:white}
+    .btn.gray{background:#334155;color:white} .btn.outline{background:rgba(255,255,255,.85);border:1px solid #e2e8f0}
+    .btn.small{padding:7px 12px;font-size:12px}.btn.icon{width:30px;height:30px;padding:0;display:inline-flex;align-items:center;justify-content:center}
+    .controls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;position:relative;z-index:5}
+    .filters{display:grid;grid-template-columns:1.6fr 1fr;gap:12px;margin-bottom:16px}
+    .panel{padding:14px}.panel h3{margin:0 0 10px;font-size:14px;color:var(--muted);font-weight:700}
+    .row{display:flex;gap:10px;align-items:center}.row.wrap{flex-wrap:wrap;padding:0;margin:0;max-width:none}
+    input,textarea,select{width:100%;border:1px solid #e2e8f0;background:rgba(255,255,255,.9);border-radius:999px;padding:10px 14px;outline:none}
+    textarea{border-radius:18px;min-height:120px;resize:vertical}
+    .layout{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start}
+    .grid{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+    @media (min-width:900px){.grid{grid-template-columns:repeat(6,minmax(0,1fr));}}
+    @media (min-width:1350px){.grid{grid-template-columns:repeat(7,minmax(0,1fr));}}
+    .card{position:relative;padding:12px;overflow:visible}.card.absent{background:rgba(226,232,240,.8);opacity:.84}
+    .card.selected{outline:3px solid rgba(14,165,233,.45)}
+    .card-top{display:flex;justify-content:space-between;gap:8px;margin-bottom:8px}
+    .avatar-wrap{position:relative;width:64px;height:64px;margin:0 auto}
+    .avatar{width:64px;height:64px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.85);font-size:40px;box-shadow:0 4px 12px rgba(0,0,0,.06);cursor:pointer;position:relative;z-index:2}
+    .name{margin-top:8px;text-align:center;font-weight:700;font-size:18px;display:flex;justify-content:center;gap:6px;align-items:center;min-height:28px}
+    .stars-line{margin-top:4px;min-height:28px;display:flex;justify-content:center;align-items:center;gap:4px;font-size:18px;flex-wrap:wrap}
+    .diamond-inline{font-size:13px;color:#0284c7;font-weight:700;margin-left:4px}
+    .group-tag{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700}
+    .g1{background:#dbeafe;color:#1d4ed8}.g2{background:#ede9fe;color:#6d28d9}.g0{background:#f1f5f9;color:#475569}
+    .progress{margin-top:8px}.bar-box{border-radius:999px;border:1px solid rgba(16,185,129,.25);background:rgba(255,255,255,.95);padding:7px 10px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+    .bar-row{display:flex;gap:8px;align-items:center}.bar{position:relative;height:16px;flex:1;border-radius:999px;overflow:hidden;background:#0f766e;border:1px solid rgba(16,185,129,.4);box-shadow:inset 0 2px 4px rgba(0,0,0,.14)}
+    .fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#bef264,#86efac,#6ee7b7);border-radius:999px;transition:width .35s ease}.fill::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.18) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.18) 50%,rgba(255,255,255,.18) 75%,transparent 75%,transparent);background-size:18px 18px;opacity:.4}
+    .lvl{text-align:center;font-size:13px;font-weight:700;margin-top:6px}
+    .homework{margin-top:8px;display:flex;align-items:center;justify-content:space-between;border-radius:16px;background:rgba(255,255,255,.82);padding:8px 10px;box-shadow:0 2px 10px rgba(0,0,0,.04);font-size:14px}
+    .muted{color:var(--muted)}
+    .alert{margin-top:8px;min-height:24px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+    .alert>span{background:rgba(255,255,255,.85);border-radius:999px;padding:6px 10px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+    .score-row{margin-top:8px;display:grid;grid-template-columns:50px 1fr 50px;gap:8px;align-items:center}
+    .score{border-radius:18px;text-align:center;background:#ecfdf5;border:1px solid #a7f3d0;box-shadow:0 2px 10px rgba(0,0,0,.04);font-size:30px;font-weight:800;padding:4px 0;line-height:1.1}
+    .btn.minus{background:#ffe4e6;color:#be123c;border:1px solid #fecdd3}.btn.plus{background:#dcfce7;color:#047857;border:1px solid #a7f3d0}
+    .ranking .item,.history .item{border-radius:20px;background:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.85);box-shadow:0 2px 10px rgba(0,0,0,.04);padding:10px 12px}
+    .ranking .item{display:flex;justify-content:space-between;align-items:center;gap:10px}.ranking .left{display:flex;gap:10px;align-items:center}.sub{font-size:12px;color:var(--muted)}
+    .modal{position:fixed;inset:0;z-index:120;background:rgba(15,23,42,.35);display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(6px)}
+    .modal.show{display:flex}.modal-card{width:min(100%,980px);max-height:90vh;overflow:auto;padding:20px;background:linear-gradient(180deg,#ffffff,#eefcf7)}
+    .close{float:right}.summary-grid,.profile-grid{display:grid;gap:12px}.summary-grid{grid-template-columns:repeat(5,1fr)}.profile-grid{grid-template-columns:repeat(4,1fr)}
+    .box{border-radius:22px;background:white;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.04)} .big{font-size:30px;font-weight:800}
+    .floating{position:absolute;left:50%;top:4px;transform:translateX(-50%);z-index:30;font-size:20px;font-weight:800;pointer-events:none;animation:floatUp .65s ease forwards}
+    .floating.minus{animation:floatDown .65s ease forwards;color:#e11d48}.floating.plus{color:#059669}.floating.homework{color:#0284c7}
+    @keyframes floatUp{0%{opacity:0;transform:translateX(-50%) translateY(6px) scale(.85)}15%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-24px) scale(1)}}
+    @keyframes floatDown{0%{opacity:0;transform:translateX(-50%) translateY(-6px) scale(.85)}15%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(16px) scale(1)}}
+    .decoration{position:absolute;z-index:20}.decoration.fire{left:50%;bottom:-10px;transform:translateX(-50%);font-size:26px}.decoration.spark1{left:50%;top:-6px;transform:translateX(-50%);font-size:22px}.decoration.spark2{right:-6px;top:4px;font-size:18px}.decoration.spark3{left:-6px;bottom:4px;font-size:18px}.decoration.crown{left:50%;top:-10px;transform:translateX(-50%);font-size:24px}
+    .picker{position:absolute;left:50%;top:74px;transform:translateX(-50%);width:210px;z-index:60;border-radius:22px;background:rgba(255,255,255,.96);border:1px solid rgba(255,255,255,.85);box-shadow:0 12px 30px rgba(0,0,0,.12);padding:12px;display:none}
+    .picker.show{display:block}.picker-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.picker-btn{width:34px;height:34px;border-radius:999px;border:none;background:#f8fafc;cursor:pointer;font-size:22px}
+    .toolbar-chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.85);border:1px solid #e2e8f0;border-radius:999px;padding:8px 12px;font-size:13px;font-weight:700}
+    .toolbar-chip.active{background:#0f766e;color:#fff;border-color:#0f766e}
+
+    .student-dashboard{display:grid;gap:14px}
+    .student-hero{display:grid;grid-template-columns:110px 1fr;gap:18px;align-items:center;background:linear-gradient(135deg,#f0fdfa,#fff7ed);border-radius:24px;padding:18px}
+    .student-big-avatar{font-size:72px;text-align:center}
+    .student-big-grade{font-size:48px;font-weight:900;line-height:1;margin:6px 0}
+    .student-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .student-kpi{background:#f8fafc;border-radius:16px;padding:12px}.student-kpi strong{font-size:21px}
+    .student-columns{display:grid;grid-template-columns:1.3fr .7fr;gap:12px}
+    .student-rank-row{display:grid;grid-template-columns:46px 1fr auto;gap:8px;align-items:center;padding:9px 10px;border-radius:12px}
+    .student-rank-row.me{background:#ccfbf1;font-weight:800}
+    .student-chart{height:235px;background:#f8fafc;border-radius:18px;overflow:hidden}
+    .student-objective{background:#fff7ed;border:1px solid #fed7aa;border-radius:16px;padding:12px;margin-top:12px}
+    .student-mini-progress{height:14px;border-radius:999px;background:#e2e8f0;overflow:hidden}.student-mini-progress span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#bef264,#34d399)}
+    @media(max-width:800px){.student-hero{grid-template-columns:1fr}.student-kpis{grid-template-columns:1fr 1fr}.student-columns{grid-template-columns:1fr}.student-big-grade{font-size:40px}}
+    .mode-panel{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .mode-switch{display:inline-flex;background:rgba(255,255,255,.78);border:1px solid #e2e8f0;border-radius:999px;padding:4px;gap:4px}
+    .mode-switch button{border:none;background:transparent;border-radius:999px;padding:8px 13px;font-weight:700;cursor:pointer}
+    .mode-switch button.active{background:#0f766e;color:#fff}
+    .period-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+    .period-tab{border:1px solid #e2e8f0;background:#fff;border-radius:999px;padding:8px 12px;font-weight:700;cursor:pointer}
+    .period-tab.active{background:#0f766e;color:#fff;border-color:#0f766e}
+    .period-rank-row{display:grid;grid-template-columns:44px minmax(130px,1.5fr) .8fr .7fr .7fr .7fr;gap:8px;align-items:center;background:#f8fafc;border-radius:14px;padding:10px}
+    .period-table-row{display:grid;grid-template-columns:minmax(150px,1.5fr) .7fr .7fr .7fr .7fr .7fr;gap:8px;align-items:center;background:#f8fafc;border-radius:14px;padding:10px}
+    @media (max-width:800px){
+      .period-rank-row,.period-table-row{grid-template-columns:1fr 1fr}
+    }
+
+    @media (max-width:1100px){.layout{grid-template-columns:1fr}.summary-grid{grid-template-columns:repeat(2,1fr)}.profile-grid{grid-template-columns:repeat(2,1fr)}.topbar{grid-template-columns:1fr}.actions{justify-content:center}.controls,.filters{grid-template-columns:1fr}}
+  
+    #avatarModal{z-index:10000 !important}
+    #avatarModal .modal-card{position:relative;z-index:10001;overflow:visible}
+    #avatarGrid{position:relative;z-index:10002;max-height:420px;overflow-y:auto;overscroll-behavior:contain;padding:8px}
+    #avatarGrid button{position:relative;z-index:10003}
+
+  
+    @media (min-width:1650px){.grid{grid-template-columns:repeat(8,minmax(0,1fr));}}
+  
+    #avatarModal{z-index:20000 !important}
+    #avatarModal .modal-card{position:relative;z-index:20001}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div><div class="pill">Classe exemple</div></div>
+      <div class="brand">
+        <h1>ZenQuest</h1>
+        <p>Classe sereine • progression • rituel</p>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="endLessonBtn">Fin d'heure</button>
+        <button class="btn outline" id="openHistoryBtn">🕘 Historique</button>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="panel">
+        <h3>Ajouter un élève</h3>
+        <div class="row">
+          <input id="newStudentInput" placeholder="Prénom de l'élève" />
+          <button class="btn green" id="addStudentBtn">Ajouter</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Ajouter une classe</h3>
+        <div class="row">
+          <input id="newClassInput" placeholder="Ex. 6e B, 6e C, 6e D" />
+          <button class="btn gray" id="addClassBtn">Créer</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Classe active</h3>
+        <div class="row">
+          <select id="classSelect" style="width:100%;border:1px solid #e2e8f0;background:rgba(255,255,255,.9);border-radius:999px;padding:10px 14px;"></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="filters">
+      <div class="panel">
+        <h3>Gestion des groupes</h3>
+        <div class="row wrap">
+          <button class="btn outline small" id="selectModeBtn">Sélection : off</button>
+          <button class="btn outline small" id="assignG1Btn">Mettre en G1</button>
+          <button class="btn outline small" id="assignG2Btn">Mettre en G2</button>
+          <button class="btn outline small" id="assignNoneBtn">Retirer du groupe</button>
+          <button class="btn outline small" id="clearSelectionBtn">Effacer sélection</button>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Vue du cours</h3>
+        <div class="row wrap">
+          <button class="toolbar-chip active" id="viewAllBtn">Classe entière</button>
+          <button class="toolbar-chip" id="viewG1Btn">Groupe 1</button>
+          <button class="toolbar-chip" id="viewG2Btn">Groupe 2</button>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="panel" style="margin-bottom:12px">
+      <div class="mode-panel">
+        <div>
+          <h3 style="margin-bottom:4px">Mode d'affichage</h3>
+          <div class="muted" style="font-size:13px">Le mode élève est une prévisualisation en lecture seule réservée au professeur.</div>
+        </div>
+        <div class="row wrap">
+          <div class="mode-switch">
+            <button type="button" id="profModeBtn" class="active">👨🏾‍🏫 Prof</button>
+            <button type="button" id="studentModeBtn">🧑🏽‍🎓 Élève</button>
+          </div>
+          <select id="studentPreviewSelect" style="display:none;min-width:210px;width:auto">
+            <option value="">Choisir un élève…</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:16px">
+      <h3>Période de notation</h3>
+      <div class="row wrap">
+        <div class="toolbar-chip active" id="periodLabel">Période 1</div>
+        <div class="toolbar-chip" id="periodAverageLabel">Moyenne calculée sur les scores de fin de cours</div>
+        <button class="btn primary small" id="openPeriodBtn">Gérer les périodes</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div><div class="grid" id="studentsGrid"></div></div>
+    </div>
+  </div>
+
+
+  <div class="modal" id="avatarModal">
+    <div class="modal-card" style="max-width:720px">
+      <button class="btn outline close" id="closeAvatarModalBtn">Fermer</button>
+      <h2>Choisir un avatar</h2>
+      <div class="muted" style="margin-bottom:12px">Choisis l’emoji qui correspond le mieux à l’élève.</div>
+      <div id="avatarModalGrid" style="display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px;max-height:520px;overflow-y:auto;padding:8px"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="historyModal">
+    <div class="modal-card" style="max-width:760px">
+      <button class="btn outline close" id="closeHistoryBtn">Fermer</button>
+      <h2>🕘 Historique du cours</h2>
+      <div class="muted" style="margin-bottom:12px">Les dernières actions et fins de cours sont conservées ici sans encombrer l’écran principal.</div>
+      <div id="historyList"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="profileModal">
+    <div class="modal-card">
+      <button class="btn outline close" id="closeProfileBtn">Fermer</button>
+      <div id="profileContent"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="studentViewModal">
+    <div class="modal-card">
+      <button class="btn outline close" id="closeStudentViewBtn">Retour prof</button>
+      <div id="studentViewContent"></div>
+    </div>
+  </div>
+
+
+  <div class="modal" id="periodModal">
+    <div class="modal-card">
+      <button class="btn outline close" id="closePeriodModalBtn">Fermer</button>
+      <div style="font-size:30px;font-weight:800;margin-bottom:6px">Gestion des périodes</div>
+      <div class="muted" style="margin-bottom:16px">Renommer, consulter et clôturer la période sans fenêtre système.</div>
+
+      <div id="periodTabs" class="period-tabs"></div>
+
+      <div class="box" id="periodEditBox">
+        <div style="font-size:18px;font-weight:700;margin-bottom:10px">Période actuelle</div>
+        <div class="row">
+          <input id="periodNameInput" placeholder="Nom de la période" />
+          <button class="btn green" id="savePeriodNameBtn">Enregistrer le nom</button>
+        </div>
+        <div id="periodCurrentSummary" style="margin-top:14px"></div>
+      </div>
+
+      <div class="box" style="margin-top:12px">
+        <div style="font-size:18px;font-weight:700;margin-bottom:10px">Bilan collectif</div>
+        <div id="periodCollectiveSummary"></div>
+      </div>
+
+      <div class="box" style="margin-top:12px">
+        <div style="font-size:18px;font-weight:700;margin-bottom:10px">Top 5 de la période</div>
+        <div class="muted" style="font-size:13px;margin-bottom:8px">Classement prioritaire sur la moyenne de période, puis diamants, étoiles, devoirs, niveau et progression.</div>
+        <div id="periodRanking"></div>
+      </div>
+
+      <div class="box" style="margin-top:12px">
+        <div style="font-size:18px;font-weight:700;margin-bottom:10px">Notes de tous les élèves</div>
+        <div id="periodStudentTable"></div>
+      </div>
+
+      <div class="box" id="periodCloseBox" style="margin-top:12px">
+        <div style="font-size:18px;font-weight:700;margin-bottom:10px">Clôturer la période</div>
+        <div class="muted" style="margin-bottom:10px">Les moyennes seront archivées. Les scores repartent à 15/20, mais étoiles, niveaux, diamants et devoirs restent acquis.</div>
+        <div class="row">
+          <input id="nextPeriodNameInput" placeholder="Nom de la prochaine période" value="Nouvelle période" />
+          <button class="btn primary" id="confirmClosePeriodBtn">Clôturer et démarrer la suivante</button>
+        </div>
+        <div id="periodActionMessage" style="margin-top:10px;font-weight:700"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="modal" id="summaryModal">
+    <div class="modal-card">
+      <div style="text-align:center;font-size:52px">🎉</div>
+      <div style="text-align:center;font-size:32px;font-weight:800;margin-top:6px">Fin de cours validée</div>
+      <div style="text-align:center;color:var(--muted);margin-top:6px">Les points, niveaux et récompenses ont été mis à jour.</div>
+      <div id="summaryContent" style="margin-top:16px"></div>
+      <div style="text-align:center;margin-top:16px">
+        <button class="btn primary" id="closeSummaryBtn">Continuer</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "zenquest_standalone_v13";
+    const MAX_POINTS = 20;
+    const MAX_INDIVIDUAL_STARS = 6;
+    const MAX_COLLECTIVE_STARS = 8;
+    const AVATARS = ['👦','👦🏻','👦🏼','👦🏽','👦🏾','👦🏿','👧','👧🏻','👧🏼','👧🏽','👧🏾','👧🏿','🧑','🧑🏻','🧑🏼','🧑🏽','🧑🏾','🧑🏿','👨','👨🏻','👨🏼','👨🏽','👨🏾','👨🏿','👩','👩🏻','👩🏼','👩🏽','👩🏾','👩🏿','🧒','🧒🏻','🧒🏼','🧒🏽','🧒🏾','🧒🏿','👱','👱🏻','👱🏼','👱🏽','👱🏾','👱🏿','👱\u200d♀️','👱🏻\u200d♀️','👱🏼\u200d♀️','👱🏽\u200d♀️','👱🏾\u200d♀️','👱🏿\u200d♀️','👱\u200d♂️','👱🏻\u200d♂️','👱🏼\u200d♂️','👱🏽\u200d♂️','👱🏾\u200d♂️','👱🏿\u200d♂️','🧑\u200d🦱','🧑🏻\u200d🦱','🧑🏼\u200d🦱','🧑🏽\u200d🦱','🧑🏾\u200d🦱','🧑🏿\u200d🦱','👩\u200d🦱','👩🏻\u200d🦱','👩🏼\u200d🦱','👩🏽\u200d🦱','👩🏾\u200d🦱','👩🏿\u200d🦱','👨\u200d🦱','👨🏻\u200d🦱','👨🏼\u200d🦱','👨🏽\u200d🦱','👨🏾\u200d🦱','👨🏿\u200d🦱','🧑\u200d🦰','🧑🏻\u200d🦰','🧑🏼\u200d🦰','🧑🏽\u200d🦰','🧑🏾\u200d🦰','🧑🏿\u200d🦰','👩\u200d🦰','👩🏻\u200d🦰','👩🏼\u200d🦰','👩🏽\u200d🦰','👩🏾\u200d🦰','👩🏿\u200d🦰','👨\u200d🦰','👨🏻\u200d🦰','👨🏼\u200d🦰','👨🏽\u200d🦰','👨🏾\u200d🦰','👨🏿\u200d🦰','🧑\u200d🦳','🧑🏻\u200d🦳','🧑🏼\u200d🦳','🧑🏽\u200d🦳','🧑🏾\u200d🦳','🧑🏿\u200d🦳'];
+
+    function uid(){ return `${Date.now()}_${Math.random().toString(36).slice(2,9)}`; }
+    function createStudent(name,index=0){ return {id:uid(),name,avatar:AVATARS[index%AVATARS.length],points:15,progress:0,level:1,stars:0,diamonds:0,homeworks:0,isAbsent:false,isAutoAbsent:false,lostThisLesson:false,lostStarThisLesson:false,pointsLostThisLesson:0,homeworkAddedThisLesson:false,totalLessons:0,perfectLessons:0,totalPointsLost:0,currentStreak:0,history:[],notes:"",teacherRemarks:[],lastAction:null,group:null,periodScores:[],archivedPeriods:[]}; }
+    function createClass(name,names=[]){ return {id:uid(),name,students:names.map((n,i)=>createStudent(n,i)),collectiveStars:0,collectiveDiamonds:0,groupStars:{g1:0,g2:0},groupDiamonds:{g1:0,g2:0},currentPeriodName:"Période 1",periodArchive:[],history:[]}; }
+    function getDefaultData(){ return {currentClassId:null,viewMode:"all",selectionMode:false,selectedStudentIds:[],appMode:"prof",periodView:"current",classes:[createClass("Classe exemple",["Paul","Clara","Emma","Lucas","Alya","Yanis","Lina","Noah"])]}; }
+    function loadData(){ try{ const raw=localStorage.getItem(STORAGE_KEY); if(!raw) return getDefaultData(); const parsed=JSON.parse(raw); if(!parsed.classes||!parsed.classes.length) return getDefaultData(); if(!("viewMode" in parsed)) parsed.viewMode="all"; if(!("selectionMode" in parsed)) parsed.selectionMode=false; if(!("selectedStudentIds" in parsed)) parsed.selectedStudentIds=[]; if(!("appMode" in parsed)) parsed.appMode="prof"; if(!("periodView" in parsed)) parsed.periodView="current"; parsed.classes.forEach(c=>{ if(!c.groupStars) c.groupStars={g1:0,g2:0}; if(!c.groupDiamonds) c.groupDiamonds={g1:0,g2:0}; if(!("collectiveDiamonds" in c)) c.collectiveDiamonds=0; if(!c.currentPeriodName) c.currentPeriodName="Période 1"; if(!Array.isArray(c.periodArchive)) c.periodArchive=[]; c.students.forEach(s=>{ if(!("group" in s)) s.group=null; if(!("isAutoAbsent" in s)) s.isAutoAbsent=false; if(!Array.isArray(s.periodScores)) s.periodScores=[]; if(!Array.isArray(s.archivedPeriods)) s.archivedPeriods=[]; if(typeof s.points!=="number") s.points=15; }); }); return parsed; }catch{ return getDefaultData(); } }
+    let state=loadData(); if(!state.currentClassId) state.currentClassId=state.classes[0]?.id||null;
+    function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    function currentClass(){ return state.classes.find(c=>c.id===state.currentClassId)||state.classes[0]; }
+
+    function applyViewAbsences(){
+      const cls=currentClass();
+      cls.students.forEach(s=>{
+        if(state.viewMode==="all"){ if(s.isAutoAbsent) s.isAbsent=false; s.isAutoAbsent=false; return; }
+        if(state.viewMode==="g1"){ if(s.group==="g2"){ s.isAbsent=true; s.isAutoAbsent=true; } else { if(s.isAutoAbsent) s.isAbsent=false; s.isAutoAbsent=false; } }
+        if(state.viewMode==="g2"){ if(s.group==="g1"){ s.isAbsent=true; s.isAutoAbsent=true; } else { if(s.isAutoAbsent) s.isAbsent=false; s.isAutoAbsent=false; } }
+      });
+    }
+
+    function getAlert(points){
+      if(points<=5) return {emoji:"🚨",label:"Attention particulière"};
+      if(points<=7) return {emoji:"🚨",label:"Situation très préoccupante"};
+      if(points<=9) return {emoji:"🚨",label:"Situation préoccupante"};
+      if(points===10) return {emoji:"⚠️",label:"Alerte importante"};
+      if(points<=12) return {emoji:"⚠️",label:"Alerte"};
+      if(points<=14) return {emoji:"👀",label:"Vigilance"};
+      if(points===15) return {emoji:"👍",label:"Satisfaisant"};
+      if(points===16) return {emoji:"🙂",label:"Bien"};
+      if(points===17) return {emoji:"👏",label:"Très bien"};
+      if(points===18) return {emoji:"🌟",label:"Excellent"};
+      if(points===19) return {emoji:"🏆",label:"Remarquable"};
+      if(points>=20) return {emoji:"💎",label:"Exemplaire"};
+      return null;
+    }
+    function getDecoration(stars){ if(stars>=6) return "crown"; if(stars>=4) return "sparkles"; if(stars>=2) return "fire"; return "none"; }
+    function getDiamondsForLevel(level){ if(level<8) return 0; return 1+Math.floor((level-8)/2); }
+    function round1(n){ return Math.round(n*10)/10; }
+    function periodStats(student){
+      const scores=student.periodScores||[];
+      if(!scores.length) return {average:null,count:0,best:null,worst:null};
+      const values=scores.map(x=>typeof x==="number"?x:x.score);
+      return {average:round1(values.reduce((a,b)=>a+b,0)/values.length),count:values.length,best:Math.max(...values),worst:Math.min(...values)};
+    }
+    function addCollectiveReward(obj, starsKey, diamondsKey){
+      obj[starsKey]=(obj[starsKey]||0)+1;
+      if(obj[starsKey]>=MAX_COLLECTIVE_STARS){ obj[starsKey]=0; obj[diamondsKey]=(obj[diamondsKey]||0)+1; }
+    }
+
+    function rankStudents(students){
+      const sorted=[...students].sort((a,b)=>{ if(b.stars!==a.stars) return b.stars-a.stars; if(b.diamonds!==a.diamonds) return b.diamonds-a.diamonds; if(b.level!==a.level) return b.level-a.level; if(b.points!==a.points) return b.points-a.points; if(b.homeworks!==a.homeworks) return b.homeworks-a.homeworks; if(b.progress!==a.progress) return b.progress-a.progress; return a.name.localeCompare(b.name,"fr"); });
+      let previousKey=null, displayedRank=0;
+      return sorted.map(student=>{ const key=`${student.stars}-${student.diamonds}-${student.level}-${student.points}-${student.homeworks}-${student.progress}`; if(key!==previousKey){ displayedRank+=1; previousKey=key; } return {...student,rank:displayedRank}; });
+    }
+
+
+    function rankPeriodRows(rows){
+      const sorted=[...rows].sort((a,b)=>{
+        const aa=a.average===null ? -Infinity : a.average;
+        const ba=b.average===null ? -Infinity : b.average;
+        if(ba!==aa) return ba-aa;
+        if((b.diamonds||0)!==(a.diamonds||0)) return (b.diamonds||0)-(a.diamonds||0);
+        if((b.stars||0)!==(a.stars||0)) return (b.stars||0)-(a.stars||0);
+        if((b.homeworks||0)!==(a.homeworks||0)) return (b.homeworks||0)-(a.homeworks||0);
+        if((b.level||0)!==(a.level||0)) return (b.level||0)-(a.level||0);
+        if((b.progress||0)!==(a.progress||0)) return (b.progress||0)-(a.progress||0);
+        return String(a.name).localeCompare(String(b.name),"fr");
+      });
+      let previousKey=null, displayedRank=0;
+      return sorted.map(row=>{
+        const key=`${row.average}-${row.diamonds||0}-${row.stars||0}-${row.homeworks||0}-${row.level||0}-${row.progress||0}`;
+        if(key!==previousKey){ displayedRank+=1; previousKey=key; }
+        return {...row,rank:displayedRank};
+      });
+    }
+
+    function currentPeriodRows(cls){
+      return cls.students.map(student=>{
+        const ps=periodStats(student);
+        return {
+          id:student.id,name:student.name,avatar:student.avatar,average:ps.average,count:ps.count,best:ps.best,worst:ps.worst,
+          stars:student.stars,diamonds:student.diamonds,homeworks:student.homeworks,level:student.level,progress:student.progress
+        };
+      });
+    }
+
+    function collectiveSnapshot(cls){
+      return {
+        classStars:cls.collectiveStars||0,
+        classDiamonds:cls.collectiveDiamonds||0,
+        g1Stars:(cls.groupStars&&cls.groupStars.g1)||0,
+        g1Diamonds:(cls.groupDiamonds&&cls.groupDiamonds.g1)||0,
+        g2Stars:(cls.groupStars&&cls.groupStars.g2)||0,
+        g2Diamonds:(cls.groupDiamonds&&cls.groupDiamonds.g2)||0
+      };
+    }
+
+    function renderCollectiveBlock(snapshot){
+      return `
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          <div style="background:#f8fafc;border-radius:16px;padding:12px"><strong>Classe</strong><div style="font-size:22px;margin-top:5px">${starRow(snapshot.classStars)} <span class="diamond-inline">💎 x${snapshot.classDiamonds}</span></div></div>
+          <div style="background:#f8fafc;border-radius:16px;padding:12px"><strong>Groupe 1</strong><div style="font-size:22px;margin-top:5px">${starRow(snapshot.g1Stars)} <span class="diamond-inline">💎 x${snapshot.g1Diamonds}</span></div></div>
+          <div style="background:#f8fafc;border-radius:16px;padding:12px"><strong>Groupe 2</strong><div style="font-size:22px;margin-top:5px">${starRow(snapshot.g2Stars)} <span class="diamond-inline">💎 x${snapshot.g2Diamonds}</span></div></div>
+        </div>`;
+    }
+
+    function setAction(student,type){
+      student.lastAction={id:uid(),type};
+      setTimeout(()=>{ const target=currentClass().students.find(s=>s.id===student.id); if(target){ target.lastAction=null; render(); save(); } },650);
+    }
+
+    function renderClassSelect(){
+      const sel=document.getElementById("classSelect"); sel.innerHTML="";
+      state.classes.forEach(c=>{ const o=document.createElement("option"); o.value=c.id; o.textContent=c.name; if(c.id===state.currentClassId) o.selected=true; sel.appendChild(o); });
+    }
+
+    function renderViewButtons(){
+      const set=(id,on)=> document.getElementById(id).classList.toggle("active",on);
+      set("viewAllBtn",state.viewMode==="all"); set("viewG1Btn",state.viewMode==="g1"); set("viewG2Btn",state.viewMode==="g2");
+      document.getElementById("selectModeBtn").textContent=`Sélection : ${state.selectionMode?"on":"off"}`;
+      document.getElementById("selectModeBtn").classList.toggle("active",state.selectionMode);
+      document.getElementById("periodLabel").textContent=currentClass().currentPeriodName || "Période 1";
+    }
+
+    function toggleSelection(studentId){
+      if(!state.selectionMode) return;
+      const arr=state.selectedStudentIds, idx=arr.indexOf(studentId);
+      if(idx>=0) arr.splice(idx,1); else arr.push(studentId);
+      render(); save();
+    }
+
+    function assignGroup(group){
+      const ids=new Set(state.selectedStudentIds);
+      currentClass().students.forEach(s=>{ if(ids.has(s.id)) s.group=group; });
+      state.selectedStudentIds=[]; save(); render();
+    }
+
+
+    let avatarTargetStudentId=null;
+
+    function openAvatarModal(studentId){
+      avatarTargetStudentId=studentId;
+      const grid=document.getElementById("avatarModalGrid");
+      grid.innerHTML="";
+      AVATARS.forEach(avatar=>{
+        const btn=document.createElement("button");
+        btn.type="button";
+        btn.className="btn outline";
+        btn.style.fontSize="30px";
+        btn.style.padding="10px";
+        btn.style.minHeight="54px";
+        btn.textContent=avatar;
+        btn.onclick=()=>{
+          const student=currentClass().students.find(s=>s.id===avatarTargetStudentId);
+          if(student){
+            student.avatar=avatar;
+            save();
+            render();
+          }
+          document.getElementById("avatarModal").classList.remove("show");
+          avatarTargetStudentId=null;
+        };
+        grid.appendChild(btn);
+      });
+      document.getElementById("avatarModal").classList.add("show");
+    }
+
+    function renderStudents(){
+      applyViewAbsences();
+      const grid=document.getElementById("studentsGrid"); grid.innerHTML="";
+      currentClass().students.forEach(student=>{
+        const alert=getAlert(student.points), deco=getDecoration(student.stars), fillPct=Math.max(0,Math.min(100,(student.progress/3)*100)), selected=state.selectedStudentIds.includes(student.id);
+        const card=document.createElement("div");
+        card.className=`card ${student.isAbsent?"absent":""} ${selected?"selected":""}`;
+
+        let floating=""; if(student.lastAction){ const t=student.lastAction.type; floating=`<div class="floating ${t}">${t==="plus"?"+1 ✨":t==="minus"?"-1 💢":"+1 📝"}</div>`; }
+        let decorations=""; if(deco==="fire") decorations=`<div class="decoration fire">🔥</div>`; if(deco==="sparkles") decorations=`<div class="decoration spark1">✨</div><div class="decoration spark2">✨</div><div class="decoration spark3">✨</div>`; if(deco==="crown") decorations=`<div class="decoration crown">👑</div>`;
+        const groupTagClass=student.group==="g1"?"g1":student.group==="g2"?"g2":"g0";
+        const groupTagLabel=student.group==="g1"?"G1":student.group==="g2"?"G2":"—";
+
+        card.innerHTML=`
+          ${floating}
+          <div class="card-top">
+            <button class="btn small outline toggle-absent">${student.isAbsent ? "Absent":"Présent"}</button>
+            <button class="btn small outline open-profile">Fiche</button>
+          </div>
+          <div class="avatar-wrap">
+            ${decorations}
+            <button class="avatar avatar-btn">${student.avatar}</button></div>
+          <div class="name">
+            <span class="name-text">${student.name}</span>
+            <span class="group-tag ${groupTagClass}">${groupTagLabel}</span>
+            <button class="btn icon outline edit-name">✏️</button>
+          </div>
+          <div class="stars-line">${Array.from({length:MAX_INDIVIDUAL_STARS}).map((_,i)=>`<span style="opacity:${i<student.stars?1:.2}">⭐</span>`).join("")}<span class="diamond-inline">💎 x${student.diamonds}</span></div>
+          <div class="progress"><div class="bar-box"><div class="bar-row"><div class="bar"><div class="fill" style="width:${fillPct}%"></div></div><div style="width:38px;text-align:right;font-size:13px;font-weight:700;color:var(--muted)">${student.progress}/3</div></div></div><div class="lvl">Niv. ${student.level}</div><div class="sub" style="text-align:center;margin-top:3px">Moy. période : ${periodStats(student).average===null?"—":periodStats(student).average+"/20"}</div></div>
+          <div class="homework"><div><strong>📝 ${student.homeworks}</strong></div><div class="row" style="gap:6px"><button class="btn icon outline hw-minus" ${student.isAbsent||student.homeworks<=0?"disabled":""}>-</button><button class="btn icon outline hw-plus" ${student.isAbsent?"disabled":""}>+</button></div></div>
+          <div class="alert">${alert?`<span>${alert.emoji} ${alert.label}</span>`:`<span style="opacity:0">placeholder</span>`}</div>
+          <div class="score-row"><button class="btn minus score-minus" ${student.isAbsent?"disabled":""}>-</button><div class="score">${student.points}</div><button class="btn plus score-plus" ${student.isAbsent?"disabled":""}>+</button></div>
+        `;
+
+        card.onclick=(e)=>{ if(e.target.closest("button,input,textarea,select")) return; toggleSelection(student.id); };
+        card.querySelector(".toggle-absent").onclick=(e)=>{ e.stopPropagation(); student.isAbsent=!student.isAbsent; student.lostThisLesson=false; student.lostStarThisLesson=false; student.pointsLostThisLesson=0; student.homeworkAddedThisLesson=false; render(); save(); };
+        card.querySelector(".open-profile").onclick=(e)=>{ e.stopPropagation(); openProfile(student.id); };
+        card.querySelector(".avatar-btn").onclick=(e)=>{
+          e.stopPropagation();
+          openAvatarModal(student.id);
+        };
+        card.querySelector(".edit-name").onclick=(e)=>{ e.stopPropagation(); const n=prompt("Modifier le prénom :",student.name); if(n&&n.trim()){ student.name=n.trim(); render(); save(); } };
+        card.querySelector(".score-minus").onclick=(e)=>{ e.stopPropagation(); const prev=student.points, next=Math.max(0,Math.min(MAX_POINTS,prev-1)); student.points=next; student.lostThisLesson=true; student.pointsLostThisLesson+=1; student.totalPointsLost+=1; if(prev>=10&&next<10&&student.stars>0&&!student.lostStarThisLesson){ student.stars-=1; student.lostStarThisLesson=true; } setAction(student,"minus"); render(); save(); };
+        card.querySelector(".score-plus").onclick=(e)=>{ e.stopPropagation(); student.points=Math.max(0,Math.min(MAX_POINTS,student.points+1)); setAction(student,"plus"); render(); save(); };
+        card.querySelector(".hw-plus").onclick=(e)=>{ e.stopPropagation(); student.homeworks+=1; student.homeworkAddedThisLesson=true; setAction(student,"homework"); render(); save(); };
+        card.querySelector(".hw-minus").onclick=(e)=>{ e.stopPropagation(); student.homeworks=Math.max(0,student.homeworks-1); render(); save(); };
+
+        grid.appendChild(card);
+      });
+    }
+
+    function starRow(n){ return Array.from({length:MAX_COLLECTIVE_STARS}).map((_,i)=>`<span style="opacity:${i<n?1:.2}">🌟</span>`).join(""); }
+
+    function renderHistory(){
+      const list=document.getElementById("historyList"); list.innerHTML=""; const history=currentClass().history;
+      if(!history.length){ list.innerHTML='<div class="item">Aucun historique pour le moment.</div>'; return; }
+      history.forEach(entry=>{
+        const item=document.createElement("div"); item.className="item"; item.style.marginBottom="8px";
+        item.innerHTML=`<div style="font-weight:700;color:var(--text)">${entry.date}</div><div>Élèves parfaits : ${entry.perfectNames.length?entry.perfectNames.join(", "):"aucun"}</div><div>+1 fin d'heure : ${entry.bonusPointNames.length?entry.bonusPointNames.join(", "):"aucun"}</div><div>Restés à 20 : ${entry.stayedAt20.length?entry.stayedAt20.join(", "):"aucun"}</div><div>Niveaux gagnés : ${entry.levelUps.length?entry.levelUps.join(", "):"aucun"}</div><div>Étoiles gagnées : ${entry.starNames.length?entry.starNames.join(", "):"aucun"}</div><div>Classe parfaite : ${entry.everyonePerfect?"oui":"non"}</div>${entry.groupTarget?`<div>Vue appliquée : ${entry.groupTarget==="g1"?"Groupe 1":entry.groupTarget==="g2"?"Groupe 2":"Classe entière"}</div>`:""}`;
+        list.appendChild(item);
+      });
+    }
+
+    function ensureRemarks(student){
+      if(!Array.isArray(student.teacherRemarks)) student.teacherRemarks=[];
+      if(student.notes && student.notes.trim() && !student._legacyNoteMigrated){
+        student.teacherRemarks.push({id:uid(),date:new Date().toLocaleDateString("fr-FR"),text:student.notes.trim()});
+        student.notes="";
+        student._legacyNoteMigrated=true;
+      }
+      return student.teacherRemarks;
+    }
+
+    function remarksHTML(student,editable=false){
+      const remarks=ensureRemarks(student);
+      if(!remarks.length) return '<div class="muted">Aucune remarque pour le moment.</div>';
+      return [...remarks].reverse().map(r=>`
+        <div style="padding:10px 0;border-bottom:1px solid #e2e8f0">
+          <div class="muted" style="font-size:12px">${r.date}</div>
+          <div style="margin:4px 0">${r.text}</div>
+          ${editable?`<div class="row" style="margin-top:6px"><button class="btn outline small" onclick="editRemark('${student.id}','${r.id}')">Modifier</button><button class="btn danger small" onclick="deleteRemark('${student.id}','${r.id}')">Supprimer</button></div>`:""}
+        </div>`).join("");
+    }
+
+    function addRemark(studentId){
+      const student=currentClass().students.find(s=>s.id===studentId);
+      const area=document.getElementById("notesArea");
+      const value=area.value.trim();
+      if(!student||!value) return;
+      ensureRemarks(student).push({id:uid(),date:new Date().toLocaleDateString("fr-FR"),text:value});
+      area.value="";
+      save(); openProfile(studentId);
+    }
+
+    function editRemark(studentId,remarkId){
+      const student=currentClass().students.find(s=>s.id===studentId);
+      const remark=ensureRemarks(student).find(r=>r.id===remarkId);
+      if(!remark) return;
+      const value=prompt("Modifier la remarque :",remark.text);
+      if(value===null) return;
+      if(value.trim()) remark.text=value.trim();
+      save(); openProfile(studentId);
+    }
+
+    function deleteRemark(studentId,remarkId){
+      const student=currentClass().students.find(s=>s.id===studentId);
+      if(!student) return;
+      student.teacherRemarks=ensureRemarks(student).filter(r=>r.id!==remarkId);
+      save(); openProfile(studentId);
+    }
+
+    function openProfile(studentId){
+      const student=currentClass().students.find(s=>s.id===studentId); if(!student) return;
+      const successRate=student.totalLessons>0?Math.round((student.perfectLessons/student.totalLessons)*100):0;
+      const warningDays=student.history.filter(e=>e.pointsLost>0).length;
+      let trend="À surveiller";
+      if(student.perfectLessons>=10&&student.points===20&&warningDays===0) trend="Élève sérieux";
+      else if(student.points<=10||warningDays>=5) trend="Contacter les parents";
+      else if(student.points<=13||warningDays>=3) trend="Attention à cet élève";
+      else if(student.currentStreak>=3||student.perfectLessons>warningDays) trend="En progression";
+
+      document.getElementById("profileContent").innerHTML=`
+        <div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:16px">
+          <div style="display:flex;gap:16px;align-items:center">
+            <div style="position:relative;width:80px;height:80px;display:flex;align-items:center;justify-content:center;border-radius:999px;background:white;box-shadow:0 2px 10px rgba(0,0,0,.04);font-size:48px">${student.avatar}</div>
+            <div>
+              <div style="font-size:32px;font-weight:800">${student.name}</div>
+              <div class="muted" style="margin-top:4px">Niv. ${student.level} • ${student.stars}⭐ • 💎 x${student.diamonds} • 📝 ${student.homeworks} • ${student.group==="g1"?"G1":student.group==="g2"?"G2":"—"}</div>
+              <div style="margin-top:4px;font-size:14px;font-weight:600">Tendance : ${trend}</div>
+              <div style="margin-top:8px"><button class="btn outline small" id="previewStudentBtn">Voir comme cet élève</button></div>
+            </div>
+          </div>
+        </div>
+        <div class="profile-grid">
+          <div class="box"><div class="muted">Cours totaux</div><div class="big">${student.totalLessons}</div></div>
+          <div class="box"><div class="muted">Cours parfaits</div><div class="big" style="color:#047857">${student.perfectLessons}</div></div>
+          <div class="box"><div class="muted">Réussite</div><div class="big" style="color:#0284c7">${successRate}%</div></div>
+          <div class="box"><div class="muted">Points perdus</div><div class="big" style="color:#be123c">${student.totalPointsLost}</div></div>
+        </div>
+        <div class="box" style="margin-top:12px">
+          <div style="font-size:18px;font-weight:700;margin-bottom:8px">${currentClass().currentPeriodName}</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;font-size:14px">
+            <div><span class="muted">Moyenne provisoire</span><br><strong>${periodStats(student).average===null?"—":periodStats(student).average+"/20"}</strong></div>
+            <div><span class="muted">Cours comptés</span><br><strong>${periodStats(student).count}</strong></div>
+            <div><span class="muted">Meilleure note</span><br><strong>${periodStats(student).best===null?"—":periodStats(student).best+"/20"}</strong></div>
+            <div><span class="muted">Plus basse note</span><br><strong>${periodStats(student).worst===null?"—":periodStats(student).worst+"/20"}</strong></div>
+          </div>
+          <div style="margin-top:10px;font-size:14px"><strong>Anciennes périodes :</strong> ${(student.archivedPeriods||[]).length ? student.archivedPeriods.map(p=>`${p.name} : ${p.average===null?"—":p.average+"/20"}`).join(" • ") : "aucune"}</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+          <div class="box"><div style="font-size:18px;font-weight:700;margin-bottom:8px">Progression</div><div style="line-height:1.8;font-size:14px"><div>Score actuel : <strong>${student.points}/20</strong></div><div>Jauge actuelle : <strong>${student.progress}/3</strong></div><div>Série actuelle : <strong>${student.currentStreak}</strong></div><div>Étoiles : <strong>${student.stars}</strong></div><div>Diamants : <strong>${student.diamonds}</strong></div><div>Devoirs rendus : <strong>${student.homeworks}</strong></div></div></div>
+          <div class="box"><div style="font-size:18px;font-weight:700;margin-bottom:8px">Remarques visibles par l’élève / les parents</div>
+          <textarea id="notesArea" placeholder="Ex : Travail sérieux aujourd’hui. / Plusieurs bavardages : davantage de concentration est attendue."></textarea>
+          <div style="margin-top:10px"><button class="btn primary" id="saveNotesBtn">Ajouter la remarque</button></div>
+          <div style="margin-top:12px">${remarksHTML(student,true)}</div></div>
+        </div>
+        <div class="box" style="margin-top:12px"><div style="font-size:18px;font-weight:700;margin-bottom:8px">Historique détaillé</div><div style="display:grid;gap:8px">${student.history.length?student.history.map(entry=>`<div style="border-radius:16px;background:#f8fafc;padding:12px"><div style="font-weight:700">${entry.date}</div><div>Absent : ${entry.absent?"oui":"non"}</div><div>Perte pendant le cours : ${entry.pointsLost}</div><div>Bonus fin d'heure : ${entry.endBonus?"oui":"non"}</div><div>Resté à 20 : ${entry.stayedAt20?"oui":"non"}</div><div>Montée de niveau : ${entry.levelUp?"oui":"non"}</div><div>Étoile gagnée : ${entry.starGained?"oui":"non"}</div><div>Devoir ajouté : ${entry.homeworkAdded?"oui":"non"}</div></div>`).join(""):`<div>Aucun historique pour le moment.</div>`}</div></div>
+      `;
+      document.getElementById("profileModal").classList.add("show");
+      document.getElementById("saveNotesBtn").onclick=()=>addRemark(student.id);
+      document.getElementById("previewStudentBtn").onclick=()=>{ document.getElementById("profileModal").classList.remove("show"); openStudentView(student.id); };
+    }
+
+    function studentTrend(values){
+      if(values.length<2) return {emoji:"➡️",label:"Pas encore assez de données"};
+      const n=values.length, sx=(n-1)*n/2, sy=values.reduce((a,b)=>a+b,0), sxx=(n-1)*n*(2*n-1)/6, sxy=values.reduce((s,y,x)=>s+x*y,0);
+      const d=n*sxx-sx*sx, slope=d?(n*sxy-sx*sy)/d:0;
+      if(slope>.18) return {emoji:"📈",label:"En progression"};
+      if(slope<-.18) return {emoji:"📉",label:"En baisse"};
+      return {emoji:"➡️",label:"Stable"};
+    }
+
+    function studentChart(values){
+      if(!values.length) return '<div class="student-chart" style="display:grid;place-items:center"><span class="muted">Le graphique apparaîtra après la première fin de cours.</span></div>';
+      const w=760,h=235,L=42,R=16,T=16,B=30,pw=w-L-R,ph=h-T-B;
+      const X=i=>values.length===1?L+pw/2:L+i/(values.length-1)*pw;
+      const Y=v=>T+(20-v)/20*ph;
+      const pts=values.map((v,i)=>`${X(i)},${Y(v)}`).join(" ");
+      const grid=[0,5,10,15,20].map(v=>`<line x1="${L}" x2="${w-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#e2e8f0"/><text x="${L-7}" y="${Y(v)+4}" text-anchor="end" font-size="11" fill="#64748b">${v}</text>`).join("");
+      const dots=values.map((v,i)=>`<circle cx="${X(i)}" cy="${Y(v)}" r="4.5" fill="#0f766e"><title>Cours ${i+1}: ${v}/20</title></circle>`).join("");
+      const labels=values.map((v,i)=>values.length>12&&i%Math.ceil(values.length/8)!==0&&i!==values.length-1?"":`<text x="${X(i)}" y="${h-9}" text-anchor="middle" font-size="10" fill="#64748b">${i+1}</text>`).join("");
+      return `<div class="student-chart"><svg viewBox="0 0 ${w} ${h}" width="100%" height="100%" preserveAspectRatio="none">${grid}<polyline points="${pts}" fill="none" stroke="#0f766e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>${dots}${labels}</svg></div>`;
+    }
+
+    function individualStars(n){
+      return Array.from({length:MAX_INDIVIDUAL_STARS}).map((_,i)=>`<span style="opacity:${i<n?1:.2}">⭐</span>`).join("");
+    }
+
+    function studentRanking(student){
+      const ranked=rankPeriodRows(currentPeriodRows(currentClass()));
+      const me=ranked.find(r=>r.id===student.id), top=ranked.slice(0,5), visible=[...top];
+      if(me&&!top.some(r=>r.id===me.id)) visible.push({separator:true},me);
+      return visible.map(r=>{
+        if(r.separator) return '<div class="muted" style="text-align:center;padding:4px">•••</div>';
+        const badge=r.rank===1?"🥇":r.rank===2?"🥈":r.rank===3?"🥉":"#"+r.rank;
+        return `<div class="student-rank-row ${r.id===student.id?"me":""}"><strong>${badge}</strong><span>${r.id===student.id?"👤 TOI":(r.avatar||"🧑")+" "+r.name}</span><span>${r.id===student.id&&r.average!==null?r.average+"/20":""}</span></div>`;
+      }).join("");
+    }
+
+    function studentYear(student){
+      const periods=student.archivedPeriods||[];
+      if(!periods.length) return '<div class="muted">Aucune période clôturée pour le moment.</div>';
+      return periods.map((p,i)=>{
+        const prev=i?periods[i-1].average:null;
+        let d="";
+        if(p.average!==null&&prev!==null){const delta=round1(p.average-prev);d=delta>0?`📈 +${delta}`:delta<0?`📉 ${delta}`:"➡️ 0";}
+        return `<div style="display:grid;grid-template-columns:1fr auto auto;gap:10px;padding:9px 0;border-bottom:1px solid #e2e8f0"><strong>${p.name}</strong><span>${p.average===null?"—":p.average+"/20"}</span><span>${d}</span></div>`;
+      }).join("");
+    }
+
+    function openStudentView(studentId){
+      const cls=currentClass();
+      const student=cls.students.find(s=>s.id===studentId);
+      if(!student) return;
+
+      const ps=periodStats(student);
+      const ranked=rankPeriodRows(currentPeriodRows(cls));
+      const me=ranked.find(s=>s.id===student.id);
+      const rank=me?me.rank:"—";
+      const values=(student.periodScores||[]).map(v=>Number(v.score)).filter(Number.isFinite);
+      const trend=studentTrend(values);
+      const g=student.group==="g1"?"g1":student.group==="g2"?"g2":null;
+      const groupName=g==="g1"?"Groupe 1":g==="g2"?"Groupe 2":"Aucun groupe";
+      const remain=Math.max(0,3-(student.progress||0));
+      const nextDiamond=student.level<8?8:student.level+(student.level%2===0?2:1);
+
+      document.getElementById("studentViewContent").innerHTML=`
+        <div class="student-dashboard">
+          <div class="student-hero">
+            <div class="student-big-avatar">${student.avatar}</div>
+            <div>
+              <div class="muted">${cls.name} • ${cls.currentPeriodName}</div>
+              <div style="font-size:30px;font-weight:900">${student.name}</div>
+              <div class="student-big-grade">${ps.average===null?"—":ps.average+" / 20"}</div>
+              <div class="muted">Moyenne actuelle de la période d’implication en classe</div>
+              <div style="margin-top:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:16px;padding:12px;line-height:1.45">
+                <strong>ℹ️ À quoi correspond cette note ?</strong><br>
+                Cette note concerne <strong>l’implication de l’élève en classe</strong>. Elle tient compte notamment de la participation, de l’investissement dans les activités, du travail fourni, de l’écoute, de la concentration et de l’attitude permettant de travailler dans de bonnes conditions.
+                <br><br>
+                <strong>Elle ne correspond pas à la moyenne générale de l’élève ni à sa moyenne en mathématiques.</strong> Elle constitue un indicateur distinct de son engagement pendant les cours.
+              </div>
+              <div class="row wrap" style="margin-top:12px">
+                <span class="toolbar-chip active">Score : ${student.points}/20</span>
+                <span class="toolbar-chip">${trend.emoji} ${trend.label}</span>
+                <span class="toolbar-chip">🏆 #${rank} / ${ranked.length}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="student-kpis">
+            <div class="student-kpi"><span class="muted">Cours comptabilisés</span><br><strong>${ps.count}</strong></div>
+            <div class="student-kpi"><span class="muted">Meilleur score</span><br><strong>${ps.best===null?"—":ps.best+"/20"}</strong></div>
+            <div class="student-kpi"><span class="muted">Plus bas</span><br><strong>${ps.worst===null?"—":ps.worst+"/20"}</strong></div>
+            <div class="student-kpi"><span class="muted">Devoirs</span><br><strong>📝 ${student.homeworks}</strong></div>
+          </div>
+
+          <div class="student-columns">
+            <div class="box">
+              <div style="font-size:20px;font-weight:800">📈 Ma progression</div>
+              <div class="muted" style="margin:4px 0 10px">Évolution de ton score d’implication à chaque fin de cours.</div>
+              ${studentChart(values)}
+            </div>
+            <div class="box">
+              <div style="font-size:20px;font-weight:800">🏆 Classement général</div>
+              <div class="muted" style="font-size:13px;margin:4px 0 8px">Top 5 de la période. Les notes des autres restent privées.</div>
+              ${studentRanking(student)}
+            </div>
+          </div>
+
+          <div class="student-columns">
+            <div class="box">
+              <div style="font-size:20px;font-weight:800">⭐ Ma progression ZenQuest</div>
+              <div style="font-size:25px;font-weight:900;margin-top:8px">Niveau ${student.level}</div>
+              <div style="font-size:25px;margin:8px 0">${individualStars(student.stars)} <span class="diamond-inline">💎 x${student.diamonds}</span></div>
+              <div class="student-mini-progress"><span style="width:${Math.min(100,(student.progress/3)*100)}%"></span></div>
+              <div class="muted" style="margin-top:5px">${student.progress}/3 vers le niveau suivant</div>
+              <div class="student-objective"><strong>🎯 Prochain objectif</strong><br>Encore ${remain} cours réussi${remain>1?"s":""} pour atteindre le niveau ${student.level+1}.<br><span class="muted">Prochain diamant : niveau ${nextDiamond}.</span></div>
+              <div style="margin-top:10px"><strong>🔥 Série actuelle : ${student.currentStreak} cours</strong></div>
+            </div>
+
+            <div class="box">
+              <div style="font-size:20px;font-weight:800">🏫 Ma classe</div>
+              <div style="margin-top:8px"><strong>${cls.name}</strong></div>
+              <div style="font-size:23px;margin:7px 0">${starRow(cls.collectiveStars||0)} <span class="diamond-inline">💎 x${cls.collectiveDiamonds||0}</span></div>
+              <div style="margin-top:14px"><strong>${groupName}</strong></div>
+              ${g?`<div style="font-size:23px;margin:7px 0">${starRow((cls.groupStars&&cls.groupStars[g])||0)} <span class="diamond-inline">💎 x${(cls.groupDiamonds&&cls.groupDiamonds[g])||0}</span></div><div class="student-objective"><strong>⚔️ G1 contre G2</strong><br>G1 : 💎 ${(cls.groupDiamonds&&cls.groupDiamonds.g1)||0}<br>G2 : 💎 ${(cls.groupDiamonds&&cls.groupDiamonds.g2)||0}</div>`:'<div class="muted" style="margin-top:6px">Pas encore affecté à un groupe.</div>'}
+            </div>
+          </div>
+
+          <div class="box">
+            <div style="font-size:20px;font-weight:800">💬 Remarques du professeur</div>
+            <div class="muted" style="margin:4px 0 8px">Suivi communiqué à l’élève et à sa famille.</div>
+            ${remarksHTML(student,false)}
+          </div>
+
+          <div class="box">
+            <div style="font-size:20px;font-weight:800">🗓️ Mon année</div>
+            <div class="muted" style="margin:4px 0 8px">Tes moyennes des périodes déjà clôturées.</div>
+            ${studentYear(student)}
+          </div>
+        </div>
+      `;
+      document.getElementById("studentViewModal").classList.add("show");
+    }
+
+    function showSummary(summary){
+      document.getElementById("summaryContent").innerHTML=`
+        <div class="summary-grid">
+          <div class="box"><div class="muted">Élèves parfaits</div><div class="big" style="color:#047857">${summary.perfectNames.length}</div></div>
+          <div class="box"><div class="muted">+1 fin d'heure</div><div class="big" style="color:#0284c7">${summary.bonusPointNames.length}</div></div>
+          <div class="box"><div class="muted">Niveaux gagnés</div><div class="big" style="color:#b45309">${summary.levelUps.length}</div></div>
+          <div class="box"><div class="muted">Étoiles gagnées</div><div class="big" style="color:#ca8a04">${summary.starNames.length}</div></div>
+          <div class="box"><div class="muted">Étoile collective</div><div class="big" style="color:#7c3aed">${summary.classStarGained?"+1":"0"}</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+          <div class="box"><div style="font-weight:700;margin-bottom:8px">Sans perte</div><div class="muted">${summary.perfectNames.length?summary.perfectNames.join(", "):"aucun"}</div></div>
+          <div class="box"><div style="font-weight:700;margin-bottom:8px">Bonus de point</div><div class="muted">${summary.bonusPointNames.length?summary.bonusPointNames.join(", "):"aucun"}</div></div>
+          <div class="box"><div style="font-weight:700;margin-bottom:8px">Restés à 20</div><div class="muted">${summary.stayedAt20.length?summary.stayedAt20.join(", "):"aucun"}</div></div>
+          <div class="box"><div style="font-weight:700;margin-bottom:8px">Montées de niveau</div><div class="muted">${summary.levelUps.length?summary.levelUps.join(", "):"aucun"}</div></div>
+        </div>
+      `;
+      document.getElementById("summaryModal").classList.add("show");
+    }
+
+    function endLesson(){
+      const cls=currentClass(); applyViewAbsences();
+      const presentStudents=cls.students.filter(s=>!s.isAbsent);
+      const everyonePerfect=presentStudents.length>0&&presentStudents.every(s=>!s.lostThisLesson);
+      const perfectNames=[], bonusPointNames=[], stayedAt20=[], levelUps=[], starNames=[];
+
+      if(everyonePerfect) addCollectiveReward(cls,"collectiveStars","collectiveDiamonds");
+      let targetGroup=null;
+      if(state.viewMode==="g1") targetGroup="g1";
+      if(state.viewMode==="g2") targetGroup="g2";
+      if(targetGroup&&everyonePerfect){ cls.groupStars[targetGroup]=(cls.groupStars[targetGroup]||0)+1; if(cls.groupStars[targetGroup]>=MAX_COLLECTIVE_STARS){ cls.groupStars[targetGroup]=0; cls.groupDiamonds[targetGroup]=(cls.groupDiamonds[targetGroup]||0)+1; } }
+
+      cls.students.forEach(student=>{
+        const wasAbsent=student.isAbsent, previousStars=student.stars;
+        if(!wasAbsent){
+          student.totalLessons+=1;
+          if(!student.lostThisLesson){
+            perfectNames.push(student.name); student.perfectLessons+=1; student.currentStreak+=1; student.progress+=1;
+            if(student.points<MAX_POINTS){ student.points+=1; bonusPointNames.push(student.name); } else stayedAt20.push(student.name);
+            if(student.progress>=3){
+              student.progress=0; student.level+=1; student.stars=Math.min(MAX_INDIVIDUAL_STARS,student.stars+1); student.diamonds=getDiamondsForLevel(student.level); levelUps.push(student.name); if(student.stars>previousStars) starNames.push(student.name);
+            }
+          }else student.currentStreak=0;
+        }
+
+        if(!wasAbsent){ student.periodScores.push({date:new Date().toLocaleString(),score:student.points}); }
+
+        student.history.unshift({ id:uid(), date:new Date().toLocaleString(), absent:wasAbsent, pointsLost:student.pointsLostThisLesson, endBonus:!wasAbsent&&!student.lostThisLesson&&student.points<MAX_POINTS, stayedAt20:!wasAbsent&&!student.lostThisLesson&&student.points>=MAX_POINTS, levelUp:!wasAbsent&&!student.lostThisLesson&&levelUps.includes(student.name), starGained:!wasAbsent&&!student.lostThisLesson&&starNames.includes(student.name), homeworkAdded:student.homeworkAddedThisLesson });
+        student.history=student.history.slice(0,20);
+
+        if(state.viewMode==="all"){ student.isAbsent=false; student.isAutoAbsent=false; }
+        else if(targetGroup){ if(student.group!==targetGroup){ student.isAbsent=true; student.isAutoAbsent=true; } else { student.isAbsent=false; student.isAutoAbsent=false; } }
+
+        student.lastAction=null; student.lostThisLesson=false; student.lostStarThisLesson=false; student.pointsLostThisLesson=0; student.homeworkAddedThisLesson=false;
+      });
+
+      cls.history.unshift({ id:uid(), date:new Date().toLocaleString(), perfectNames, bonusPointNames, stayedAt20, levelUps, starNames, everyonePerfect, groupTarget:state.viewMode });
+      cls.history=cls.history.slice(0,15);
+
+      save(); render(); showSummary({ perfectNames, bonusPointNames, stayedAt20, levelUps, starNames, classStarGained: everyonePerfect });
+    }
+
+    function renderPeriodManager(){
+      const cls=currentClass();
+      const input=document.getElementById("periodNameInput");
+      const nextInput=document.getElementById("nextPeriodNameInput");
+      const table=document.getElementById("periodStudentTable");
+      const ranking=document.getElementById("periodRanking");
+      const collective=document.getElementById("periodCollectiveSummary");
+      const currentSummary=document.getElementById("periodCurrentSummary");
+      const tabs=document.getElementById("periodTabs");
+      const editBox=document.getElementById("periodEditBox");
+      const closeBox=document.getElementById("periodCloseBox");
+      const message=document.getElementById("periodActionMessage");
+
+      if(!cls.periodArchive) cls.periodArchive=[];
+      if(!state.periodView) state.periodView="current";
+
+      tabs.innerHTML="";
+      const choices=[
+        {key:"current",label:cls.currentPeriodName+" • actuelle"},
+        ...cls.periodArchive.map(p=>({key:p.id,label:p.name}))
+      ];
+      choices.forEach(choice=>{
+        const b=document.createElement("button");
+        b.type="button";
+        b.className=`period-tab ${state.periodView===choice.key?"active":""}`;
+        b.textContent=choice.label;
+        b.onclick=()=>{ state.periodView=choice.key; save(); renderPeriodManager(); };
+        tabs.appendChild(b);
+      });
+
+      let rows, snapshot, title, classAverage, isCurrent=state.periodView==="current";
+      if(isCurrent){
+        rows=currentPeriodRows(cls);
+        snapshot=collectiveSnapshot(cls);
+        title=cls.currentPeriodName;
+        const avgs=rows.filter(r=>r.average!==null).map(r=>r.average);
+        classAverage=avgs.length?round1(avgs.reduce((a,b)=>a+b,0)/avgs.length):null;
+        input.value=cls.currentPeriodName||"Période 1";
+        if(!nextInput.value.trim()) nextInput.value="Nouvelle période";
+        editBox.style.display="";
+        closeBox.style.display="";
+        message.textContent="";
+      }else{
+        const archived=cls.periodArchive.find(p=>p.id===state.periodView);
+        if(!archived){ state.periodView="current"; return renderPeriodManager(); }
+        rows=archived.rankingRows||[];
+        snapshot=archived.collectiveSnapshot||{classStars:0,classDiamonds:0,g1Stars:0,g1Diamonds:0,g2Stars:0,g2Diamonds:0};
+        title=archived.name;
+        classAverage=archived.classAverage;
+        editBox.style.display="none";
+        closeBox.style.display="none";
+      }
+
+      currentSummary.innerHTML= isCurrent ? `
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          <div><span class="muted">Nom</span><br><strong>${title}</strong></div>
+          <div><span class="muted">Élèves avec une note</span><br><strong>${rows.filter(r=>r.average!==null).length}/${rows.length}</strong></div>
+          <div><span class="muted">Moyenne provisoire classe</span><br><strong>${classAverage===null?"—":classAverage+"/20"}</strong></div>
+        </div>` : `
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          <div><span class="muted">Période</span><br><strong>${title}</strong></div>
+          <div><span class="muted">Statut</span><br><strong>Clôturée</strong></div>
+          <div><span class="muted">Moyenne de classe</span><br><strong>${classAverage===null?"—":classAverage+"/20"}</strong></div>
+        </div>`;
+
+      collective.innerHTML=renderCollectiveBlock(snapshot);
+
+      const ranked=rankPeriodRows(rows);
+      ranking.innerHTML=ranked.length ? ranked.slice(0,5).map(r=>`
+        <div class="period-rank-row" style="margin-bottom:8px">
+          <strong>#${r.rank}</strong>
+          <strong>${r.avatar||"🧑"} ${r.name}</strong>
+          <span>${r.average===null?"—":r.average+"/20"}</span>
+          <span>💎 ${r.diamonds||0}</span>
+          <span>⭐ ${r.stars||0}</span>
+          <span>📝 ${r.homeworks||0}</span>
+        </div>`).join("") : '<div class="muted">Aucune note pour cette période.</div>';
+
+      table.innerHTML=rows.length ? `
+        <div style="display:grid;gap:8px">
+          ${ranked.map(r=>`
+            <div class="period-table-row">
+              <strong>${r.avatar||"🧑"} ${r.name}</strong>
+              <span>${r.average===null?"—":r.average+"/20"}</span>
+              <span>${r.count||0} cours</span>
+              <span>↑ ${r.best===null||r.best===undefined?"—":r.best}</span>
+              <span>↓ ${r.worst===null||r.worst===undefined?"—":r.worst}</span>
+              <span>#${r.rank}</span>
+            </div>`).join("")}
+        </div>` : '<div class="muted">Aucune donnée.</div>';
+    }
+
+    function openPeriodManager(){
+      renderPeriodManager();
+      document.getElementById("periodModal").classList.add("show");
+    }
+
+    function savePeriodName(){
+      const cls=currentClass();
+      const n=document.getElementById("periodNameInput").value.trim();
+      if(!n) return;
+      cls.currentPeriodName=n;
+      save(); render(); renderPeriodManager();
+      document.getElementById("periodActionMessage").textContent="Nom de période enregistré ✓";
+    }
+
+    function closePeriod(){
+      const cls=currentClass();
+      const nextName=document.getElementById("nextPeriodNameInput").value.trim() || "Nouvelle période";
+      const frozenRows=currentPeriodRows(cls).map(row=>({...row}));
+      const frozenCollective=collectiveSnapshot(cls);
+      const validAverages=frozenRows.filter(r=>r.average!==null).map(r=>r.average);
+      const classAverage=validAverages.length ? round1(validAverages.reduce((a,b)=>a+b,0)/validAverages.length) : null;
+      const closedAt=new Date().toLocaleString();
+
+      cls.students.forEach(student=>{
+        const ps=periodStats(student);
+        student.archivedPeriods.push({
+          name:cls.currentPeriodName,
+          average:ps.average,
+          count:ps.count,
+          best:ps.best,
+          worst:ps.worst,
+          closedAt
+        });
+        student.periodScores=[];
+        student.points=15;
+        student.progress=0;
+        student.lostThisLesson=false;
+        student.lostStarThisLesson=false;
+        student.pointsLostThisLesson=0;
+      });
+
+      cls.periodArchive.push({
+        id:uid(),
+        name:cls.currentPeriodName,
+        classAverage,
+        studentsCount:cls.students.length,
+        closedAt,
+        rankingRows:frozenRows,
+        collectiveSnapshot:frozenCollective
+      });
+
+      state.periodView="current";
+      cls.currentPeriodName=nextName;
+      save(); render(); renderPeriodManager();
+      document.getElementById("periodActionMessage").textContent="Période clôturée ✓ La nouvelle période commence à 15/20.";
+    }
+
+
+    function populateStudentPreviewSelect(){
+      const sel=document.getElementById("studentPreviewSelect");
+      const current=sel.value;
+      sel.innerHTML='<option value="">Choisir un élève…</option>';
+      currentClass().students.slice().sort((a,b)=>a.name.localeCompare(b.name,"fr")).forEach(student=>{
+        const opt=document.createElement("option");
+        opt.value=student.id;
+        opt.textContent=student.name;
+        sel.appendChild(opt);
+      });
+      if([...sel.options].some(o=>o.value===current)) sel.value=current;
+    }
+
+    function renderStudentModeControls(){
+      const profBtn=document.getElementById("profModeBtn");
+      const studentBtn=document.getElementById("studentModeBtn");
+      const select=document.getElementById("studentPreviewSelect");
+      const isStudent=state.appMode==="student";
+      profBtn.classList.toggle("active",!isStudent);
+      studentBtn.classList.toggle("active",isStudent);
+      select.style.display=isStudent?"":"none";
+      populateStudentPreviewSelect();
+    }
+
+    function setAppMode(mode){
+      state.appMode=mode;
+      if(mode==="prof"){
+        document.getElementById("studentViewModal").classList.remove("show");
+        document.getElementById("studentPreviewSelect").value="";
+      }
+      save(); renderStudentModeControls();
+    }
+
+    function render(){ renderClassSelect(); renderViewButtons(); renderStudentModeControls(); renderStudents(); renderHistory(); }
+
+    document.getElementById("addStudentBtn").onclick=()=>{ const v=document.getElementById("newStudentInput").value.trim(); if(!v) return; currentClass().students.push(createStudent(v,currentClass().students.length)); document.getElementById("newStudentInput").value=""; save(); render(); };
+    document.getElementById("addClassBtn").onclick=()=>{ const v=document.getElementById("newClassInput").value.trim(); if(!v) return; const c=createClass(v,[]); state.classes.push(c); state.currentClassId=c.id; document.getElementById("newClassInput").value=""; save(); render(); };
+    document.getElementById("classSelect").onchange=(e)=>{ state.currentClassId=e.target.value; state.appMode="prof"; save(); render(); };
+    document.getElementById("endLessonBtn").onclick=endLesson;
+    document.getElementById("closeAvatarModalBtn").onclick=()=>{
+      document.getElementById("avatarModal").classList.remove("show");
+      avatarTargetStudentId=null;
+    };
+    document.getElementById("openHistoryBtn").onclick=()=>{ renderHistory(); document.getElementById("historyModal").classList.add("show"); };
+    document.getElementById("closeHistoryBtn").onclick=()=>document.getElementById("historyModal").classList.remove("show");
+    document.getElementById("profModeBtn").onclick=()=> setAppMode("prof");
+    document.getElementById("studentModeBtn").onclick=()=> setAppMode("student");
+    document.getElementById("studentPreviewSelect").onchange=(e)=>{ if(e.target.value){ state.appMode="student"; save(); openStudentView(e.target.value); renderStudentModeControls(); } };
+    document.getElementById("openPeriodBtn").onclick=openPeriodManager;
+    document.getElementById("closePeriodModalBtn").onclick=()=> document.getElementById("periodModal").classList.remove("show");
+    document.getElementById("savePeriodNameBtn").onclick=savePeriodName;
+    document.getElementById("confirmClosePeriodBtn").onclick=closePeriod;
+    document.getElementById("closeStudentViewBtn").onclick=()=> setAppMode("prof");
+    document.getElementById("closeProfileBtn").onclick=()=> document.getElementById("profileModal").classList.remove("show");
+    document.getElementById("closeSummaryBtn").onclick=()=> document.getElementById("summaryModal").classList.remove("show");
+    document.getElementById("selectModeBtn").onclick=()=>{ state.selectionMode=!state.selectionMode; if(!state.selectionMode) state.selectedStudentIds=[]; save(); render(); };
+    document.getElementById("clearSelectionBtn").onclick=()=>{ state.selectedStudentIds=[]; save(); render(); };
+    document.getElementById("assignG1Btn").onclick=()=> assignGroup("g1");
+    document.getElementById("assignG2Btn").onclick=()=> assignGroup("g2");
+    document.getElementById("assignNoneBtn").onclick=()=> assignGroup(null);
+    document.getElementById("viewAllBtn").onclick=()=>{ state.viewMode="all"; save(); render(); };
+    document.getElementById("viewG1Btn").onclick=()=>{ state.viewMode="g1"; save(); render(); };
+    document.getElementById("viewG2Btn").onclick=()=>{ state.viewMode="g2"; save(); render(); };
+
+    render();
+  </script>
+</body>
+</html>
