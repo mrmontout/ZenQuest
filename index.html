@@ -150,13 +150,13 @@
   <div id="authScreen" style="min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(180deg,#ecfeff,#f0fdf4,#fff7ed)">
     <div class="panel" style="width:min(460px,100%);padding:26px">
       <div style="font-size:38px;font-weight:900;text-align:center">ZenQuest</div>
-      <div class="muted" style="text-align:center;margin:4px 0 8px">Connexion sécurisée</div><div style="text-align:center;margin-bottom:18px"><span style="display:inline-block;padding:5px 10px;border-radius:999px;background:#ecfdf5;border:1px solid #a7f3d0;font-size:12px;font-weight:900">🟡 v39 • ZenCoins & aventures</span></div>
+      <div class="muted" style="text-align:center;margin:4px 0 8px">Connexion sécurisée</div><div style="text-align:center;margin-bottom:18px"></div>
       <label style="display:block;font-weight:700;margin-bottom:6px">Identifiant</label>
-      <input id="loginUsername" type="text" autocomplete="username" placeholder="Ex. prof" style="width:100%;margin-bottom:12px">
+      <input id="loginUsername" type="text" autocomplete="username" placeholder="Ex. jade6b" style="width:100%;margin-bottom:12px">
       <label style="display:block;font-weight:700;margin-bottom:6px">Mot de passe</label>
       <input id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••" style="width:100%;margin-bottom:14px">
       <button class="btn primary" id="loginBtn" style="width:100%;font-size:16px">🔐 Se connecter</button>
-      <div class="muted" style="text-align:center;margin-top:10px">Professeurs et élèves se connectent avec leur identifiant ZenQuest + leur mot de passe.</div>
+      <div class="muted" style="text-align:center;margin-top:10px">Les élèves se connectent avec leur identifiant ZenQuest + leur mot de passe.</div>
       <div id="loginMessage" class="muted" style="margin-top:12px;text-align:center"></div>
     </div>
   </div>
@@ -191,7 +191,6 @@
         <button class="btn outline" id="openHistoryBtn">🕘 Historique</button>
         <button class="btn outline" id="rewardRequestsBtn">🎁 Récompenses <span id="rewardRequestsBadge"></span></button>
         <button class="btn outline" id="studentCodesBtn">🔑 Codes élèves</button>
-        <button class="btn outline" id="testMayaSupabaseBtn">🧪 Tester compte Maya</button>
         <button class="btn outline" id="classMessagesBtn">📢 Message classe</button>
         <button class="btn outline" id="boardBtn">🖥️ Écran de classe</button>
         <button class="btn outline" id="logoutBtn">🔒 Déconnexion</button>
@@ -3442,7 +3441,61 @@
       setTimeout(()=>{ if(document.getElementById("mainApp")?.style.display!=="none") loadTeacherRewardRequests(false); },0); renderClassSelect(); renderViewButtons(); renderStudentModeControls(); renderStudents(); renderHistory(); }
 
     document.getElementById("addStudentBtn").onclick=addStudentToSupabase;
-    document.getElementById("addClassBtn").onclick=()=>{ const v=document.getElementById("newClassInput").value.trim(); if(!v) return; const c=createClass(v,[]); state.classes.push(c); state.currentClassId=c.id; document.getElementById("newClassInput").value=""; save(); render(); };
+    document.getElementById("addClassBtn").onclick=async()=>{
+      const input=document.getElementById("newClassInput");
+      const btn=document.getElementById("addClassBtn");
+      const v=input.value.trim();
+      if(!v) return;
+
+      const oldText=btn.textContent;
+      btn.disabled=true;
+      btn.textContent="Création…";
+
+      try{
+        const {data:{user},error:userError}=await supabaseClient.auth.getUser();
+        if(userError || !user) throw new Error("Session professeur introuvable.");
+
+        const {data:newClass,error:classError}=await supabaseClient
+          .from("classes")
+          .insert({teacher_id:user.id,name:v})
+          .select("*")
+          .single();
+
+        if(classError) throw new Error("Création de la classe : "+classError.message);
+
+        const {error:periodError}=await supabaseClient
+          .from("periods")
+          .insert({
+            class_id:newClass.id,
+            name:"Période 1",
+            started_at:new Date().toISOString().slice(0,10),
+            is_closed:false,
+            is_current:true
+          });
+
+        if(periodError){
+          // La classe existe quand même : on recharge pour ne jamais créer un faux objet local.
+          console.error("PERIOD CREATION ERROR",periodError);
+        }
+
+        input.value="";
+        await loadTeacherSupabaseData();
+
+        const created=state.classes.find(c=>c.id===newClass.id);
+        if(!created) throw new Error("Classe créée mais impossible de la recharger.");
+
+        state.currentClassId=newClass.id;
+        state.appMode="prof";
+        save();
+        render();
+      }catch(err){
+        console.error("CLASS CREATION ERROR",err);
+        alert("❌ "+(err?.message||String(err)));
+      }finally{
+        btn.disabled=false;
+        btn.textContent=oldText;
+      }
+    };
     document.getElementById("classSelect").onchange=(e)=>{ state.currentClassId=e.target.value; state.appMode="prof"; save(); render(); };
     document.getElementById("endLessonBtn").onclick=endLesson;
     document.getElementById("loginBtn").onclick=login;
@@ -3454,7 +3507,7 @@
     document.getElementById("copyStudentCodesBtn").onclick=copyStudentCodes;
     document.getElementById("downloadStudentCodesBtn").onclick=downloadStudentCodes;
     document.getElementById("studentLogoutBtn").onclick=async()=>{await supabaseClient.auth.signOut();};
-    document.getElementById("testMayaSupabaseBtn").onclick=openMayaSupabaseTest;
+    document.getElementById("testMayaSupabaseBtn")?.addEventListener("click",openMayaSupabaseTest);
     document.getElementById("closeMayaSupabaseTestBtn").onclick=()=>document.getElementById("mayaSupabaseTestModal").classList.remove("show");
     document.getElementById("runMayaSupabaseTestBtn").onclick=runMayaSupabaseTest;
     document.getElementById("classMessagesBtn").onclick=openClassMessages;
