@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v24</title>
+  <title>ZenQuest v41 Onglets et boutique</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -85,6 +85,14 @@
     .student-chart{height:235px;background:#f8fafc;border-radius:18px;overflow:hidden}
     .student-objective{background:#fff7ed;border:1px solid #fed7aa;border-radius:16px;padding:12px;margin-top:12px}
     .student-mini-progress{height:14px;border-radius:999px;background:#e2e8f0;overflow:hidden}.student-mini-progress span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#bef264,#34d399)}
+    .collection-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+    .collection-item{position:relative;border:1px solid #e2e8f0;border-radius:18px;padding:14px;background:#f8fafc;text-align:center;min-height:170px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:7px}
+    .collection-item.locked{filter:grayscale(.7);opacity:.58}
+    .collection-item.equipped{outline:3px solid #10b981;background:#ecfdf5}
+    .collection-icon{font-size:46px;line-height:1}.collection-name{font-weight:900}.collection-condition{font-size:12px;color:var(--muted)}
+    .collection-lock{position:absolute;right:9px;top:8px;font-size:18px}.collection-equip{padding:7px 11px;font-size:12px}
+    .collection-preview{margin-top:12px;border-radius:18px;padding:14px;background:linear-gradient(135deg,#ecfeff,#fff7ed);display:flex;align-items:center;gap:12px}
+    @media(max-width:800px){.collection-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:800px){.student-hero{grid-template-columns:1fr}.student-kpis{grid-template-columns:1fr 1fr}.student-columns{grid-template-columns:1fr}.student-big-grade{font-size:40px}}
     .mode-panel{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
     .mode-switch{display:inline-flex;background:rgba(255,255,255,.78);border:1px solid #e2e8f0;border-radius:999px;padding:4px;gap:4px}
@@ -111,14 +119,38 @@
   
     #avatarModal{z-index:20000 !important}
     #avatarModal .modal-card{position:relative;z-index:20001}
-  </style>
+  
+    /* v41d — boutique élève plus lisible */
+    #authenticatedStudentView .student-dashboard { padding-bottom:48px; }
+    #authenticatedStudentView .box { margin-bottom:18px; }
+    #authenticatedStudentView .collection-grid { gap:16px !important; }
+    #authenticatedStudentView .collection-item { min-width:0; }
+    @media (max-width:850px){
+      #authenticatedStudentView .student-columns { grid-template-columns:1fr !important; }
+      #authenticatedStudentView .collection-grid { grid-template-columns:1fr !important; }
+    }
+
+
+    /* v41g — espacement vertical du tableau élève */
+    #authenticatedStudentView .student-kpis{
+      margin-bottom:20px !important;
+    }
+    #authenticatedStudentView .student-columns{
+      gap:20px !important;
+      margin-bottom:20px !important;
+    }
+    #authenticatedStudentView .student-columns + .student-columns{
+      margin-top:0 !important;
+    }
+
+</style>
 </head>
 <body>
   
   <div id="authScreen" style="min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(180deg,#ecfeff,#f0fdf4,#fff7ed)">
     <div class="panel" style="width:min(460px,100%);padding:26px">
       <div style="font-size:38px;font-weight:900;text-align:center">ZenQuest</div>
-      <div class="muted" style="text-align:center;margin:4px 0 8px">Connexion sécurisée</div><div style="text-align:center;margin-bottom:18px"><span style="display:inline-block;padding:5px 10px;border-radius:999px;background:#ecfdf5;border:1px solid #a7f3d0;font-size:12px;font-weight:900">✅ v24 • prof relié à Supabase</span></div>
+      <div class="muted" style="text-align:center;margin:4px 0 8px">Connexion sécurisée</div><div style="text-align:center;margin-bottom:18px"><span style="display:inline-block;padding:5px 10px;border-radius:999px;background:#ecfdf5;border:1px solid #a7f3d0;font-size:12px;font-weight:900">🟡 v39 • ZenCoins & aventures</span></div>
       <label style="display:block;font-weight:700;margin-bottom:6px">Identifiant</label>
       <input id="loginUsername" type="text" autocomplete="username" placeholder="Ex. prof" style="width:100%;margin-bottom:12px">
       <label style="display:block;font-weight:700;margin-bottom:6px">Mot de passe</label>
@@ -157,6 +189,7 @@
       <div class="actions">
         <button class="btn primary" id="endLessonBtn">Fin d'heure</button>
         <button class="btn outline" id="openHistoryBtn">🕘 Historique</button>
+        <button class="btn outline" id="rewardRequestsBtn">🎁 Récompenses <span id="rewardRequestsBadge"></span></button>
         <button class="btn outline" id="studentCodesBtn">🔑 Codes élèves</button>
         <button class="btn outline" id="testMayaSupabaseBtn">🧪 Tester compte Maya</button>
         <button class="btn outline" id="classMessagesBtn">📢 Message classe</button>
@@ -250,6 +283,19 @@
   </div>
 
 
+  <div class="modal" id="rewardRequestsModal">
+    <div class="modal-card" style="width:min(760px,95vw);max-height:90vh;overflow:auto">
+      <div class="modal-header">
+        <div>
+          <h2 style="margin:0">🎁 Demandes de récompenses</h2>
+          <div class="muted" style="margin-top:4px">Les ZenCoins sont débités uniquement lorsque tu acceptes la demande.</div>
+        </div>
+        <button class="btn outline" id="closeRewardRequestsBtn">Fermer</button>
+      </div>
+      <div id="teacherRewardRequestsList" style="margin-top:14px"></div>
+    </div>
+  </div>
+
   <div class="modal" id="avatarModal">
     <div class="modal-card" style="max-width:720px">
       <button class="btn outline close" id="closeAvatarModalBtn">Fermer</button>
@@ -329,6 +375,8 @@
     </div>
   </div>
 
+  <div id="endLessonToast" style="display:none;position:fixed;left:50%;top:22px;transform:translateX(-50%);z-index:999999;background:#0f172a;color:white;padding:14px 20px;border-radius:18px;box-shadow:0 14px 40px rgba(15,23,42,.28);font-weight:800;text-align:center;max-width:min(92vw,620px)"></div>
+
   <div class="modal" id="summaryModal">
     <div class="modal-card">
       <div style="text-align:center;font-size:52px">🎉</div>
@@ -353,8 +401,9 @@
       </div>
 
       <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:16px;padding:12px;margin:12px 0;line-height:1.45">
-        Les codes sont générés automatiquement pour les élèves de la classe active.
-        Ils restent enregistrés dans ZenQuest.
+        Les codes sont créés une seule fois avec le compte élève puis enregistrés dans Supabase.
+        <strong>Ouvrir cette fenêtre ne change plus aucun mot de passe.</strong>
+        Les anciens comptes créés avant la v26 peuvent afficher « code non enregistré ». Utilise alors le bouton 🔄 pour leur attribuer un nouveau mot de passe.
       </div>
 
       <div class="row wrap" style="margin-bottom:12px">
@@ -434,6 +483,13 @@
           <p>Mais ZenQuest ne mesure pas ton niveau scolaire : cette note n’est <strong>ni ta moyenne générale, ni ta moyenne en mathématiques</strong>.</p>
           <p>Tu n’as donc pas besoin d’être le meilleur en maths pour réussir dans ZenQuest.</p>
           <strong>Si tu travailles, que tu t’impliques et que tu adoptes une bonne attitude en classe, tu ne peux que progresser.</strong>
+          <div style="margin-top:16px;padding-top:14px;border-top:1px solid #a7f3d0">
+            <strong>🟡 Les ZenCoins</strong><br>
+            À la fin de chaque période, ta progression te permet de recevoir des ZenCoins. Ils se cumulent toute l’année et peuvent être échangés contre des récompenses.
+            <div style="margin-top:8px;font-weight:900">
+              1 ⭐ = 0 🟡 &nbsp;•&nbsp; 3 ⭐ = 1 🟡 &nbsp;•&nbsp; 5 ⭐ = 2 🟡 &nbsp;•&nbsp; 6 ⭐ = 3 🟡 &nbsp;•&nbsp; 1 💎 = 4 🟡
+            </div>
+          </div>
         </div>
       </div>
 
@@ -656,27 +712,20 @@
     }
 
     function ensureStudentCodes(cls=currentClass()){
-      let changed=false;
-      cls.students.forEach(student=>{
-        if(!student.authUsername){
-          student.authUsername=buildStudentUsername(student,cls);
-          changed=true;
-        }
-        if(!student.authPassword){
-          student.authPassword=randomAmazonianPassword();
-          changed=true;
-        }
-      });
-      if(changed) save();
+      // Les codes Supabase ne doivent JAMAIS être régénérés à l'ouverture.
+      // Ils sont créés une seule fois lors de la création du compte élève.
+      return false;
     }
 
     function studentCodesAsText(cls=currentClass()){
       ensureStudentCodes(cls);
       const header=`ZENQUEST — CODES ÉLÈVES\nClasse : ${cls.name}\n\n`;
       if(!cls.students.length) return header+"Aucun élève dans cette classe.";
-      return header+cls.students.map(student=>
-        `Élève : ${student.name}\nIdentifiant : ${student.authUsername}\nMDP : ${student.authPassword}`
-      ).join("\n\n------------------------------\n\n");
+      return header+cls.students.map(student=>{
+        const username=student.authUsername || "— code non enregistré —";
+        const password=student.authPassword || "— mot de passe non enregistré —";
+        return `Élève : ${student.name}\nIdentifiant : ${username}\nMDP : ${password}`;
+      }).join("\n\n------------------------------\n\n");
     }
 
     function renderStudentPreviewList(cls=currentClass()){
@@ -687,11 +736,28 @@
         return;
       }
       box.innerHTML=cls.students.map(student=>`
-        <button class="btn outline previewStudentBtn" data-student-id="${student.id}"
-          style="justify-content:flex-start;text-align:left;padding:10px 12px">
-          <span style="font-size:20px;margin-right:7px">${student.avatar||"🙂"}</span>
-          <span><strong>${student.name}</strong><br><span class="muted" style="font-size:12px">${student.authUsername||""}</span></span>
-        </button>
+        <div style="display:flex;gap:6px;align-items:stretch">
+          <button class="btn outline previewStudentBtn" data-student-id="${student.id}"
+            style="justify-content:flex-start;text-align:left;padding:10px 12px;flex:1">
+            <span style="font-size:20px;margin-right:7px">${student.avatar||"🙂"}</span>
+            <span>
+              <strong>${student.name}</strong><br>
+              <span class="muted" style="font-size:12px">
+                Identifiant : ${student.authUsername||"—"}<br>
+                MDP : <strong>${student.authPassword||"— code non enregistré —"}</strong>
+              </span>
+            </span>
+          </button>
+          <div style="display:flex;flex-direction:column;gap:4px;min-width:64px">
+            <button class="btn outline resetStudentCodeBtn" data-student-id="${student.id}"
+              title="Réinitialiser immédiatement le mot de passe" ${student.supabaseUserId?"":"disabled"}>🔄</button>
+            <button class="btn outline deleteStudentBtn" data-student-id="${student.id}"
+              title="Supprimer définitivement cet élève">🗑️</button>
+            <div id="resetStatus-${student.id}" class="muted" style="font-size:10px;text-align:center">
+              ${student.supabaseUserId ? "prêt" : "pas d'UUID"}
+            </div>
+          </div>
+        </div>
       `).join("");
 
       box.querySelectorAll(".previewStudentBtn").forEach(btn=>{
@@ -699,6 +765,12 @@
           document.getElementById("studentCodesModal").classList.remove("show");
           openStudentPreview(btn.dataset.studentId);
         };
+      });
+      box.querySelectorAll(".resetStudentCodeBtn").forEach(btn=>{
+        btn.onclick=()=>resetStudentCode(btn.dataset.studentId);
+      });
+      box.querySelectorAll(".deleteStudentBtn").forEach(btn=>{
+        btn.onclick=()=>requestDeleteStudent(btn.dataset.studentId, btn);
       });
     }
 
@@ -711,6 +783,192 @@
             👁️ Mode aperçu élève — lecture seule
           </div>
         `);
+      }
+    }
+
+    async function resetStudentCode(studentId){
+      const cls=currentClass();
+      const student=cls?.students?.find(s=>String(s.id)===String(studentId));
+      const status=document.getElementById(`resetStatus-${studentId}`);
+
+      const setStatus=(msg,isError=false)=>{
+        const el=document.getElementById(`resetStatus-${studentId}`);
+        if(el){
+          el.textContent=msg;
+          el.style.color=isError?"#b91c1c":"";
+          el.style.fontWeight=isError?"800":"";
+        }
+      };
+
+      if(!student){
+        setStatus("élève introuvable",true);
+        return;
+      }
+      if(!student.supabaseUserId){
+        setStatus("pas d'UUID",true);
+        alert(`${student.name} n'a pas de user_id Supabase. Le reset est impossible tant que son compte Auth n'est pas relié.`);
+        return;
+      }
+
+      const oldPassword=student.authPassword||"";
+
+      const resetBtn=document.querySelector(`.resetStudentCodeBtn[data-student-id="${studentId}"]`);
+      if(resetBtn){ resetBtn.disabled=true; resetBtn.textContent="⏳"; }
+      setStatus("appel serveur…");
+
+      try{
+        const username=student.authUsername || buildStudentUsername(student,cls);
+        let password=randomAmazonianPassword();
+        let guard=0;
+        while(password===oldPassword && guard<20){
+          password=randomAmazonianPassword();
+          guard++;
+        }
+
+        const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
+        if(sessionError || !session) throw new Error("Session professeur introuvable.");
+
+        setStatus("reset Auth…");
+
+        const response=await fetch(
+          "https://afterlxyowjgeoeiijec.supabase.co/functions/v1/bright-service",
+          {
+            method:"POST",
+            headers:{
+              "Content-Type":"application/json",
+              "Authorization":`Bearer ${session.access_token}`,
+              "apikey":"sb_publishable_YIt7fyla9Uf0dOhPJYAOOA_PBfyCWqw"
+            },
+            body:JSON.stringify({student_id:student.id,password})
+          }
+        );
+
+        const raw=await response.text();
+        let result={};
+        try{ result=raw?JSON.parse(raw):{}; }catch{ result={raw}; }
+
+        if(!response.ok){
+          throw new Error(
+            `Edge Function HTTP ${response.status}`+
+            (result?.error?` : ${result.error}`:raw?` : ${raw.slice(0,180)}`:"")
+          );
+        }
+
+        setStatus("sauvegarde code…");
+
+        const {data:updated,error:updateError}=await supabaseClient
+          .from("students")
+          .update({auth_username:username,auth_password:password})
+          .eq("id",student.id)
+          .select("auth_username,auth_password,user_id")
+          .single();
+
+        if(updateError) throw new Error("Sauvegarde students : "+updateError.message);
+
+        student.authUsername=updated?.auth_username||username;
+        student.authPassword=updated?.auth_password||password;
+        student.supabaseUserId=updated?.user_id||student.supabaseUserId;
+
+        const codesText=document.getElementById("studentCodesText");
+        if(codesText) codesText.value=studentCodesAsText(cls);
+
+        renderStudentPreviewList(cls);
+
+        const finalStatus=document.getElementById(`resetStatus-${studentId}`);
+        if(finalStatus){
+          finalStatus.textContent="✅ changé";
+          finalStatus.style.color="#047857";
+          finalStatus.style.fontWeight="800";
+        }
+
+        alert(
+          `✅ Nouveau code pour ${student.name}\n\n`+
+          `Identifiant : ${student.authUsername}\n`+
+          `Mot de passe : ${student.authPassword}`
+        );
+      }catch(err){
+        console.error("RESET STUDENT ERROR",err);
+        setStatus("❌ erreur",true);
+        alert("❌ Reset impossible\n\n"+(err?.message||String(err)));
+        if(resetBtn){ resetBtn.disabled=false; resetBtn.textContent="🔄"; }
+      }
+    }
+
+    const deleteConfirmTimers=new Map();
+
+    function requestDeleteStudent(studentId,btn){
+      const cls=currentClass();
+      const student=cls?.students?.find(s=>String(s.id)===String(studentId));
+      if(!student) return alert("Élève introuvable.");
+
+      if(btn.dataset.confirmDelete!=="yes"){
+        btn.dataset.confirmDelete="yes";
+        btn.textContent="Confirmer ?";
+        btn.style.minWidth="96px";
+        const oldTimer=deleteConfirmTimers.get(studentId);
+        if(oldTimer) clearTimeout(oldTimer);
+        const timer=setTimeout(()=>{
+          btn.dataset.confirmDelete="";
+          btn.textContent="🗑️";
+          btn.style.minWidth="";
+          deleteConfirmTimers.delete(studentId);
+        },5000);
+        deleteConfirmTimers.set(studentId,timer);
+        return;
+      }
+
+      const timer=deleteConfirmTimers.get(studentId);
+      if(timer) clearTimeout(timer);
+      deleteConfirmTimers.delete(studentId);
+      deleteStudentPermanently(studentId,btn);
+    }
+
+    async function deleteStudentPermanently(studentId,btn){
+      const cls=currentClass();
+      const student=cls?.students?.find(s=>String(s.id)===String(studentId));
+      if(!student) return alert("Élève introuvable.");
+
+      btn.disabled=true;
+      btn.textContent="⏳";
+
+      try{
+        const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
+        if(sessionError || !session) throw new Error("Session professeur introuvable.");
+
+        const response=await fetch(
+          "https://afterlxyowjgeoeiijec.supabase.co/functions/v1/delete-student",
+          {
+            method:"POST",
+            headers:{
+              "Content-Type":"application/json",
+              "Authorization":`Bearer ${session.access_token}`,
+              "apikey":"sb_publishable_YIt7fyla9Uf0dOhPJYAOOA_PBfyCWqw"
+            },
+            body:JSON.stringify({student_id:student.id})
+          }
+        );
+
+        const raw=await response.text();
+        let result={};
+        try{ result=raw?JSON.parse(raw):{}; }catch{ result={raw}; }
+        if(!response.ok){
+          throw new Error(result.error || `Erreur suppression (${response.status})`);
+        }
+
+        cls.students=cls.students.filter(s=>String(s.id)!==String(studentId));
+
+        const codesText=document.getElementById("studentCodesText");
+        if(codesText) codesText.value=studentCodesAsText(cls);
+        renderStudentPreviewList(cls);
+        render();
+
+        alert(`🗑️ ${student.name} a été supprimé définitivement de ZenQuest et de son compte élève.`);
+      }catch(err){
+        console.error("DELETE STUDENT ERROR",err);
+        alert("❌ Suppression impossible\n\n"+(err?.message||String(err)));
+        btn.disabled=false;
+        btn.textContent="🗑️";
+        btn.dataset.confirmDelete="";
       }
     }
 
@@ -873,10 +1131,32 @@
       render(); save();
     }
 
-    function assignGroup(group){
-      const ids=new Set(state.selectedStudentIds);
-      currentClass().students.forEach(s=>{ if(ids.has(s.id)) s.group=group; });
-      state.selectedStudentIds=[]; save(); render();
+    async function assignGroup(group){
+      const cls=currentClass();
+      const selected=cls.students.filter(s=>state.selectedStudentIds.includes(s.id));
+      if(!selected.length) return;
+
+      try{
+        if(cls.fromSupabase){
+          for(const student of selected){
+            const dbGroup=group==="g1" ? "g1" : group==="g2" ? "g2" : null;
+            const {error}=await supabaseClient
+              .from("students")
+              .update({group_name:dbGroup})
+              .eq("id",student.id);
+            if(error) throw new Error(`${student.name} : ${error.message}`);
+          }
+        }
+
+        selected.forEach(s=>s.group=group);
+        state.selectedStudentIds=[];
+        state.selectionMode=false;
+        save();
+        render();
+      }catch(err){
+        console.error("GROUP UPDATE ERROR",err);
+        alert("❌ Impossible d’enregistrer le groupe dans Supabase.\n\n"+(err?.message||String(err)));
+      }
     }
 
 
@@ -907,6 +1187,30 @@
         grid.appendChild(btn);
       });
       document.getElementById("avatarModal").classList.add("show");
+    }
+
+    async function updateStudentPointsInSupabase(student,newPoints){
+      if(!student?.id) throw new Error("Élève invalide.");
+      const {data,error}=await supabaseClient
+        .from("students")
+        .update({points:newPoints})
+        .eq("id",student.id)
+        .select("points")
+        .single();
+
+      if(error) throw error;
+      student.points=Number(data?.points ?? newPoints);
+      return student.points;
+    }
+
+    async function updateStudentHomeworksInSupabase(student,newHomeworks){
+      if(!student?.id) throw new Error("Élève invalide.");
+      const safeValue=Math.max(0,Number(newHomeworks)||0);
+      const {data,error}=await supabaseClient
+        .from("students").update({homeworks:safeValue})
+        .eq("id",student.id).select("homeworks").single();
+      if(error) throw error;
+      student.homeworks=Number(data?.homeworks ?? safeValue);
     }
 
     function renderStudents(){
@@ -951,16 +1255,91 @@
           openAvatarModal(student.id);
         };
         card.querySelector(".edit-name").onclick=(e)=>{ e.stopPropagation(); const n=prompt("Modifier le prénom :",student.name); if(n&&n.trim()){ student.name=n.trim(); render(); save(); } };
-        card.querySelector(".score-minus").onclick=(e)=>{ e.stopPropagation(); const prev=student.points, next=Math.max(0,Math.min(MAX_POINTS,prev-1)); student.points=next; student.lostThisLesson=true; student.pointsLostThisLesson+=1; student.totalPointsLost+=1; if(prev>=10&&next<10&&student.stars>0&&!student.lostStarThisLesson){ student.stars-=1; student.lostStarThisLesson=true; } setAction(student,"minus"); render(); save(); };
-        card.querySelector(".score-plus").onclick=(e)=>{ e.stopPropagation(); student.points=Math.max(0,Math.min(MAX_POINTS,student.points+1)); setAction(student,"plus"); render(); save(); };
-        card.querySelector(".hw-plus").onclick=(e)=>{ e.stopPropagation(); student.homeworks+=1; student.homeworkAddedThisLesson=true; setAction(student,"homework"); render(); save(); };
-        card.querySelector(".hw-minus").onclick=(e)=>{ e.stopPropagation(); student.homeworks=Math.max(0,student.homeworks-1); render(); save(); };
+        card.querySelector(".score-minus").onclick=async(e)=>{
+          e.stopPropagation();
+          const btn=e.currentTarget;
+          const prev=student.points;
+          const next=Math.max(0,Math.min(MAX_POINTS,prev-1));
+          if(next===prev) return;
+
+          btn.disabled=true;
+          try{
+            await updateStudentPointsInSupabase(student,next);
+            student.lostThisLesson=true;
+            student.pointsLostThisLesson+=1;
+            student.totalPointsLost+=1;
+            if(prev>=10&&next<10&&student.stars>0&&!student.lostStarThisLesson){
+              student.stars-=1;
+              student.lostStarThisLesson=true;
+            }
+            setAction(student,"minus");
+            render();
+            save();
+          }catch(err){
+            console.error("POINTS UPDATE ERROR",err);
+            alert("❌ Impossible d’enregistrer le retrait du point dans Supabase.\n\n"+(err?.message||String(err)));
+            btn.disabled=false;
+          }
+        };
+        card.querySelector(".score-plus").onclick=async(e)=>{
+          e.stopPropagation();
+          const btn=e.currentTarget;
+          const prev=student.points;
+          const next=Math.max(0,Math.min(MAX_POINTS,prev+1));
+          if(next===prev) return;
+
+          btn.disabled=true;
+          try{
+            await updateStudentPointsInSupabase(student,next);
+            setAction(student,"plus");
+            render();
+            save();
+          }catch(err){
+            console.error("POINTS UPDATE ERROR",err);
+            alert("❌ Impossible d’enregistrer le point dans Supabase.\n\n"+(err?.message||String(err)));
+            btn.disabled=false;
+          }
+        };
+        card.querySelector(".hw-plus").onclick=async(e)=>{
+          e.stopPropagation();
+          const btn=e.currentTarget;
+          btn.disabled=true;
+          try{
+            await updateStudentHomeworksInSupabase(student,Number(student.homeworks||0)+1);
+            student.homeworkAddedThisLesson=true;
+            setAction(student,"homework");
+            render(); save();
+          }catch(err){
+            console.error("HOMEWORK UPDATE ERROR",err);
+            alert("❌ Impossible d’enregistrer le devoir dans Supabase.\n\n"+(err?.message||String(err)));
+            btn.disabled=false;
+          }
+        };
+        card.querySelector(".hw-minus").onclick=async(e)=>{
+          e.stopPropagation();
+          const btn=e.currentTarget;
+          const next=Math.max(0,Number(student.homeworks||0)-1);
+          if(next===Number(student.homeworks||0)) return;
+          btn.disabled=true;
+          try{
+            await updateStudentHomeworksInSupabase(student,next);
+            render(); save();
+          }catch(err){
+            console.error("HOMEWORK UPDATE ERROR",err);
+            alert("❌ Impossible d’enregistrer le devoir dans Supabase.\n\n"+(err?.message||String(err)));
+            btn.disabled=false;
+          }
+        };
 
         grid.appendChild(card);
       });
     }
 
-    function starRow(n){ return Array.from({length:MAX_COLLECTIVE_STARS}).map((_,i)=>`<span style="opacity:${i<n?1:.2}">🌟</span>`).join(""); }
+    function starRow(n){
+      n=Math.max(0,Math.min(MAX_COLLECTIVE_STARS,Number(n||0)));
+      const filled=Array.from({length:n}).map(()=>"<span>🌟</span>").join("");
+      return `<span style="display:inline-flex;align-items:center;gap:1px;flex-wrap:wrap">${filled || "<span>☆</span>"}<span class="muted" style="font-size:13px;margin-left:5px">${n}/${MAX_COLLECTIVE_STARS}</span></span>`;
+    }
 
     function renderHistory(){
       const list=document.getElementById("historyList"); list.innerHTML=""; const history=currentClass().history;
@@ -993,31 +1372,90 @@
         </div>`).join("");
     }
 
-    function addRemark(studentId){
+    async function addRemark(studentId){
       const student=currentClass().students.find(s=>s.id===studentId);
       const area=document.getElementById("notesArea");
-      const value=area.value.trim();
-      if(!student||!value) return;
-      ensureRemarks(student).push({id:uid(),date:new Date().toLocaleDateString("fr-FR"),text:value});
-      area.value="";
-      save(); openProfile(studentId);
+      const btn=document.getElementById("saveNotesBtn");
+      const status=document.getElementById("remarkStatus");
+      const value=(area?.value||"").trim();
+
+      const showStatus=(message,ok=false)=>{
+        if(!status) return;
+        status.style.display="block";
+        status.style.background=ok?"#ecfdf5":"#fff7ed";
+        status.textContent=message;
+      };
+
+      if(!student){ showStatus("❌ Élève introuvable."); return; }
+      if(!value){ showStatus("✍️ Écris d’abord une remarque."); area?.focus(); return; }
+
+      if(btn){ btn.disabled=true; btn.textContent="⏳ Enregistrement…"; }
+      showStatus("⏳ Enregistrement de la remarque dans Supabase…");
+
+      try{
+        const {data,error}=await supabaseClient
+          .from("teacher_remarks")
+          .insert({student_id:student.id,teacher_id:(await supabaseClient.auth.getUser()).data.user?.id,remark:value})
+          .select("id,remark,created_at")
+          .single();
+
+        if(error) throw error;
+        if(!data?.id) throw new Error("Supabase n’a retourné aucun identifiant de remarque.");
+
+        ensureRemarks(student).push({
+          id:data.id,
+          date:new Date(data.created_at).toLocaleDateString("fr-FR"),
+          text:data.remark,
+          createdAt:data.created_at
+        });
+        area.value="";
+        save();
+        showStatus("✅ Remarque enregistrée.",true);
+        setTimeout(()=>openProfile(studentId),650);
+      }catch(err){
+        console.error("REMARK INSERT ERROR",err);
+        showStatus("❌ "+(err?.message||String(err)));
+        if(btn){ btn.disabled=false; btn.textContent="Ajouter la remarque"; }
+      }
     }
 
-    function editRemark(studentId,remarkId){
+    async function editRemark(studentId,remarkId){
       const student=currentClass().students.find(s=>s.id===studentId);
       const remark=ensureRemarks(student).find(r=>r.id===remarkId);
       if(!remark) return;
       const value=prompt("Modifier la remarque :",remark.text);
-      if(value===null) return;
-      if(value.trim()) remark.text=value.trim();
-      save(); openProfile(studentId);
+      if(value===null||!value.trim()) return;
+      try{
+        const {error}=await supabaseClient
+          .from("teacher_remarks")
+          .update({remark:value.trim()})
+          .eq("id",remarkId)
+          .eq("student_id",studentId);
+        if(error) throw error;
+        remark.text=value.trim();
+        save(); openProfile(studentId);
+      }catch(err){
+        console.error("REMARK UPDATE ERROR",err);
+        alert("❌ Impossible de modifier la remarque.\n\n"+(err?.message||String(err)));
+      }
     }
 
-    function deleteRemark(studentId,remarkId){
+    async function deleteRemark(studentId,remarkId){
       const student=currentClass().students.find(s=>s.id===studentId);
       if(!student) return;
-      student.teacherRemarks=ensureRemarks(student).filter(r=>r.id!==remarkId);
-      save(); openProfile(studentId);
+      try{
+        const {error}=await supabaseClient
+          .from("teacher_remarks")
+          .delete()
+          .eq("id",remarkId)
+          .eq("student_id",studentId);
+        if(error) throw error;
+        student.teacherRemarks=ensureRemarks(student).filter(r=>r.id!==remarkId);
+        save(); openProfile(studentId);
+      }catch(err){
+        console.error("REMARK DELETE ERROR",err);
+        alert("❌ Impossible de supprimer la remarque.\n\n"+(err?.message||String(err)));
+      }
     }
 
     function openProfile(studentId){
@@ -1064,6 +1502,7 @@
           <div class="box"><div style="font-size:18px;font-weight:700;margin-bottom:8px">Remarques visibles par l’élève / les parents</div>
           <textarea id="notesArea" placeholder="Ex : Travail sérieux aujourd’hui. / Plusieurs bavardages : davantage de concentration est attendue."></textarea>
           <div style="margin-top:10px"><button class="btn primary" id="saveNotesBtn">Ajouter la remarque</button></div>
+          <div id="remarkStatus" style="display:none;margin-top:10px;padding:10px 12px;border-radius:12px;background:#f1f5f9;font-weight:700"></div>
           <div style="margin-top:12px">${remarksHTML(student,true)}</div></div>
         </div>
         <div class="box" style="margin-top:12px"><div style="font-size:18px;font-weight:700;margin-bottom:8px">Historique détaillé</div><div style="display:grid;gap:8px">${student.history.length?student.history.map(entry=>`<div style="border-radius:16px;background:#f8fafc;padding:12px"><div style="font-weight:700">${entry.date}</div><div>Absent : ${entry.absent?"oui":"non"}</div><div>Perte pendant le cours : ${entry.pointsLost}</div><div>Bonus fin d'heure : ${entry.endBonus?"oui":"non"}</div><div>Resté à 20 : ${entry.stayedAt20?"oui":"non"}</div><div>Montée de niveau : ${entry.levelUp?"oui":"non"}</div><div>Étoile gagnée : ${entry.starGained?"oui":"non"}</div><div>Devoir ajouté : ${entry.homeworkAdded?"oui":"non"}</div></div>`).join(""):`<div>Aucun historique pour le moment.</div>`}</div></div>
@@ -1118,6 +1557,38 @@
         if(p.average!==null&&prev!==null){const delta=round1(p.average-prev);d=delta>0?`📈 +${delta}`:delta<0?`📉 ${delta}`:"➡️ 0";}
         return `<div style="display:grid;grid-template-columns:1fr auto auto;gap:10px;padding:9px 0;border-bottom:1px solid #e2e8f0"><strong>${p.name}</strong><span>${p.average===null?"—":p.average+"/20"}</span><span>${d}</span></div>`;
       }).join("");
+    }
+
+    const ZEN_COLLECTION=[
+      {id:"badge",icon:"🌿",name:"Explorateur",need:0,label:"Disponible dès le départ"},
+      {id:"fire",icon:"🔥",name:"Aura de feu",need:2,label:"Débloqué à 2 étoiles"},
+      {id:"spark",icon:"✨",name:"Éclats",need:4,label:"Débloqué à 4 étoiles"},
+      {id:"crown",icon:"👑",name:"Couronne",need:6,label:"Débloqué à 6 étoiles"},
+      {id:"diamond",icon:"💎",name:"Cadre diamant",diamonds:1,label:"Débloqué avec 1 diamant"},
+      {id:"jungle",icon:"🌴",name:"Fond jungle",diamonds:2,label:"Débloqué avec 2 diamants"},
+      {id:"jaguar",icon:"🐆",name:"Badge jaguar",diamonds:3,label:"Débloqué avec 3 diamants"},
+      {id:"legend",icon:"🏆",name:"Légende Zen",diamonds:5,label:"Débloqué avec 5 diamants"}
+    ];
+    const zenEquipped={};
+    function collectionHTML(student,key){
+      const stars=Number(student.stars||0), diamonds=Number(student.diamonds||0);
+      const equipped=zenEquipped[key]||"badge";
+      const item=ZEN_COLLECTION.find(x=>x.id===equipped)||ZEN_COLLECTION[0];
+      const cards=ZEN_COLLECTION.map(x=>{
+        const unlocked=x.diamonds!=null?diamonds>=x.diamonds:stars>=x.need;
+        const isEq=unlocked&&x.id===equipped;
+        return `<div class="collection-item ${unlocked?"":"locked"} ${isEq?"equipped":""}">
+          ${unlocked?"":'<span class="collection-lock">🔒</span>'}
+          <div class="collection-icon">${x.icon}</div><div><div class="collection-name">${x.name}</div><div class="collection-condition">${x.label}</div></div>
+          ${unlocked?`<button class="btn ${isEq?"green":"outline"} collection-equip" data-collection-key="${key}" data-collection-id="${x.id}">${isEq?"✓ Équipé":"Équiper"}</button>`:'<span class="collection-condition">À débloquer</span>'}
+        </div>`;
+      }).join("");
+      return `<div class="box"><div style="font-size:20px;font-weight:900">🎒 Ma collection</div><div class="muted" style="margin-top:4px">Débloque des éléments en progressant dans ZenQuest, puis choisis celui que tu veux afficher.</div>
+        <div class="collection-preview"><div style="font-size:44px">${item.icon}</div><div><strong>Actuellement équipé : ${item.name}</strong><div class="muted" style="font-size:13px">Les récompenses sont purement visuelles.</div></div></div>
+        <div class="collection-grid">${cards}</div></div>`;
+    }
+    function bindCollectionButtons(root,student,key,rerender){
+      root.querySelectorAll('.collection-equip').forEach(btn=>btn.onclick=()=>{zenEquipped[key]=btn.dataset.collectionId;rerender();});
     }
 
     function openStudentView(studentId){
@@ -1207,6 +1678,8 @@
             </div>
           </div>
 
+          ${collectionHTML(student,"preview-"+student.id)}
+
           <div class="box">
             <div style="font-size:20px;font-weight:800">💬 Remarques du professeur</div>
             <div class="muted" style="margin:4px 0 8px">Suivi communiqué à l’élève et à sa famille.</div>
@@ -1223,6 +1696,31 @@
       document.getElementById("studentViewModal").classList.add("show");
       const rulesBtn=document.getElementById("openStudentRulesBtn");
       if(rulesBtn) rulesBtn.onclick=openStudentRules;
+      bindCollectionButtons(document.getElementById("studentViewContent"),student,"preview-"+student.id,()=>openStudentView(student.id));
+    }
+
+    function showEndLessonToast(summary){
+      const el=document.getElementById("endLessonToast");
+      if(!el) return;
+      const bonus=summary.bonusPointNames?.length||0;
+      const stars=summary.starNames?.length||0;
+      const levels=summary.levelUps?.length||0;
+      el.innerHTML=`🎉 <strong>Fin de cours validée !</strong><br><span style="font-weight:600;opacity:.9">${bonus} bonus de point${bonus>1?"s":""}${stars?` • ${stars} étoile${stars>1?"s":""}`:""}${levels?` • ${levels} niveau${levels>1?"x":""}`:""}</span>`;
+      el.style.display="block";
+      clearTimeout(window.__zenEndLessonToastTimer);
+      window.__zenEndLessonToastTimer=setTimeout(()=>{ el.style.display="none"; },4200);
+    }
+
+    function showEndLessonStatus(message,kind="info",autoHide=false){
+      const el=document.getElementById("endLessonToast");
+      if(!el) return;
+      const icon=kind==="success"?"✅":kind==="error"?"❌":"⏳";
+      el.innerHTML=`${icon} ${message}`;
+      el.style.display="block";
+      clearTimeout(window.__zenEndLessonToastTimer);
+      if(autoHide){
+        window.__zenEndLessonToastTimer=setTimeout(()=>{el.style.display="none";},5000);
+      }
     }
 
     function showSummary(summary){
@@ -1244,46 +1742,299 @@
       document.getElementById("summaryModal").classList.add("show");
     }
 
-    function endLesson(){
-      const cls=currentClass(); applyViewAbsences();
-      const presentStudents=cls.students.filter(s=>!s.isAbsent);
-      const everyonePerfect=presentStudents.length>0&&presentStudents.every(s=>!s.lostThisLesson);
-      const perfectNames=[], bonusPointNames=[], stayedAt20=[], levelUps=[], starNames=[];
+    async function updateCollectiveProgressInSupabase(cls){
+      const payload={
+        collective_stars:Number(cls.collectiveStars||0),
+        collective_diamonds:Number(cls.collectiveDiamonds||0),
+        group1_stars:Number(cls.groupStars?.g1||0),
+        group1_diamonds:Number(cls.groupDiamonds?.g1||0),
+        group2_stars:Number(cls.groupStars?.g2||0),
+        group2_diamonds:Number(cls.groupDiamonds?.g2||0)
+      };
+      const {error}=await supabaseClient
+        .from("classes")
+        .update(payload)
+        .eq("id",cls.id);
+      if(error) throw error;
+    }
 
-      if(everyonePerfect) addCollectiveReward(cls,"collectiveStars","collectiveDiamonds");
-      let targetGroup=null;
-      if(state.viewMode==="g1") targetGroup="g1";
-      if(state.viewMode==="g2") targetGroup="g2";
-      if(targetGroup&&everyonePerfect){ cls.groupStars[targetGroup]=(cls.groupStars[targetGroup]||0)+1; if(cls.groupStars[targetGroup]>=MAX_COLLECTIVE_STARS){ cls.groupStars[targetGroup]=0; cls.groupDiamonds[targetGroup]=(cls.groupDiamonds[targetGroup]||0)+1; } }
+    async function endLesson(){
+      const endBtn=document.getElementById("endLessonBtn");
+      const oldEndText=endBtn?.textContent||"Fin d'heure";
 
-      cls.students.forEach(student=>{
-        const wasAbsent=student.isAbsent, previousStars=student.stars;
-        if(!wasAbsent){
-          student.totalLessons+=1;
-          if(!student.lostThisLesson){
-            perfectNames.push(student.name); student.perfectLessons+=1; student.currentStreak+=1; student.progress+=1;
-            if(student.points<MAX_POINTS){ student.points+=1; bonusPointNames.push(student.name); } else stayedAt20.push(student.name);
-            if(student.progress>=3){
-              student.progress=0; student.level+=1; student.stars=Math.min(MAX_INDIVIDUAL_STARS,student.stars+1); student.diamonds=getDiamondsForLevel(student.level); levelUps.push(student.name); if(student.stars>previousStars) starNames.push(student.name);
-            }
-          }else student.currentStreak=0;
+      try{
+        showEndLessonStatus("Fin d’heure en cours…", "info", false);
+        if(endBtn){
+          endBtn.disabled=true;
+          endBtn.textContent="⏳ Vérification…";
         }
 
-        if(!wasAbsent){ student.periodScores.push({date:new Date().toLocaleString(),score:student.points}); }
+        const cls=currentClass();
+        if(!cls) throw new Error("Aucune classe active.");
+        applyViewAbsences();
 
-        student.history.unshift({ id:uid(), date:new Date().toLocaleString(), absent:wasAbsent, pointsLost:student.pointsLostThisLesson, endBonus:!wasAbsent&&!student.lostThisLesson&&student.points<MAX_POINTS, stayedAt20:!wasAbsent&&!student.lostThisLesson&&student.points>=MAX_POINTS, levelUp:!wasAbsent&&!student.lostThisLesson&&levelUps.includes(student.name), starGained:!wasAbsent&&!student.lostThisLesson&&starNames.includes(student.name), homeworkAdded:student.homeworkAddedThisLesson });
-        student.history=student.history.slice(0,20);
+        if(!cls?.id) throw new Error("La classe active n'a pas d'identifiant Supabase.");
 
-        if(state.viewMode==="all"){ student.isAbsent=false; student.isAutoAbsent=false; }
-        else if(targetGroup){ if(student.group!==targetGroup){ student.isAbsent=true; student.isAutoAbsent=true; } else { student.isAbsent=false; student.isAutoAbsent=false; } }
+        // On récupère la période directement au clic pour ne pas dépendre du chargement initial.
+        let periodId=cls.currentPeriodId||null;
+        let periodName=cls.currentPeriodName||"Période en cours";
 
-        student.lastAction=null; student.lostThisLesson=false; student.lostStarThisLesson=false; student.pointsLostThisLesson=0; student.homeworkAddedThisLesson=false;
-      });
+        if(!periodId){
+          if(endBtn) endBtn.textContent="⏳ Recherche de la période…";
+          const {data:periods,error:periodError}=await supabaseClient
+            .from("periods")
+            .select("id,name")
+            .eq("class_id",cls.id)
+            .limit(1);
 
-      cls.history.unshift({ id:uid(), date:new Date().toLocaleString(), perfectNames, bonusPointNames, stayedAt20, levelUps, starNames, everyonePerfect, groupTarget:state.viewMode });
-      cls.history=cls.history.slice(0,15);
+          if(periodError) throw new Error("Recherche de la période : "+periodError.message);
+          if(!periods?.length) throw new Error("Aucune période n'existe dans Supabase pour cette classe.");
 
-      save(); render(); showSummary({ perfectNames, bonusPointNames, stayedAt20, levelUps, starNames, classStarGained: everyonePerfect });
+          periodId=periods[0].id;
+          periodName=periods[0].name||periodName;
+          cls.currentPeriodId=periodId;
+          cls.currentPeriodName=periodName;
+        }
+
+        const presentStudents=cls.students.filter(s=>!s.isAbsent);
+        if(!presentStudents.length) throw new Error("Aucun élève présent à enregistrer.");
+
+        if(endBtn) endBtn.textContent="⏳ Enregistrement…";
+
+        const everyonePerfect=presentStudents.every(s=>!s.lostThisLesson);
+        const perfectNames=[], bonusPointNames=[], stayedAt20=[], levelUps=[], starNames=[];
+        const updates=[];
+
+        for(const student of cls.students){
+          const wasAbsent=student.isAbsent;
+          const previousStars=Number(student.stars||0);
+
+          if(wasAbsent){
+            updates.push({student,wasAbsent:true});
+            continue;
+          }
+
+          let newPoints=Number(student.points||0);
+          let newProgress=Number(student.progress||0);
+          let newLevel=Number(student.level||1);
+          let newStars=Number(student.stars||0);
+          let newDiamonds=Number(student.diamonds||0);
+          let newStreak=Number(student.currentStreak||0);
+
+          if(!student.lostThisLesson){
+            perfectNames.push(student.name);
+            newStreak+=1;
+            newProgress+=1;
+
+            if(newPoints<MAX_POINTS){
+              newPoints+=1;
+              bonusPointNames.push(student.name);
+            }else{
+              stayedAt20.push(student.name);
+            }
+
+            if(newProgress>=3){
+              newProgress=0;
+              newLevel+=1;
+              newStars=Math.min(MAX_INDIVIDUAL_STARS,newStars+1);
+              newDiamonds=getDiamondsForLevel(newLevel);
+              levelUps.push(student.name);
+              if(newStars>previousStars) starNames.push(student.name);
+            }
+          }else{
+            newStreak=0;
+          }
+
+          updates.push({
+            student,wasAbsent:false,newPoints,newProgress,newLevel,
+            newStars,newDiamonds,newStreak
+          });
+        }
+
+        // Important : on écrit d'abord dans Supabase.
+        for(const u of updates){
+          if(u.wasAbsent) continue;
+
+          const {error:updateError}=await supabaseClient
+            .from("students")
+            .update({
+              points:u.newPoints,
+              progress:u.newProgress,
+              level:u.newLevel,
+              stars:u.newStars,
+              diamonds:u.newDiamonds,
+              current_streak:u.newStreak
+            })
+            .eq("id",u.student.id);
+
+          if(updateError) throw new Error(`Mise à jour de ${u.student.name} : ${updateError.message}`);
+
+          const {error:scoreError}=await supabaseClient
+            .from("lesson_scores")
+            .insert({
+              student_id:u.student.id,
+              period_id:periodId,
+              score:u.newPoints
+            });
+
+          if(scoreError) throw new Error(`Historique/graphique de ${u.student.name} : ${scoreError.message}`);
+        }
+
+        // Puis on reflète le résultat dans l'interface.
+        for(const u of updates){
+          const s=u.student;
+          if(!u.wasAbsent){
+            s.totalLessons=Number(s.totalLessons||0)+1;
+            if(!s.lostThisLesson) s.perfectLessons=Number(s.perfectLessons||0)+1;
+
+            s.points=u.newPoints;
+            s.progress=u.newProgress;
+            s.level=u.newLevel;
+            s.stars=u.newStars;
+            s.diamonds=u.newDiamonds;
+            s.currentStreak=u.newStreak;
+
+            s.periodScores=s.periodScores||[];
+            s.periodScores.push({date:new Date().toLocaleString(),score:u.newPoints});
+          }
+
+          s.history=s.history||[];
+          s.history.unshift({
+            id:uid(),
+            date:new Date().toLocaleString(),
+            absent:u.wasAbsent,
+            pointsLost:s.pointsLostThisLesson||0,
+            endBonus:!u.wasAbsent&&!s.lostThisLesson&&bonusPointNames.includes(s.name),
+            stayedAt20:!u.wasAbsent&&!s.lostThisLesson&&stayedAt20.includes(s.name),
+            levelUp:!u.wasAbsent&&levelUps.includes(s.name),
+            starGained:!u.wasAbsent&&starNames.includes(s.name),
+            homeworkAdded:!!s.homeworkAddedThisLesson
+          });
+          s.history=s.history.slice(0,20);
+
+          s.lastAction=null;
+          s.lostThisLesson=false;
+          s.lostStarThisLesson=false;
+          s.pointsLostThisLesson=0;
+          s.homeworkAddedThisLesson=false;
+        }
+
+        if(everyonePerfect) addCollectiveReward(cls,"collectiveStars","collectiveDiamonds");
+
+        let targetGroup=null;
+        if(state.viewMode==="g1") targetGroup="g1";
+        if(state.viewMode==="g2") targetGroup="g2";
+        if(targetGroup&&everyonePerfect){
+          cls.groupStars[targetGroup]=(cls.groupStars[targetGroup]||0)+1;
+          if(cls.groupStars[targetGroup]>=MAX_COLLECTIVE_STARS){
+            cls.groupStars[targetGroup]=0;
+            cls.groupDiamonds[targetGroup]=(cls.groupDiamonds[targetGroup]||0)+1;
+          }
+        }
+
+        try{
+          await updateCollectiveProgressInSupabase(cls);
+        }catch(collectiveErr){
+          throw new Error("Progression collective : "+(collectiveErr?.message||String(collectiveErr)));
+        }
+
+        cls.history=cls.history||[];
+        cls.history.unshift({
+          id:uid(),
+          date:new Date().toLocaleString(),
+          perfectNames,bonusPointNames,stayedAt20,levelUps,starNames,
+          everyonePerfect,groupTarget:state.viewMode
+        });
+        cls.history=cls.history.slice(0,15);
+
+        save();
+        render();
+
+        // On laisse le rendu principal se terminer avant d'ouvrir le récapitulatif.
+        // Cela garantit que le petit message "Fin de cours validée" reste visible.
+        const lessonSummary={
+          perfectNames,bonusPointNames,stayedAt20,levelUps,starNames,
+          classStarGained:everyonePerfect
+        };
+        showEndLessonStatus("Fin de cours validée !", "success", true);
+        setTimeout(()=>{
+          try{ showSummary(lessonSummary); }
+          catch(summaryErr){ console.error("SUMMARY ERROR", summaryErr); }
+        },350);
+
+      }catch(err){
+        console.error("FIN D'HEURE ERROR",err);
+        showEndLessonStatus("Fin d’heure impossible : "+(err?.message||String(err)), "error", false);
+      }finally{
+        const btn=document.getElementById("endLessonBtn");
+        if(btn){
+          btn.disabled=false;
+          btn.textContent=oldEndText;
+        }
+      }
+    }
+
+    async function loadTeacherRewardRequests(openModal=false){
+      try{
+        const cls=currentClass();
+        if(!cls?.id) return;
+        const studentIds=(cls.students||[]).map(s=>s.id);
+        let requests=[];
+        if(studentIds.length){
+          const {data,error}=await supabaseClient
+            .from("reward_requests")
+            .select("id,student_id,item_code,item_name,price,status,created_at")
+            .in("student_id",studentIds)
+            .eq("status","pending")
+            .order("created_at",{ascending:true});
+          if(error) throw error;
+          requests=data||[];
+        }
+
+        const badge=document.getElementById("rewardRequestsBadge");
+        if(badge) badge.textContent=requests.length?`(${requests.length})`:"";
+
+        const list=document.getElementById("teacherRewardRequestsList");
+        if(list){
+          list.innerHTML=requests.length?requests.map(r=>{
+            const student=(cls.students||[]).find(s=>s.id===r.student_id);
+            return `<div class="box" style="margin-bottom:12px">
+              <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+                <div>
+                  <div style="font-size:19px;font-weight:900">${escapeHTML(student?.name||"Élève")} réclame ${escapeHTML(r.item_name)}</div>
+                  <div class="muted">${Number(r.price)} 🟡 • ${new Date(r.created_at).toLocaleString("fr-FR")}</div>
+                </div>
+                <div class="row">
+                  <button class="btn green small reward-approve-btn" data-id="${r.id}">✅ Accepter</button>
+                  <button class="btn outline small reward-reject-btn" data-id="${r.id}">❌ Refuser</button>
+                </div>
+              </div>
+            </div>`;
+          }).join(""):'<div class="box"><strong>✅ Aucune demande en attente.</strong></div>';
+
+          list.querySelectorAll(".reward-approve-btn").forEach(b=>b.onclick=()=>resolveRewardRequest(b.dataset.id,"approved"));
+          list.querySelectorAll(".reward-reject-btn").forEach(b=>b.onclick=()=>resolveRewardRequest(b.dataset.id,"rejected"));
+        }
+
+        if(openModal) document.getElementById("rewardRequestsModal").classList.add("show");
+      }catch(err){
+        console.error("REWARD REQUESTS ERROR",err);
+        if(openModal) alert("❌ Impossible de charger les demandes : "+(err?.message||String(err)));
+      }
+    }
+
+    async function resolveRewardRequest(requestId,decision){
+      try{
+        const {error}=await supabaseClient.rpc("zenquest_resolve_reward_request",{
+          target_request_id:requestId,
+          decision
+        });
+        if(error) throw error;
+        await loadTeacherSupabaseData();
+        await loadTeacherRewardRequests(false);
+      }catch(err){
+        alert("❌ "+(err?.message||String(err)));
+      }
     }
 
     function renderPeriodManager(){
@@ -1383,58 +2134,180 @@
       document.getElementById("periodModal").classList.add("show");
     }
 
-    function savePeriodName(){
+    async function savePeriodName(){
       const cls=currentClass();
       const n=document.getElementById("periodNameInput").value.trim();
+      const message=document.getElementById("periodActionMessage");
       if(!n) return;
-      cls.currentPeriodName=n;
-      save(); render(); renderPeriodManager();
-      document.getElementById("periodActionMessage").textContent="Nom de période enregistré ✓";
+      try{
+        if(!cls.currentPeriodId) throw new Error("Aucune période actuelle reliée à Supabase.");
+        message.textContent="⏳ Enregistrement du nom…";
+        const {error}=await supabaseClient
+          .from("periods")
+          .update({name:n})
+          .eq("id",cls.currentPeriodId);
+        if(error) throw error;
+        cls.currentPeriodName=n;
+        save(); render(); renderPeriodManager();
+        document.getElementById("periodActionMessage").textContent="Nom de période enregistré ✓";
+      }catch(err){
+        console.error("PERIOD NAME ERROR",err);
+        message.textContent="❌ "+(err?.message||String(err));
+      }
     }
 
-    function closePeriod(){
+    function zenCoinsForPeriod(student){
+      const diamonds=Number(student.diamonds||0);
+      const stars=Number(student.stars||0);
+      if(diamonds>=1) return 4;
+      if(stars>=6) return 3;
+      if(stars>=4) return 2;
+      if(stars>=2) return 1;
+      return 0;
+    }
+
+    const ZEN_SHOP=[
+      {code:"pencil",icon:"✏️",name:"Crayon",price:4,kind:"Récompense réelle"},
+      {code:"pen",icon:"🖊️",name:"Stylo",price:6,kind:"Récompense réelle"},
+      {code:"sticker",icon:"🎉",name:"Autocollant",price:8,kind:"Récompense réelle"}
+    ];
+
+    function zenShopHTML(student,rewardRequests=[]){
+      const coins=Number(student.zen_coins||student.zenCoins||0);
+      const pending=(rewardRequests||[]).find(r=>r.status==="pending");
+      const recent=(rewardRequests||[]).filter(r=>r.status!=="pending").slice(0,3);
+
+      return `<div class="box">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <div><div style="font-size:20px;font-weight:900">🛍️ Boutique ZenQuest</div><div class="muted">Tu recevras tes ZenCoins à la fin de chaque période. Ils se cumulent toute l’année : garde-les ou échange-les auprès du professeur contre une récompense.</div></div>
+          <div style="font-size:25px;font-weight:900">🟡 ${coins}</div>
+        </div>
+
+        ${pending?`<div style="margin-top:14px;padding:12px 14px;border-radius:14px;background:#fff7ed;border:1px solid #fdba74">
+          <div>⏳ <strong>Demande en attente :</strong> ${escapeHTML(pending.item_name)} (${Number(pending.price)} 🟡). Le professeur doit encore la valider.</div>
+          <button type="button" class="btn outline small cancel-reward-request-btn" data-request-id="${pending.id}" style="margin-top:10px">
+            ↩️ Annuler ma demande
+          </button>
+        </div>`:""}
+
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:18px">
+          ${ZEN_SHOP.map(x=>{
+            const enough=coins>=x.price;
+            const disabled=!enough || !!pending;
+            return `<div class="collection-item ${!enough?'locked':''}" style="display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;min-height:165px;gap:12px;padding:18px;border-radius:18px">
+              <div class="collection-icon">${x.icon}</div>
+              <div><div class="collection-name">${x.name}</div><div class="collection-condition">${x.kind}</div></div>
+              <strong>${x.price} 🟡</strong>
+              <span class="collection-condition">${enough?'Disponible':'🔒 Encore '+(x.price-coins)+' 🟡'}</span>
+              <button type="button" class="btn ${enough&&!pending?'primary':'outline'} small reward-request-btn"
+                data-reward-code="${x.code}" ${disabled?'disabled':''}
+                style="width:100%;margin-top:2px;opacity:${disabled?.58:1}">
+                ${pending?'Demande déjà envoyée':enough?'🙋 Réclamer au professeur':'Pas assez de ZenCoins'}
+              </button>
+            </div>`;
+          }).join('')}
+        </div>
+
+        ${recent.length?`<div style="margin-top:15px">
+          <div class="muted" style="font-weight:800;margin-bottom:6px">Mes dernières demandes</div>
+          ${recent.map(r=>`<div style="font-size:13px;padding:4px 0">
+            ${r.status==="approved"?"✅":"❌"} ${escapeHTML(r.item_name)} — ${r.status==="approved"?"acceptée":"refusée"}
+          </div>`).join("")}
+        </div>`:""}
+      </div>`;
+    }
+
+    async function requestReward(itemCode){
+      const btns=[...document.querySelectorAll(".reward-request-btn")];
+      btns.forEach(b=>b.disabled=true);
+      try{
+        const {error}=await supabaseClient.rpc("zenquest_request_reward",{target_item_code:itemCode});
+        if(error) throw error;
+        await loadAuthenticatedStudent((await supabaseClient.auth.getUser()).data.user);
+      }catch(err){
+        alert("❌ "+(err?.message||String(err)));
+        btns.forEach(b=>b.disabled=false);
+      }
+    }
+
+    async function cancelRewardRequest(requestId){
+      const btn=document.querySelector(".cancel-reward-request-btn");
+      if(btn){ btn.disabled=true; btn.textContent="Annulation…"; }
+      try{
+        const {error}=await supabaseClient.rpc("zenquest_cancel_reward_request",{target_request_id:requestId});
+        if(error) throw error;
+        const {data:{user}}=await supabaseClient.auth.getUser();
+        await loadAuthenticatedStudent(user);
+      }catch(err){
+        alert("❌ "+(err?.message||String(err)));
+        if(btn){ btn.disabled=false; btn.textContent="↩️ Annuler ma demande"; }
+      }
+    }
+
+    function studentPeriodHistoryHTML(history=[]){
+      if(!history.length) return `<div class="box"><div style="font-size:20px;font-weight:900">📚 Mes anciennes aventures</div><div class="muted" style="margin-top:8px">Aucune période clôturée pour le moment.</div></div>`;
+      return `<div class="box"><div style="font-size:20px;font-weight:900">📚 Mes anciennes aventures</div>
+        <div class="muted" style="margin:4px 0 12px">Tes notes et ta progression des périodes précédentes restent consultables ici.</div>
+        ${history.map(h=>{
+          const scores=(h.scores||[]).map(x=>Number(x.score)).filter(Number.isFinite);
+          return `<div style="padding:16px 0;border-top:1px solid #e2e8f0">
+            <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+              <strong style="font-size:18px">${escapeHTML(h.name||'Période')}</strong>
+              <strong>${h.average==null?'—':String(round1(Number(h.average))).replace('.',',')+'/20'}</strong>
+            </div>
+            <div class="row wrap" style="margin:9px 0">
+              <span class="toolbar-chip">🎮 Niv. ${Number(h.final_level||1)}</span>
+              <span class="toolbar-chip">⭐ ${Number(h.final_stars||0)}</span>
+              <span class="toolbar-chip">💎 ${Number(h.final_diamonds||0)}</span>
+              <span class="toolbar-chip">🟡 +${Number(h.zen_coins_earned||0)}</span>
+              <span class="toolbar-chip">📚 ${Number(h.lesson_count||scores.length)} cours</span>
+            </div>
+            ${scores.length?studentChart(scores):'<div class="muted">Aucune note de fin de cours enregistrée.</div>'}
+            ${scores.length?`<div class="row wrap" style="margin-top:8px">${scores.map((s,i)=>`<span class="toolbar-chip">Cours ${i+1} : ${s}/20</span>`).join('')}</div>`:''}
+          </div>`;
+        }).join('')}
+      </div>`;
+    }
+
+    async function closePeriod(){
       const cls=currentClass();
       const nextName=document.getElementById("nextPeriodNameInput").value.trim() || "Nouvelle période";
-      const frozenRows=currentPeriodRows(cls).map(row=>({...row}));
-      const frozenCollective=collectiveSnapshot(cls);
-      const validAverages=frozenRows.filter(r=>r.average!==null).map(r=>r.average);
-      const classAverage=validAverages.length ? round1(validAverages.reduce((a,b)=>a+b,0)/validAverages.length) : null;
-      const closedAt=new Date().toLocaleString();
+      const message=document.getElementById("periodActionMessage");
+      const btn=document.getElementById("confirmClosePeriodBtn");
+      if(!cls.currentPeriodId){ message.textContent="❌ Aucune période actuelle Supabase."; return; }
 
-      cls.students.forEach(student=>{
-        const ps=periodStats(student);
-        student.archivedPeriods.push({
-          name:cls.currentPeriodName,
-          average:ps.average,
-          count:ps.count,
-          best:ps.best,
-          worst:ps.worst,
-          closedAt
+      const oldPeriodId=cls.currentPeriodId;
+      const oldPeriodName=cls.currentPeriodName;
+
+      try{
+        if(btn){ btn.disabled=true; btn.textContent="⏳ Clôture sécurisée…"; }
+        message.textContent="🔒 Clôture atomique en cours…";
+
+        const {data:newPeriodId,error}=await supabaseClient.rpc("zenquest_close_period",{
+          target_class_id:cls.id,
+          target_period_id:oldPeriodId,
+          next_period_name:nextName
         });
-        student.periodScores=[];
-        student.points=15;
-        student.progress=0;
-        student.lostThisLesson=false;
-        student.lostStarThisLesson=false;
-        student.pointsLostThisLesson=0;
-      });
+        if(error) throw error;
+        if(!newPeriodId) throw new Error("Supabase n’a pas renvoyé l’identifiant de la nouvelle période.");
 
-      cls.periodArchive.push({
-        id:uid(),
-        name:cls.currentPeriodName,
-        classAverage,
-        studentsCount:cls.students.length,
-        closedAt,
-        rankingRows:frozenRows,
-        collectiveSnapshot:frozenCollective
-      });
+        message.textContent=`✅ ${oldPeriodName} clôturée • ZenCoins attribués 🟡 • ${nextName} commence à 15/20, niveau 1.`;
 
-      state.periodView="current";
-      cls.currentPeriodName=nextName;
-      save(); render(); renderPeriodManager();
-      document.getElementById("periodActionMessage").textContent="Période clôturée ✓ La nouvelle période commence à 15/20.";
+        // Recharger depuis Supabase : aucune reconstruction locale fragile.
+        await loadTeacherSupabaseData();
+        state.periodView="current";
+        save();
+        render();
+        renderPeriodManager();
+        const msg=document.getElementById("periodActionMessage");
+        if(msg) msg.textContent=`✅ ${oldPeriodName} clôturée • 🟡 attribués • ${nextName} est la période actuelle.`;
+      }catch(err){
+        console.error("ATOMIC CLOSE PERIOD ERROR",err);
+        message.textContent="❌ Clôture annulée : "+(err?.message||String(err));
+      }finally{
+        if(btn){ btn.disabled=false; btn.textContent="Clôturer la période"; }
+      }
     }
-
 
     function populateStudentPreviewSelect(){
       const sel=document.getElementById("studentPreviewSelect");
@@ -1569,6 +2442,16 @@
       reminder:{icon:"⏰",label:"Rappel"}
     };
 
+    function mapSupabaseClassMessage(row){
+      return {
+        id:row.id,
+        type:row.type||"message",
+        text:row.text||"",
+        dueDate:row.due_date||"",
+        createdAt:row.created_at||""
+      };
+    }
+
     function formatFrenchDate(dateStr){
       if(!dateStr) return "";
       const d=new Date(dateStr+"T12:00:00");
@@ -1640,37 +2523,79 @@
       }).join("");
 
       box.querySelectorAll(".deleteClassMessageBtn").forEach(btn=>{
-        btn.onclick=()=>{
+        btn.onclick=async()=>{
           const cls=currentClass();
-          cls.classMessages=(cls.classMessages||[]).filter(m=>m.id!==btn.dataset.messageId);
-          save();
-          renderClassMessagesList();
+          const messageId=btn.dataset.messageId;
+          btn.disabled=true;
+          const oldText=btn.textContent;
+          btn.textContent="⏳";
+
+          try{
+            const {error}=await supabaseClient
+              .from("class_messages")
+              .delete()
+              .eq("id",messageId);
+
+            if(error) throw error;
+
+            cls.classMessages=(cls.classMessages||[]).filter(m=>String(m.id)!==String(messageId));
+            renderClassMessagesList();
+          }catch(err){
+            console.error("CLASS MESSAGE DELETE ERROR",err);
+            alert("❌ Suppression impossible.\n\n"+(err?.message||String(err)));
+            btn.disabled=false;
+            btn.textContent=oldText;
+          }
         };
       });
     }
 
-    function addClassMessage(){
+    async function addClassMessage(){
       const cls=currentClass();
       const textValue=document.getElementById("classMessageText").value.trim();
       const type=document.getElementById("classMessageType").value;
       const dueDate=document.getElementById("classMessageDueDate").value;
+      const btn=document.getElementById("addClassMessageBtn");
 
       if(!textValue) return;
+      if(!cls?.id || !cls.fromSupabase){
+        alert("Choisis d’abord une classe Supabase.");
+        return;
+      }
 
-      if(!Array.isArray(cls.classMessages)) cls.classMessages=[];
-      cls.classMessages.push({
-        id:uid(),
-        type,
-        text:textValue,
-        dueDate:dueDate||"",
-        createdAt:new Date().toISOString()
-      });
+      btn.disabled=true;
+      btn.textContent="Publication…";
 
-      document.getElementById("classMessageText").value="";
-      document.getElementById("classMessageDueDate").value="";
-      document.getElementById("classMessageType").value="message";
-      save();
-      renderClassMessagesList();
+      try{
+        const {data,error}=await supabaseClient
+          .from("class_messages")
+          .insert({
+            class_id:cls.id,
+            type,
+            text:textValue,
+            due_date:dueDate||null
+          })
+          .select("*")
+          .single();
+
+        if(error) throw error;
+
+        if(!Array.isArray(cls.classMessages)) cls.classMessages=[];
+        cls.classMessages.push(mapSupabaseClassMessage(data));
+
+        document.getElementById("classMessageText").value="";
+        document.getElementById("classMessageDueDate").value="";
+        document.getElementById("classMessageType").value="message";
+
+        renderClassMessagesList();
+        alert("✅ Message publié pour la classe.");
+      }catch(err){
+        console.error("CLASS MESSAGE INSERT ERROR",err);
+        alert("❌ Impossible de publier le message.\n\n"+(err?.message||String(err)));
+      }finally{
+        btn.disabled=false;
+        btn.textContent="➕ Publier pour la classe";
+      }
     }
 
 
@@ -1824,13 +2749,18 @@
           progress,
           stars,
           diamonds,
+          zen_coins,
           homeworks,
           current_streak,
           classes (
             id,
             name,
             collective_stars,
-            collective_diamonds
+            collective_diamonds,
+            group1_stars,
+            group1_diamonds,
+            group2_stars,
+            group2_diamonds
           )
         `)
         .eq("user_id",user.id)
@@ -1859,14 +2789,15 @@
       let periodAverage=null;
       const {data:periods,error:periodError}=await supabaseClient
         .from("periods")
-        .select("id,name")
-        .eq("class_id",studentRow.class_id);
+        .select("id,name,is_current,created_at,closed_at")
+        .eq("class_id",studentRow.class_id)
+        .order("created_at",{ascending:true});
 
       if(periodError){
         throw new Error(`Erreur periods : ${periodError.message}${periodError.code?` • code ${periodError.code}`:""}`);
       }
 
-      const currentPeriod=(periods||[])[0] || null;
+      const currentPeriod=(periods||[]).find(p=>p.is_current) || (periods||[]).slice(-1)[0] || null;
       if(currentPeriod?.name) currentPeriodName=currentPeriod.name;
 
       // Lesson scores for this student, restricted by RLS.
@@ -1888,6 +2819,25 @@
         periodAverage=lessonScores.reduce((sum,s)=>sum+Number(s.score||0),0)/lessonScores.length;
       }
 
+      const {data:allScores,error:allScoresError}=await supabaseClient
+        .from("lesson_scores")
+        .select("period_id,score,created_at")
+        .eq("student_id",studentRow.id)
+        .order("created_at",{ascending:true});
+      if(allScoresError) throw new Error(`Erreur historique lesson_scores : ${allScoresError.message}`);
+
+      const {data:periodResults,error:periodResultsError}=await supabaseClient
+        .from("period_results")
+        .select("period_id,average,lesson_count,best_score,worst_score,final_level,final_stars,final_diamonds,homeworks,zen_coins_earned,created_at")
+        .eq("student_id",studentRow.id)
+        .order("created_at",{ascending:true});
+      if(periodResultsError) throw new Error(`Erreur historique périodes : ${periodResultsError.message}`);
+
+      const studentPeriodHistory=(periodResults||[]).map(r=>{
+        const p=(periods||[]).find(x=>x.id===r.period_id);
+        return {...r,name:p?.name||"Ancienne période",scores:(allScores||[]).filter(s=>s.period_id===r.period_id)};
+      });
+
       // Teacher remarks, restricted by RLS.
       const {data:remarks,error:remarksError}=await supabaseClient
         .from("teacher_remarks")
@@ -1899,93 +2849,228 @@
         throw new Error(`Erreur teacher_remarks : ${remarksError.message}${remarksError.code?` • code ${remarksError.code}`:""}`);
       }
 
-      renderAuthenticatedStudentDashboard(studentRow,cls,currentPeriodName,periodAverage,lessonScores,remarks||[]);
+      const {data:classMessages,error:classMessagesError}=await supabaseClient
+        .from("class_messages")
+        .select("*")
+        .eq("class_id",studentRow.class_id)
+        .order("created_at",{ascending:false});
+
+      if(classMessagesError){
+        throw new Error(`Erreur class_messages : ${classMessagesError.message}${classMessagesError.code?` • code ${classMessagesError.code}`:""}`);
+      }
+
+      const {data:rewardRequests,error:rewardRequestsError}=await supabaseClient
+        .from("reward_requests")
+        .select("id,item_code,item_name,price,status,created_at,resolved_at")
+        .eq("student_id",studentRow.id)
+        .order("created_at",{ascending:false});
+      if(rewardRequestsError) throw new Error(`Erreur récompenses : ${rewardRequestsError.message}`);
+
+      renderAuthenticatedStudentDashboard(
+        studentRow,
+        cls,
+        currentPeriodName,
+        periodAverage,
+        lessonScores,
+        remarks||[],
+        (classMessages||[]).map(mapSupabaseClassMessage),
+        studentPeriodHistory,
+        rewardRequests||[]
+      );
     }
 
-    function renderAuthenticatedStudentDashboard(student,cls,currentPeriodName,periodAverage,lessonScores,remarks){
+    function renderAuthenticatedStudentDashboard(student,cls,currentPeriodName,periodAverage,lessonScores,remarks,classMessages=[],periodHistory=[],rewardRequests=[]){
       document.getElementById("studentClassPill").textContent=cls?.name||"Ma classe";
 
-      const avgDisplay=periodAverage===null ? "—" : periodAverage.toFixed(1).replace(".",",");
-      const progress=Math.max(0,Math.min(100,Number(student.progress||0)));
-      const avatar=student.avatar||"🧑🏽‍🎓";
+      const scores=(lessonScores||[])
+        .map(s=>Number(s.score))
+        .filter(Number.isFinite);
 
-      const scoreRows=lessonScores.length
-        ? lessonScores.slice(-8).map((s,i)=>`<span class="toolbar-chip">Cours ${Math.max(1,lessonScores.length-7+i)} : ${Number(s.score).toFixed(0)}/20</span>`).join("")
+      const avgDisplay=periodAverage===null ? "—" : round1(periodAverage).toString().replace(".",",");
+      const best=scores.length?Math.max(...scores):null;
+      const worst=scores.length?Math.min(...scores):null;
+      const trend=studentTrend(scores);
+      const avatar=student.avatar||"🧑🏽‍🎓";
+      const stars=Number(student.stars||0);
+      const diamonds=Number(student.diamonds||0);
+      const level=Number(student.level||1);
+      const progressStep=Math.max(0,Math.min(3,Number(student.progress||0)));
+      const progressPct=(progressStep/3)*100;
+      const remain=Math.max(0,3-progressStep);
+      const nextDiamond=level<8?8:level+(level%2===0?2:1);
+      const group=student.group_name==="g1"?"g1":student.group_name==="g2"?"g2":null;
+      const groupName=group==="g1"?"Groupe 1":group==="g2"?"Groupe 2":"Aucun groupe";
+
+      const classStars=Number(cls?.collective_stars||0);
+      const classDiamonds=Number(cls?.collective_diamonds||0);
+      const groupStars=group==="g1"
+        ? Number(cls?.group1_stars||0)
+        : group==="g2" ? Number(cls?.group2_stars||0) : 0;
+      const groupDiamonds=group==="g1"
+        ? Number(cls?.group1_diamonds||0)
+        : group==="g2" ? Number(cls?.group2_diamonds||0) : 0;
+
+      const scoreRows=scores.length
+        ? scores.slice(-8).map((score,i)=>`<span class="toolbar-chip">Cours ${Math.max(1,scores.length-7+i)} : ${score}/20</span>`).join("")
         : '<span class="muted">Aucun score de fin de cours enregistré pour cette période.</span>';
 
       const remarksHtml=remarks.length
         ? remarks.map(r=>`
-            <div class="box" style="margin-bottom:8px">
-              <div style="white-space:pre-wrap;line-height:1.5">${escapeHTML(r.remark||"")}</div>
-              <div class="muted" style="font-size:12px;margin-top:6px">${new Date(r.created_at).toLocaleDateString("fr-FR")}</div>
+            <div style="padding:10px 0;border-bottom:1px solid #e2e8f0">
+              <div class="muted" style="font-size:12px">${new Date(r.created_at).toLocaleDateString("fr-FR")}</div>
+              <div style="margin-top:4px;white-space:pre-wrap;line-height:1.5">${escapeHTML(r.remark||"")}</div>
             </div>`).join("")
         : '<div class="muted">Aucune remarque du professeur pour le moment.</div>';
 
       document.getElementById("authenticatedStudentView").innerHTML=`
-        <div class="box" style="background:#f8fafc">
-          <div class="row wrap" style="align-items:center;gap:14px">
-            <div style="font-size:64px">${avatar}</div>
-            <div style="flex:1;min-width:220px">
-              <div style="font-size:30px;font-weight:950">${escapeHTML(student.first_name||"Élève")}</div>
+        <div class="student-dashboard">
+
+          <div class="mode-switch" style="margin-bottom:16px;width:100%;display:flex">
+            <button type="button" id="studentCurrentTabBtn" class="active" style="flex:1">🎮 Période actuelle</button>
+            <button type="button" id="studentHistoryTabBtn" style="flex:1">📚 Mes anciennes périodes</button>
+          </div>
+
+          <div id="studentCurrentPeriodPanel">
+          ${(lessonScores||[]).length===0 ? `<div style="margin-bottom:14px;padding:12px 16px;border-radius:16px;background:#eef2ff;border:1px solid #c7d2fe;font-weight:900">
+            🆕 Nouvelle période
+          </div>` : ``}
+          <div class="student-hero">
+            <div class="student-big-avatar">${avatar}</div>
+            <div>
               <div class="muted">${escapeHTML(cls?.name||"")} • ${escapeHTML(currentPeriodName)}</div>
+              <div style="font-size:30px;font-weight:900">${escapeHTML(student.first_name||"Élève")}</div>
+              <div class="student-big-grade">${avgDisplay}${periodAverage===null?"":" / 20"}</div>
+              <div class="muted">Moyenne actuelle de la période d’implication en classe</div>
+
+              <div style="margin-top:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:16px;padding:12px;line-height:1.45">
+                <strong>ℹ️ À quoi correspond cette note ?</strong><br>
+                Cette note concerne <strong>ton implication en classe</strong> : travail, participation, écoute, concentration et attitude.
+                <br><br>
+                <strong>Elle pourra apparaître sur ton bulletin</strong>, mais elle ne correspond
+                <strong>ni à ta moyenne générale, ni à ta moyenne en mathématiques.</strong>
+              </div>
+
+              <div class="row wrap" style="margin-top:12px">
+                <span class="toolbar-chip active">Score : ${Number(student.points??15)}/20</span>
+                <span class="toolbar-chip">${trend.emoji} ${trend.label}</span>
+                <span class="toolbar-chip">⭐ ${stars}</span>
+                <span class="toolbar-chip">💎 ${diamonds}</span>
+                <span class="toolbar-chip" style="font-weight:900">🟡 ${Number(student.zen_coins||0)} ZenCoins disponibles</span>
+              </div>
+              <div class="muted" style="margin-top:8px">
+                Les ZenCoins gagnés lors des périodes précédentes sont conservés.
+              </div>
+
+              <button class="btn primary" id="authenticatedStudentRulesBtn"
+                style="width:100%;margin-top:14px;padding:14px 18px;font-size:16px;font-weight:900">
+                📜 Voir les règles et le fonctionnement de ZenQuest
+              </button>
             </div>
-            <div style="text-align:center">
-              <div class="muted">Note d’implication</div>
-              <div style="font-size:46px;font-weight:950">${avgDisplay}<span style="font-size:20px">/20</span></div>
+          </div>
+
+          ${studentClassMessagesHTML({classMessages})}
+
+          <div class="box" style="border:2px solid #bfdbfe">
+            <div style="font-size:20px;font-weight:900">💬 Remarques du professeur</div>
+            <div class="muted" style="margin:4px 0 8px">Message personnel concernant le suivi de l’élève.</div>
+            ${remarksHtml}
+          </div>
+
+          <div class="student-kpis">
+            <div class="student-kpi"><span class="muted">Cours comptabilisés</span><br><strong>${scores.length}</strong></div>
+            <div class="student-kpi"><span class="muted">Meilleur score</span><br><strong>${best===null?"—":best+"/20"}</strong></div>
+            <div class="student-kpi"><span class="muted">Plus bas</span><br><strong>${worst===null?"—":worst+"/20"}</strong></div>
+            <div class="student-kpi"><span class="muted">Devoirs</span><br><strong>📝 ${Number(student.homeworks||0)}</strong></div>
+          </div>
+
+          <div class="student-columns">
+            <div class="box">
+              <div style="font-size:20px;font-weight:800">📈 Ma progression</div>
+              <div class="muted" style="margin:4px 0 10px">Évolution de ton score d’implication à chaque fin de cours.</div>
+              ${studentChart(scores)}
+              <div class="row wrap" style="margin-top:10px">${scoreRows}</div>
+            </div>
+
+            <div class="box">
+              <div style="font-size:20px;font-weight:800">🎮 Mon profil ZenQuest</div>
+              <div style="font-size:25px;font-weight:900;margin-top:10px">Niveau ${level}</div>
+              <div style="font-size:25px;margin:8px 0">${individualStars(stars)} <span class="diamond-inline">💎 x${diamonds}</span></div>
+              <div class="student-mini-progress"><span style="width:${progressPct}%"></span></div>
+              <div class="muted" style="margin-top:5px">${progressStep}/3 vers le niveau suivant</div>
+
+              <div class="student-objective">
+                <strong>🎯 Prochain objectif</strong><br>
+                Encore ${remain} cours réussi${remain>1?"s":""} pour atteindre le niveau ${level+1}.
+                <br><span class="muted">Prochain diamant : niveau ${nextDiamond}.</span>
+              </div>
+
+              <div style="margin-top:12px"><strong>🔥 Série actuelle : ${Number(student.current_streak||0)} cours</strong></div>
             </div>
           </div>
 
-          <div style="margin-top:14px;padding:14px;border-radius:16px;background:#ecfdf5;border:1px solid #a7f3d0;line-height:1.5">
-            <strong>Cette note pourra apparaître sur ton bulletin</strong> afin de rendre compte de ton implication en classe.
-            <br><br>
-            Elle ne correspond <strong>ni à ta moyenne générale, ni à ta moyenne en mathématiques</strong>.
+          <div class="student-columns">
+            <div class="box">
+              <div style="font-size:20px;font-weight:800">🏫 Ma classe</div>
+              <div style="margin-top:8px"><strong>${escapeHTML(cls?.name||"Ma classe")}</strong></div>
+              <div style="font-size:21px;margin:9px 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap">${starRow(classStars)} <span class="diamond-inline">💎 x${classDiamonds}</span></div>
+              <div class="student-objective">
+                <strong>🤝 Progression collective</strong><br>
+                Toute la classe peut gagner des étoiles ensemble lorsque le cours se passe bien.
+              </div>
+            </div>
+
+            <div class="box">
+              <div style="font-size:20px;font-weight:800">👥 Mon groupe</div>
+              <div style="margin-top:8px"><strong>${groupName}</strong></div>
+              ${group
+                ? `<div style="font-size:21px;margin:9px 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap">${starRow(groupStars)} <span class="diamond-inline">💎 x${groupDiamonds}</span></div>
+                   <div class="muted">Ta progression de groupe est distincte de celle de toute la classe.</div>`
+                : '<div class="muted" style="margin-top:8px">Tu n’es pas encore affecté à un groupe.</div>'}
+            </div>
           </div>
 
-          <button class="btn primary" id="authenticatedStudentRulesBtn" style="width:100%;margin-top:14px;padding:14px;font-size:16px;font-weight:900">
-            📜 Voir les règles et le fonctionnement de ZenQuest
-          </button>
-        </div>
-
-        <div class="student-kpis">
-          <div class="box"><div class="muted">Score actuel</div><div style="font-size:28px;font-weight:950">${Number(student.points||15)}/20</div></div>
-          <div class="box"><div class="muted">Niveau</div><div style="font-size:28px;font-weight:950">${Number(student.level||1)}</div></div>
-          <div class="box"><div class="muted">Étoiles</div><div style="font-size:28px;font-weight:950">⭐ ${Number(student.stars||0)}</div></div>
-          <div class="box"><div class="muted">Diamants</div><div style="font-size:28px;font-weight:950">💎 ${Number(student.diamonds||0)}</div></div>
-          <div class="box"><div class="muted">Devoirs</div><div style="font-size:28px;font-weight:950">📝 ${Number(student.homeworks||0)}</div></div>
-          <div class="box"><div class="muted">Série</div><div style="font-size:28px;font-weight:950">🔥 ${Number(student.current_streak||0)}</div></div>
-        </div>
-
-        <div class="box">
-          <div style="font-size:19px;font-weight:900">📈 Progression</div>
-          <div style="height:14px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-top:10px">
-            <div style="height:100%;width:${progress}%;background:#10b981"></div>
+          ${zenShopHTML(student,rewardRequests)}
+          <div style="margin-top:18px">${collectionHTML(student,"auth-"+student.id)}</div>
+          <div style="height:32px"></div>
           </div>
-          <div class="muted" style="margin-top:6px">${progress}% vers le prochain objectif</div>
-        </div>
 
-        <div class="box">
-          <div style="font-size:19px;font-weight:900">🧾 Derniers scores de fin de cours</div>
-          <div class="row wrap" style="margin-top:10px">${scoreRows}</div>
-        </div>
-
-        <div class="box">
-          <div style="font-size:19px;font-weight:900">🤝 Progression collective</div>
-          <div class="row wrap" style="margin-top:8px">
-            <span class="toolbar-chip">⭐ ${Number(cls?.collective_stars||0)}</span>
-            <span class="toolbar-chip">💎 ${Number(cls?.collective_diamonds||0)}</span>
+          <div id="studentHistoryPanel" style="display:none">
+            ${studentPeriodHistoryHTML(periodHistory)}
           </div>
-        </div>
 
-        <div class="box">
-          <div style="font-size:19px;font-weight:900">💬 Remarques du professeur</div>
-          <div style="margin-top:10px">${remarksHtml}</div>
         </div>
       `;
 
+      const currentTabBtn=document.getElementById("studentCurrentTabBtn");
+      const historyTabBtn=document.getElementById("studentHistoryTabBtn");
+      const currentPanel=document.getElementById("studentCurrentPeriodPanel");
+      const historyPanel=document.getElementById("studentHistoryPanel");
+      const showStudentTab=(tab)=>{
+        const history=tab==="history";
+        currentPanel.style.display=history?"none":"block";
+        historyPanel.style.display=history?"block":"none";
+        currentTabBtn.classList.toggle("active",!history);
+        historyTabBtn.classList.toggle("active",history);
+      };
+      if(currentTabBtn) currentTabBtn.onclick=()=>showStudentTab("current");
+      if(historyTabBtn) historyTabBtn.onclick=()=>showStudentTab("history");
+
+      document.querySelectorAll(".reward-request-btn").forEach(btn=>{
+        btn.onclick=()=>requestReward(btn.dataset.rewardCode);
+      });
+      document.querySelectorAll(".cancel-reward-request-btn").forEach(btn=>{
+        btn.onclick=()=>cancelRewardRequest(btn.dataset.requestId);
+      });
+
       const rulesBtn=document.getElementById("authenticatedStudentRulesBtn");
       if(rulesBtn) rulesBtn.onclick=openStudentRules;
+      bindCollectionButtons(
+        document.getElementById("authenticatedStudentView"),
+        student,
+        "auth-"+student.id,
+        ()=>renderAuthenticatedStudentDashboard(student,cls,currentPeriodName,periodAverage,lessonScores,remarks,classMessages,periodHistory,rewardRequests)
+      );
     }
-
 
     function mapSupabaseStudent(row,index=0){
       return {
@@ -1997,6 +3082,7 @@
         level:Number(row.level??1),
         stars:Number(row.stars??0),
         diamonds:Number(row.diamonds??0),
+        zenCoins:Number(row.zen_coins??0),
         homeworks:Number(row.homeworks??0),
         isAbsent:false,
         isAutoAbsent:false,
@@ -2010,18 +3096,23 @@
         currentStreak:Number(row.current_streak??0),
         history:[],
         notes:"",
-        teacherRemarks:[],
+        teacherRemarks:(row._teacherRemarks||[]).map(r=>({
+          id:r.id,
+          date:r.created_at?new Date(r.created_at).toLocaleDateString("fr-FR"):"",
+          text:r.remark||"",
+          createdAt:r.created_at||null
+        })),
         lastAction:null,
         group:row.group_name==="g1"||row.group_name==="g2"?row.group_name:null,
-        periodScores:[],
-        archivedPeriods:[],
-        authUsername:"",
-        authPassword:"",
+        periodScores:(row._currentScores||[]).map(x=>({date:x.created_at?new Date(x.created_at).toLocaleString():"",score:Number(x.score)})),
+        archivedPeriods:row._archivedPeriods||[],
+        authUsername:row.auth_username||"",
+        authPassword:row.auth_password||"",
         supabaseUserId:row.user_id||null
       };
     }
 
-    function mapSupabaseClass(row,students=[]){
+    function mapSupabaseClass(row,students=[],classMessages=[]){
       return {
         id:row.id,
         name:row.name||"Classe",
@@ -2036,10 +3127,11 @@
           g1:Number(row.group1_diamonds??0),
           g2:Number(row.group2_diamonds??0)
         },
-        currentPeriodName:"Période en cours",
+        currentPeriodId:row.currentPeriodId||null,
+        currentPeriodName:row.currentPeriodName||"Période en cours",
         periodArchive:[],
         history:[],
-        classMessages:[],
+        classMessages:classMessages.map(mapSupabaseClassMessage),
         boardPresets:[],
         fromSupabase:true
       };
@@ -2062,7 +3154,82 @@
           .order("first_name",{ascending:true});
 
         if(studentError) throw new Error(`Impossible de charger les élèves de ${c.name} : ${studentError.message}`);
-        mapped.push(mapSupabaseClass(c,students||[]));
+
+        const {data:periods,error:periodError}=await supabaseClient
+          .from("periods")
+          .select("id,name,is_current,created_at,closed_at")
+          .eq("class_id",c.id)
+          .order("created_at",{ascending:true});
+
+        if(periodError) throw new Error(`Impossible de charger la période de ${c.name} : ${periodError.message}`);
+
+        const currentPeriod=(periods||[]).find(p=>p.is_current) || (periods||[]).slice(-1)[0] || null;
+
+        const studentIds=(students||[]).map(s=>s.id);
+        let teacherRemarks=[];
+        if(studentIds.length){
+          const {data:remarkRows,error:remarkError}=await supabaseClient
+            .from("teacher_remarks")
+            .select("id,student_id,remark,created_at")
+            .in("student_id",studentIds)
+            .order("created_at",{ascending:true});
+          if(remarkError) throw new Error(`Impossible de charger les remarques de ${c.name} : ${remarkError.message}`);
+          teacherRemarks=remarkRows||[];
+        }
+
+        const studentsWithRemarks=(students||[]).map(s=>({
+          ...s,
+          _teacherRemarks:teacherRemarks.filter(r=>r.student_id===s.id)
+        }));
+
+        let allLessonScores=[];
+        if(studentIds.length){
+          const {data:scoreRows,error:scoreLoadError}=await supabaseClient
+            .from("lesson_scores")
+            .select("student_id,period_id,score,created_at")
+            .in("student_id",studentIds)
+            .order("created_at",{ascending:true});
+          if(scoreLoadError) throw new Error(`Impossible de charger les scores de ${c.name} : ${scoreLoadError.message}`);
+          allLessonScores=scoreRows||[];
+        }
+
+        studentsWithRemarks.forEach(s=>{
+          s._currentScores=currentPeriod
+            ? allLessonScores.filter(x=>x.student_id===s.id&&x.period_id===currentPeriod.id)
+            : [];
+          s._archivedPeriods=(periods||[]).filter(p=>!p.is_current).map(p=>{
+            const vals=allLessonScores.filter(x=>x.student_id===s.id&&x.period_id===p.id).map(x=>Number(x.score)).filter(Number.isFinite);
+            return {
+              id:p.id,name:p.name,closedAt:p.closed_at?new Date(p.closed_at).toLocaleString():"",
+              average:vals.length?round1(vals.reduce((a,b)=>a+b,0)/vals.length):null,
+              count:vals.length,best:vals.length?Math.max(...vals):null,worst:vals.length?Math.min(...vals):null
+            };
+          });
+        });
+
+        const {data:classMessages,error:messageError}=await supabaseClient
+          .from("class_messages")
+          .select("*")
+          .eq("class_id",c.id)
+          .order("created_at",{ascending:false});
+
+        if(messageError) throw new Error(`Impossible de charger les messages de ${c.name} : ${messageError.message}`);
+
+        const mappedClass=mapSupabaseClass({
+          ...c,
+          currentPeriodId:currentPeriod?.id||null,
+          currentPeriodName:currentPeriod?.name||"Période en cours"
+        },studentsWithRemarks,classMessages||[]);
+
+        mappedClass.periodArchive=(periods||[]).filter(p=>!p.is_current).map(p=>{
+          const rankingRows=mappedClass.students.map(s=>{
+            const ap=(s.archivedPeriods||[]).find(a=>a.id===p.id)||{};
+            return {id:s.id,name:s.name,avatar:s.avatar,average:ap.average??null,count:ap.count||0,best:ap.best??null,worst:ap.worst??null,diamonds:s.diamonds,stars:s.stars,homeworks:s.homeworks};
+          });
+          const avgs=rankingRows.filter(r=>r.average!==null).map(r=>r.average);
+          return {id:p.id,name:p.name,closedAt:p.closed_at?new Date(p.closed_at).toLocaleString():"",classAverage:avgs.length?round1(avgs.reduce((a,b)=>a+b,0)/avgs.length):null,rankingRows,collectiveSnapshot:collectiveSnapshot(mappedClass)};
+        });
+        mapped.push(mappedClass);
       }
 
       state.classes=mapped;
@@ -2088,8 +3255,12 @@
       btn.disabled=true;
       btn.textContent="Ajout…";
 
+      let insertedStudent=null;
+
       try{
         const avatar=AVATARS[cls.students.length%AVATARS.length];
+
+        // 1) Crée d'abord la ligne élève dans Supabase
         const {data,error}=await supabaseClient
           .from("students")
           .insert({
@@ -2108,13 +3279,97 @@
           .single();
 
         if(error) throw error;
+        insertedStudent=data;
 
-        cls.students.push(mapSupabaseStudent(data,cls.students.length));
+        // 2) Génère identifiant + mot de passe
+        const tempStudent=mapSupabaseStudent(data,cls.students.length);
+        const username=buildStudentUsername(tempStudent,cls);
+        const password=randomAmazonianPassword();
+
+        // 3) Récupère la session prof et appelle l'Edge Function sécurisée
+        const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
+        if(sessionError || !session){
+          throw new Error("Session professeur introuvable.");
+        }
+
+        const response=await fetch(
+          "https://afterlxyowjgeoeiijec.supabase.co/functions/v1/create-student",
+          {
+            method:"POST",
+            headers:{
+              "Content-Type":"application/json",
+              "Authorization":`Bearer ${session.access_token}`
+            },
+            body:JSON.stringify({
+              student_id:data.id,
+              username,
+              password
+            })
+          }
+        );
+
+        let result={};
+        try{ result=await response.json(); }catch{}
+
+        if(!response.ok){
+          throw new Error(result.error || `Erreur création compte (${response.status})`);
+        }
+
+        // 4) Enregistre EXACTEMENT les codes créés.
+        // Le bouton "Codes élèves" les relira ensuite sans jamais les régénérer.
+        const {error:codesError}=await supabaseClient
+          .from("students")
+          .update({
+            auth_username:username,
+            auth_password:password
+          })
+          .eq("id",data.id);
+
+        if(codesError){
+          throw new Error("Compte créé, mais impossible d'enregistrer ses codes : "+codesError.message);
+        }
+
+        // 5) Recharge la ligne pour récupérer user_id + codes fixes
+        const {data:linkedStudent,error:reloadError}=await supabaseClient
+          .from("students")
+          .select("*")
+          .eq("id",data.id)
+          .single();
+
+        if(reloadError) throw reloadError;
+
+        const mapped=mapSupabaseStudent(linkedStudent,cls.students.length);
+        mapped.authUsername=username;
+        mapped.authPassword=password;
+
+        cls.students.push(mapped);
         cls.students.sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));
+
         input.value="";
         render();
+
+        alert(
+          `✅ Compte créé pour ${name}\n\n`+
+          `Identifiant : ${username}\n`+
+          `Mot de passe : ${password}`
+        );
+
       }catch(err){
-        alert("Ajout impossible : "+(err?.message||"Erreur inconnue"));
+        console.error(err);
+
+        // Si la ligne a été créée mais le compte Auth a échoué,
+        // on garde l'élève dans Supabase pour éviter de perdre la saisie.
+        if(insertedStudent){
+          const mapped=mapSupabaseStudent(insertedStudent,cls.students.length);
+          cls.students.push(mapped);
+          cls.students.sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));
+          render();
+        }
+
+        alert(
+          "L’élève a été ajouté, mais son compte n’a pas pu être créé automatiquement.\n\n"+
+          (err?.message||"Erreur inconnue")
+        );
       }finally{
         btn.disabled=false;
         btn.textContent="Ajouter";
@@ -2183,7 +3438,8 @@
       });
     }
 
-    function render(){ renderClassSelect(); renderViewButtons(); renderStudentModeControls(); renderStudents(); renderHistory(); }
+    function render(){
+      setTimeout(()=>{ if(document.getElementById("mainApp")?.style.display!=="none") loadTeacherRewardRequests(false); },0); renderClassSelect(); renderViewButtons(); renderStudentModeControls(); renderStudents(); renderHistory(); }
 
     document.getElementById("addStudentBtn").onclick=addStudentToSupabase;
     document.getElementById("addClassBtn").onclick=()=>{ const v=document.getElementById("newClassInput").value.trim(); if(!v) return; const c=createClass(v,[]); state.classes.push(c); state.currentClassId=c.id; document.getElementById("newClassInput").value=""; save(); render(); };
@@ -2225,6 +3481,8 @@
       avatarTargetStudentId=null;
     };
     document.getElementById("openHistoryBtn").onclick=()=>{ renderHistory(); document.getElementById("historyModal").classList.add("show"); };
+    document.getElementById("rewardRequestsBtn").onclick=()=>loadTeacherRewardRequests(true);
+    document.getElementById("closeRewardRequestsBtn").onclick=()=>document.getElementById("rewardRequestsModal").classList.remove("show");
     document.getElementById("closeHistoryBtn").onclick=()=>document.getElementById("historyModal").classList.remove("show");
     document.getElementById("profModeBtn").onclick=()=> setAppMode("prof");
     document.getElementById("studentModeBtn").onclick=()=> setAppMode("student");
