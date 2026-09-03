@@ -116,23 +116,15 @@
     <div class="panel" style="width:min(460px,100%);padding:26px">
       <div style="font-size:38px;font-weight:900;text-align:center">ZenQuest</div>
       <div class="muted" style="text-align:center;margin:4px 0 20px">Connexion sécurisée</div>
-      <label style="display:block;font-weight:700;margin-bottom:6px">Adresse e-mail</label>
-      <input id="loginEmail" type="email" autocomplete="username" placeholder="votre@email.fr" style="width:100%;margin-bottom:12px">
+      <label style="display:block;font-weight:700;margin-bottom:6px">Identifiant</label>
+      <input id="loginUsername" type="text" autocomplete="username" placeholder="Ex. prof" style="width:100%;margin-bottom:12px">
       <label style="display:block;font-weight:700;margin-bottom:6px">Mot de passe</label>
       <input id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••" style="width:100%;margin-bottom:14px">
       <button class="btn primary" id="loginBtn" style="width:100%;font-size:16px">🔐 Se connecter</button>
-      <button class="btn outline" id="forgotPasswordBtn" style="width:100%;margin-top:9px">Mot de passe oublié ?</button>
+      <div class="muted" style="text-align:center;margin-top:10px">Pas d’e-mail requis : identifiant + mot de passe</div>
       <div id="loginMessage" class="muted" style="margin-top:12px;text-align:center"></div>
-
-      <div id="resetPasswordBox" style="display:none;margin-top:18px;padding-top:16px;border-top:1px solid #dbeafe">
-        <div style="font-size:18px;font-weight:800;margin-bottom:8px">🔑 Nouveau mot de passe</div>
-        <div class="muted" style="margin-bottom:10px">Après avoir ouvert le lien reçu par e-mail, choisis ici ton nouveau mot de passe.</div>
-        <input id="newPassword" type="password" autocomplete="new-password" placeholder="Nouveau mot de passe" style="width:100%;margin-bottom:10px">
-        <input id="newPasswordConfirm" type="password" autocomplete="new-password" placeholder="Confirmer le mot de passe" style="width:100%;margin-bottom:10px">
-        <button class="btn primary" id="saveNewPasswordBtn" style="width:100%">Enregistrer le nouveau mot de passe</button>
-        <div id="resetMessage" class="muted" style="margin-top:10px;text-align:center"></div>
-      </div>
     </div>
+  </div>
   </div>
 
 <div class="wrap" id="mainApp" style="display:none">
@@ -145,6 +137,10 @@
       <div class="actions">
         <button class="btn primary" id="endLessonBtn">Fin d'heure</button>
         <button class="btn outline" id="openHistoryBtn">🕘 Historique</button>
+        <button class="btn outline" id="studentCodesBtn">🔑 Codes élèves</button>
+        <button class="btn outline" id="testMayaSupabaseBtn">🧪 Tester compte Maya</button>
+        <button class="btn outline" id="classMessagesBtn">📢 Message classe</button>
+        <button class="btn outline" id="boardBtn">🖥️ Écran de classe</button>
         <button class="btn outline" id="logoutBtn">🔒 Déconnexion</button>
       </div>
     </div>
@@ -321,24 +317,416 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
+  <div class="modal" id="studentCodesModal">
+    <div class="modal-card" style="width:min(760px,94vw)">
+      <div class="modal-header">
+        <div>
+          <h2 style="margin:0">🔑 Codes élèves</h2>
+          <div class="muted" id="studentCodesSubtitle" style="margin-top:4px"></div>
+        </div>
+        <button class="btn outline" id="closeStudentCodesBtn">Fermer</button>
+      </div>
+
+      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:16px;padding:12px;margin:12px 0;line-height:1.45">
+        Les codes sont générés automatiquement pour les élèves de la classe active.
+        Ils restent enregistrés dans ZenQuest.
+      </div>
+
+      <div class="row wrap" style="margin-bottom:12px">
+        <button class="btn primary" id="copyStudentCodesBtn">📋 Copier tous les codes</button>
+        <button class="btn green" id="downloadStudentCodesBtn">⬇️ Télécharger le fichier .txt</button>
+      </div>
+
+      <div style="margin:4px 0 12px">
+        <div style="font-weight:800;margin-bottom:8px">👁️ Tester la vue élève</div>
+        <div class="muted" style="margin-bottom:8px">Clique sur un élève pour voir exactement son tableau de bord en lecture seule.</div>
+        <div id="studentPreviewList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px"></div>
+      </div>
+
+      <textarea id="studentCodesText" readonly
+        style="width:100%;min-height:420px;resize:vertical;border:1px solid #e2e8f0;border-radius:18px;padding:16px;background:#f8fafc;font:500 15px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace"></textarea>
+    </div>
+  </div>
+
+  
+  <div class="modal" id="studentRulesModal">
+    <div class="modal-card" style="width:min(900px,95vw);max-height:90vh;overflow:auto">
+      <div class="modal-header">
+        <div>
+          <h2 style="margin:0">📜 Règles de ZenQuest</h2>
+          <div class="muted" style="margin-top:4px">Tout ce qu’il faut savoir pour progresser.</div>
+        </div>
+        <button class="btn outline" id="closeStudentRulesBtn">Fermer</button>
+      </div>
+
+      <div class="row wrap" style="margin:14px 0">
+        <button class="btn primary studentRuleTab active" data-rule-tab="game">🎮 Comment fonctionne ZenQuest ?</button>
+        <button class="btn outline studentRuleTab" data-rule-tab="class">📜 Les règles de la classe</button>
+      </div>
+
+      <div id="studentRuleGame">
+        <div class="box">
+          <div style="font-size:21px;font-weight:900">🎮 Comment fonctionne ZenQuest ?</div>
+          <p>ZenQuest récompense ton <strong>implication en classe</strong> : ton travail, ta participation, ton écoute, ta concentration et ton attitude pendant le cours.</p>
+        </div>
+
+        <div class="box">
+          <div style="font-size:19px;font-weight:900">🎯 Ton score</div>
+          <p>Au début de chaque période, tu commences à <strong>15/20</strong>.</p>
+          <p>Pendant un cours, tu peux gagner ou perdre des points. Si tu es présent et que tu termines le cours <strong>sans avoir perdu de point</strong>, tu gagnes automatiquement <strong>+1</strong>, sans pouvoir dépasser 20/20.</p>
+          <p>Si tu es absent, ton score ne change pas.</p>
+        </div>
+
+        <div class="box">
+          <div style="font-size:19px;font-weight:900">⭐ Progression</div>
+          <p>Chaque cours réussi sans perte de point fait également progresser ta jauge. Après <strong>3 cours réussis</strong>, tu progresses dans ZenQuest.</p>
+          <div style="font-size:24px;font-weight:900;text-align:center;padding:8px">2 ⭐ → 🔥 &nbsp;&nbsp; 4 ⭐ → ✨ &nbsp;&nbsp; 6 ⭐ → 👑</div>
+          <p>En continuant à progresser, tu peux ensuite accumuler des <strong>💎 diamants</strong>.</p>
+          <p>Attention : si ton score descend trop bas, tu peux perdre une étoile.</p>
+        </div>
+
+        <div class="student-columns">
+          <div class="box">
+            <div style="font-size:19px;font-weight:900">📝 Devoirs</div>
+            <p>Les devoirs réalisés sont comptabilisés. Ils récompensent ta régularité et peuvent notamment servir à départager des élèves dans le classement.</p>
+          </div>
+          <div class="box">
+            <div style="font-size:19px;font-weight:900">🏆 Classement</div>
+            <p>Le classement repose principalement sur ta <strong>moyenne d’implication de la période</strong>, puis sur ta progression dans ZenQuest.</p>
+            <p>Tu peux voir <strong>ta position et ta propre note</strong>, mais les notes des autres élèves restent privées.</p>
+          </div>
+        </div>
+
+        <div class="box">
+          <div style="font-size:19px;font-weight:900">🤝 Progression collective</div>
+          <p>Ta classe et ton groupe peuvent également progresser ensemble. Si tous les élèves présents terminent le cours sans perdre de point, une <strong>⭐ collective</strong> peut être gagnée.</p>
+          <p>Après <strong>8 ⭐ collectives</strong>, elles sont transformées en <strong>💎 diamant collectif</strong>.</p>
+        </div>
+
+        <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:18px;padding:16px;line-height:1.55">
+          <div style="font-size:19px;font-weight:900">🌱 À retenir</div>
+          <p>Ta <strong>note d’implication ZenQuest pourra apparaître sur ton bulletin</strong> afin de rendre compte de ton implication en classe.</p>
+          <p>Mais ZenQuest ne mesure pas ton niveau scolaire : cette note n’est <strong>ni ta moyenne générale, ni ta moyenne en mathématiques</strong>.</p>
+          <p>Tu n’as donc pas besoin d’être le meilleur en maths pour réussir dans ZenQuest.</p>
+          <strong>Si tu travailles, que tu t’impliques et que tu adoptes une bonne attitude en classe, tu ne peux que progresser.</strong>
+        </div>
+      </div>
+
+      <div id="studentRuleClass" style="display:none">
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:18px;padding:18px;text-align:center;margin-bottom:12px">
+          <div class="muted">ZenQuest repose avant tout sur trois principes :</div>
+          <div style="font-size:27px;font-weight:950;margin-top:8px">🧘 CALME • 🤫 SILENCE • ⏳ PATIENCE</div>
+        </div>
+
+        <div class="box">
+          <div style="font-size:19px;font-weight:900;margin-bottom:10px">Pour que chacun puisse travailler dans de bonnes conditions :</div>
+          <div style="display:grid;gap:10px;line-height:1.5">
+            <div>✋ <strong>Je lève la main</strong> et j’attends l’autorisation avant de parler.</div>
+            <div>👂 <strong>J’écoute le professeur et mes camarades</strong> lorsqu’ils prennent la parole.</div>
+            <div>🤫 <strong>Je travaille dans le calme et le silence</strong> lorsque cela est demandé.</div>
+            <div>🪑 <strong>Je ne me lève pas sans autorisation.</strong></div>
+            <div>🙋 Lorsque je souhaite faire quelque chose qui n’a pas été demandé, <strong>je demande d’abord l’autorisation.</strong></div>
+            <div>📚 <strong>Je me mets au travail</strong> et je participe sérieusement aux activités proposées.</div>
+            <div>🤝 <strong>Je respecte le travail des autres</strong> et je ne perturbe pas la classe.</div>
+            <div>⏳ Je sais attendre : <strong>je ne suis pas toujours obligé d’obtenir immédiatement ce que je demande.</strong></div>
+          </div>
+        </div>
+
+        <div style="background:#fff7ed;border:1px solid #fdba74;border-radius:18px;padding:16px;line-height:1.55;margin-bottom:12px">
+          <div style="font-size:19px;font-weight:900">⚖️ Les décisions concernant les points</div>
+          <p>C’est <strong>le professeur qui décide de l’attribution ou du retrait des points</strong>, en fonction de ce qu’il observe pendant le cours.</p>
+          <p>Un point gagné ou perdu <strong>n’a pas vocation à provoquer une discussion pendant le cours</strong>. Si tu ne comprends pas une décision, tu peux demander une explication <strong>calmement et au moment approprié</strong>.</p>
+          <p>ZenQuest sert à améliorer les conditions de travail de la classe : il ne doit pas devenir lui-même une source d’interruptions ou de négociations.</p>
+        </div>
+
+        <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:18px;padding:18px;text-align:center">
+          <div style="font-size:19px;font-weight:900">🌿 Finalement, la règle est simple :</div>
+          <div style="font-size:22px;font-weight:950;margin-top:8px">Respecte le cadre, travaille et implique-toi : ZenQuest jouera en ta faveur.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal" id="classMessagesModal">
+    <div class="modal-card" style="width:min(820px,95vw);max-height:90vh;overflow:auto">
+      <div class="modal-header">
+        <div>
+          <h2 style="margin:0">📢 Message de la classe</h2>
+          <div class="muted" id="classMessagesSubtitle" style="margin-top:4px"></div>
+        </div>
+        <button class="btn outline" id="closeClassMessagesBtn">Fermer</button>
+      </div>
+
+      <div class="box" style="margin-top:12px">
+        <div style="font-size:18px;font-weight:900;margin-bottom:10px">Ajouter une information</div>
+        <div class="row wrap" style="align-items:stretch">
+          <select id="classMessageType" style="min-width:180px">
+            <option value="message">📢 Message du professeur</option>
+            <option value="work">📚 Travail à faire</option>
+            <option value="bring">🎒 À apporter</option>
+            <option value="reminder">⏰ Rappel</option>
+          </select>
+          <input id="classMessageDueDate" type="date" style="min-width:170px" />
+        </div>
+        <textarea id="classMessageText" placeholder="Ex. Apporter la calculatrice au prochain cours."
+          style="width:100%;min-height:110px;margin-top:10px;border:1px solid #e2e8f0;border-radius:16px;padding:12px;font:inherit;resize:vertical"></textarea>
+        <div class="muted" style="font-size:12px;margin:6px 0 10px">La date est facultative. Si tu en ajoutes une, elle apparaîtra comme échéance.</div>
+        <button class="btn green" id="addClassMessageBtn">➕ Publier pour la classe</button>
+      </div>
+
+      <div style="font-size:18px;font-weight:900;margin:16px 0 8px">Messages publiés</div>
+      <div id="classMessagesList"></div>
+    </div>
+  </div>
+
+
+  <div class="modal" id="boardModal">
+    <div class="modal-card" style="width:min(1100px,97vw);max-height:94vh;overflow:auto">
+      <div class="modal-header">
+        <div>
+          <h2 style="margin:0">🖥️ Écran de classe</h2>
+          <div class="muted">À afficher au tableau pendant l’accueil ou le travail autonome.</div>
+        </div>
+        <button class="btn outline" id="closeBoardBtn">Retour ZenQuest</button>
+      </div>
+
+      <div class="row wrap" style="margin:14px 0">
+        <button class="btn primary boardPresetBtn" data-preset="welcome">👋 Accueil</button>
+        <button class="btn outline boardPresetBtn" data-preset="work">✏️ Au boulot !</button>
+        <select id="customBoardSelect" style="min-width:210px"><option value="">⭐ Mes messages enregistrés…</option></select>
+        <button class="btn outline" id="manageBoardBtn">⚙️ Mes messages</button>
+      </div>
+
+      <div id="boardDisplay" style="border:1px solid #e2e8f0;border-radius:24px;padding:38px;min-height:520px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:#f8fafc">
+        <div id="boardEmoji" style="font-size:84px">👋</div>
+        <div id="boardTitle" style="font-size:64px;font-weight:950;margin-top:10px">Bonjour !</div>
+        <div id="boardText" style="font-size:36px;line-height:1.45;margin-top:18px;white-space:pre-wrap;font-weight:800">Sortez vos affaires.
+Écrivez la date.</div>
+        <div id="boardTimer" style="font-size:104px;font-weight:950;letter-spacing:3px;margin-top:28px">02:00</div>
+        <div class="row wrap" style="justify-content:center;margin-top:14px">
+          <button class="btn green" id="boardTimerStartBtn">▶️ Démarrer</button>
+          <button class="btn outline" id="boardTimerPauseBtn">⏸️ Pause</button>
+          <button class="btn outline" id="boardTimerResetBtn">↩️ Recommencer</button>
+          <label class="toolbar-chip">Durée <input id="boardMinutes" type="number" min="1" max="60" value="2" style="width:62px;margin-left:6px"> min</label>
+        </div>
+      </div>
+
+      <div id="boardManage" class="box" style="display:none;margin-top:14px">
+        <div style="font-size:19px;font-weight:900">⭐ Ajouter un message personnalisé</div>
+        <div class="row wrap" style="margin-top:10px">
+          <input id="boardCustomEmoji" value="📌" maxlength="4" style="width:80px" aria-label="Emoji">
+          <input id="boardCustomTitle" placeholder="Titre — ex. Correction" style="flex:1;min-width:180px">
+          <input id="boardCustomMinutes" type="number" min="1" max="60" value="5" style="width:90px" aria-label="Minutes">
+        </div>
+        <textarea id="boardCustomText" placeholder="Écris le message à afficher au tableau…"
+          style="width:100%;min-height:100px;margin-top:10px;border:1px solid #e2e8f0;border-radius:16px;padding:12px;font:inherit"></textarea>
+        <button class="btn green" id="saveBoardPresetBtn" style="margin-top:10px">💾 Enregistrer ce message</button>
+        <div id="boardPresetList" style="margin-top:12px"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="mayaSupabaseTestModal">
+    <div class="modal-card" style="width:min(680px,94vw)">
+      <div class="modal-header">
+        <div>
+          <h2 style="margin:0">🧪 Test compte élève Supabase</h2>
+          <div class="muted" style="margin-top:4px">Création du compte réel de Maya via la fonction sécurisée.</div>
+        </div>
+        <button class="btn outline" id="closeMayaSupabaseTestBtn">Fermer</button>
+      </div>
+
+      <div class="box" style="margin-top:12px">
+        <div><strong>Élève :</strong> Maya</div>
+        <div><strong>Identifiant :</strong> maya6b</div>
+        <div><strong>Mot de passe :</strong> awara973</div>
+      </div>
+
+      <div id="mayaSupabaseTestStatus" class="box" style="margin-top:12px">
+        Prêt à lancer le test.
+      </div>
+
+      <button class="btn green" id="runMayaSupabaseTestBtn" style="width:100%;margin-top:12px">
+        🚀 Créer le compte Maya dans Supabase
+      </button>
+    </div>
+  </div>
+
+<script>
     const SUPABASE_URL = "https://afterlxyowjgeoeiijec.supabase.co";
     const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_YIt7fyla9Uf0dOhPJYAOOA_PBfyCWqw";
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-    const STORAGE_KEY = "zenquest_standalone_v15_auth_recovery";
+    const STORAGE_KEY = "zenquest_standalone_v22_supabase_student_test";
     const MAX_POINTS = 20;
     const MAX_INDIVIDUAL_STARS = 6;
     const MAX_COLLECTIVE_STARS = 8;
     const AVATARS = ['👦','👦🏻','👦🏼','👦🏽','👦🏾','👦🏿','👧','👧🏻','👧🏼','👧🏽','👧🏾','👧🏿','🧑','🧑🏻','🧑🏼','🧑🏽','🧑🏾','🧑🏿','👨','👨🏻','👨🏼','👨🏽','👨🏾','👨🏿','👩','👩🏻','👩🏼','👩🏽','👩🏾','👩🏿','🧒','🧒🏻','🧒🏼','🧒🏽','🧒🏾','🧒🏿','👱','👱🏻','👱🏼','👱🏽','👱🏾','👱🏿','👱\u200d♀️','👱🏻\u200d♀️','👱🏼\u200d♀️','👱🏽\u200d♀️','👱🏾\u200d♀️','👱🏿\u200d♀️','👱\u200d♂️','👱🏻\u200d♂️','👱🏼\u200d♂️','👱🏽\u200d♂️','👱🏾\u200d♂️','👱🏿\u200d♂️','🧑\u200d🦱','🧑🏻\u200d🦱','🧑🏼\u200d🦱','🧑🏽\u200d🦱','🧑🏾\u200d🦱','🧑🏿\u200d🦱','👩\u200d🦱','👩🏻\u200d🦱','👩🏼\u200d🦱','👩🏽\u200d🦱','👩🏾\u200d🦱','👩🏿\u200d🦱','👨\u200d🦱','👨🏻\u200d🦱','👨🏼\u200d🦱','👨🏽\u200d🦱','👨🏾\u200d🦱','👨🏿\u200d🦱','🧑\u200d🦰','🧑🏻\u200d🦰','🧑🏼\u200d🦰','🧑🏽\u200d🦰','🧑🏾\u200d🦰','🧑🏿\u200d🦰','👩\u200d🦰','👩🏻\u200d🦰','👩🏼\u200d🦰','👩🏽\u200d🦰','👩🏾\u200d🦰','👩🏿\u200d🦰','👨\u200d🦰','👨🏻\u200d🦰','👨🏼\u200d🦰','👨🏽\u200d🦰','👨🏾\u200d🦰','👨🏿\u200d🦰','🧑\u200d🦳','🧑🏻\u200d🦳','🧑🏼\u200d🦳','🧑🏽\u200d🦳','🧑🏾\u200d🦳','🧑🏿\u200d🦳'];
 
     function uid(){ return `${Date.now()}_${Math.random().toString(36).slice(2,9)}`; }
-    function createStudent(name,index=0){ return {id:uid(),name,avatar:AVATARS[index%AVATARS.length],points:15,progress:0,level:1,stars:0,diamonds:0,homeworks:0,isAbsent:false,isAutoAbsent:false,lostThisLesson:false,lostStarThisLesson:false,pointsLostThisLesson:0,homeworkAddedThisLesson:false,totalLessons:0,perfectLessons:0,totalPointsLost:0,currentStreak:0,history:[],notes:"",teacherRemarks:[],lastAction:null,group:null,periodScores:[],archivedPeriods:[]}; }
-    function createClass(name,names=[]){ return {id:uid(),name,students:names.map((n,i)=>createStudent(n,i)),collectiveStars:0,collectiveDiamonds:0,groupStars:{g1:0,g2:0},groupDiamonds:{g1:0,g2:0},currentPeriodName:"Période 1",periodArchive:[],history:[]}; }
+    function createStudent(name,index=0){ return {id:uid(),name,avatar:AVATARS[index%AVATARS.length],points:15,progress:0,level:1,stars:0,diamonds:0,homeworks:0,isAbsent:false,isAutoAbsent:false,lostThisLesson:false,lostStarThisLesson:false,pointsLostThisLesson:0,homeworkAddedThisLesson:false,totalLessons:0,perfectLessons:0,totalPointsLost:0,currentStreak:0,history:[],notes:"",teacherRemarks:[],lastAction:null,group:null,periodScores:[],archivedPeriods:[],authUsername:"",authPassword:""}; }
+    function createClass(name,names=[]){ return {id:uid(),name,students:names.map((n,i)=>createStudent(n,i)),collectiveStars:0,collectiveDiamonds:0,groupStars:{g1:0,g2:0},groupDiamonds:{g1:0,g2:0},currentPeriodName:"Période 1",periodArchive:[],history:[],classMessages:[],boardPresets:[]}; }
     function getDefaultData(){ return {currentClassId:null,viewMode:"all",selectionMode:false,selectedStudentIds:[],appMode:"prof",periodView:"current",classes:[createClass("Classe exemple",["Paul","Clara","Emma","Lucas","Alya","Yanis","Lina","Noah"])]}; }
-    function loadData(){ try{ const raw=localStorage.getItem(STORAGE_KEY); if(!raw) return getDefaultData(); const parsed=JSON.parse(raw); if(!parsed.classes||!parsed.classes.length) return getDefaultData(); if(!("viewMode" in parsed)) parsed.viewMode="all"; if(!("selectionMode" in parsed)) parsed.selectionMode=false; if(!("selectedStudentIds" in parsed)) parsed.selectedStudentIds=[]; if(!("appMode" in parsed)) parsed.appMode="prof"; if(!("periodView" in parsed)) parsed.periodView="current"; parsed.classes.forEach(c=>{ if(!c.groupStars) c.groupStars={g1:0,g2:0}; if(!c.groupDiamonds) c.groupDiamonds={g1:0,g2:0}; if(!("collectiveDiamonds" in c)) c.collectiveDiamonds=0; if(!c.currentPeriodName) c.currentPeriodName="Période 1"; if(!Array.isArray(c.periodArchive)) c.periodArchive=[]; c.students.forEach(s=>{ if(!("group" in s)) s.group=null; if(!("isAutoAbsent" in s)) s.isAutoAbsent=false; if(!Array.isArray(s.periodScores)) s.periodScores=[]; if(!Array.isArray(s.archivedPeriods)) s.archivedPeriods=[]; if(typeof s.points!=="number") s.points=15; }); }); return parsed; }catch{ return getDefaultData(); } }
+    function loadData(){ try{ const raw=localStorage.getItem(STORAGE_KEY); if(!raw) return getDefaultData(); const parsed=JSON.parse(raw); if(!parsed.classes||!parsed.classes.length) return getDefaultData(); if(!("viewMode" in parsed)) parsed.viewMode="all"; if(!("selectionMode" in parsed)) parsed.selectionMode=false; if(!("selectedStudentIds" in parsed)) parsed.selectedStudentIds=[]; if(!("appMode" in parsed)) parsed.appMode="prof"; if(!("periodView" in parsed)) parsed.periodView="current"; parsed.classes.forEach(c=>{ if(!c.groupStars) c.groupStars={g1:0,g2:0}; if(!c.groupDiamonds) c.groupDiamonds={g1:0,g2:0}; if(!("collectiveDiamonds" in c)) c.collectiveDiamonds=0; if(!c.currentPeriodName) c.currentPeriodName="Période 1"; if(!Array.isArray(c.periodArchive)) c.periodArchive=[]; if(!Array.isArray(c.classMessages)) c.classMessages=[]; if(!Array.isArray(c.boardPresets)) c.boardPresets=[]; c.students.forEach(s=>{ if(!("group" in s)) s.group=null; if(!("isAutoAbsent" in s)) s.isAutoAbsent=false; if(!Array.isArray(s.periodScores)) s.periodScores=[]; if(!Array.isArray(s.archivedPeriods)) s.archivedPeriods=[]; if(typeof s.points!=="number") s.points=15; }); }); return parsed; }catch{ return getDefaultData(); } }
     let state=loadData(); if(!state.currentClassId) state.currentClassId=state.classes[0]?.id||null;
     function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
     function currentClass(){ return state.classes.find(c=>c.id===state.currentClassId)||state.classes[0]; }
+
+    const AMAZONIAN_WORDS=[
+      "awara","wassai","maripa","saimiri","jaguar","toucan","tapir","caiman","anaconda","morpho","kapok","cacao","heliconia","arara","iguane","colibri","piranha","matoutou","coumarou","pacou","acoupa","jacaranda","balata","carapa","acajou","wacapou","angelique","grignon","gonfolo","amarante","courbaril","fromager","manil","moutouchi","simarouba","gaiac","paletuvier","mangrove","savane","crique","maroni","oyapock","approuague","mana","sinnamary","kourou","iracoubo","comte","tampok","camopi","teko","wayana","wayampi","kalina","palikur","lokono","saul","roura","regina","atipa","jamaisgoute","machoiran","tarpon","koumarou","aimara","croupia","patagai","pacu","arai","agami","hoccos","ibis","savacou","urubu","caracara","harpie","ara","perroquet","tamandua","paresseux","capybara","paca","agouti","coati","tayra","ocelot","margay","puma","manati","dauphin","loutre","caimanrouge","caimangris","tortue","matamata","anolis","boa","couleuvre","rainette","dendrobate","crapaud","papillon","libellule","luciole","abeille","fourmi","termite","scarabee","orchidee","bromelia","passiflore","goyavier","maracuja","cupuacu","bacaba","buriti","acai","inga","cachiri","manioc","cassave","couac","dachine","igname","banane","papaye","corossol","goyave","ananas","roucou","vanille","cannelle","gingembre","curcuma","citronnelle","piment","canopee","liane","fougere","bambou","riviere","cascade","saut","inselberg","carbet","hamac","pirogue","pagaye","touloulou","atoumo","comou","parepou","mombin","pommerose","quenette","icaque","caimite","sapote","barbadine","prune","coco","miel","orpaillage","laterite","granit","quartz","graine","feuille","racine","pluie","orage","soleil","lune","etoile","foret","fleuve","marais","estuaire","source"
+    ];
+
+    function normalizeCodePart(value){
+      return (value||"")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g,"")
+        .replace(/[^a-z0-9]/g,"");
+    }
+
+    function classCode(className){
+      let c=normalizeCodePart((className||"").replace(/classe/gi,""));
+      c=c.replace(/^([3456])e([a-z])$/, "$1$2");
+      c=c.replace(/^([3456])eme([a-z])$/, "$1$2");
+      return c || "classe";
+    }
+
+    function buildStudentUsername(student, cls){
+      const base=(normalizeCodePart(student.name)||"eleve")+classCode(cls.name);
+      const used=new Set(
+        cls.students
+          .filter(s=>s.id!==student.id && s.authUsername)
+          .map(s=>s.authUsername.toLowerCase())
+      );
+      if(!used.has(base)) return base;
+      let i=2;
+      while(used.has(`${base}${i}`)) i++;
+      return `${base}${i}`;
+    }
+
+    function randomAmazonianPassword(){
+      const used=new Set(
+        state.classes.flatMap(c=>c.students.map(s=>s.authPassword).filter(Boolean))
+      );
+
+      const available=AMAZONIAN_WORDS
+        .map(word=>`${word}973`)
+        .filter(password=>!used.has(password));
+
+      if(available.length){
+        return available[Math.floor(Math.random()*available.length)];
+      }
+
+      // Sécurité si un jour il y a plus d'élèves que de mots disponibles :
+      // on conserve l'esprit "mot amazonien + 973" en combinant deux mots.
+      for(let i=0;i<500;i++){
+        const a=AMAZONIAN_WORDS[Math.floor(Math.random()*AMAZONIAN_WORDS.length)];
+        const b=AMAZONIAN_WORDS[Math.floor(Math.random()*AMAZONIAN_WORDS.length)];
+        const candidate=`${a}${b}973`;
+        if(a!==b && !used.has(candidate)) return candidate;
+      }
+
+      return `amazonie${Date.now().toString().slice(-6)}973`;
+    }
+
+    function ensureStudentCodes(cls=currentClass()){
+      let changed=false;
+      cls.students.forEach(student=>{
+        if(!student.authUsername){
+          student.authUsername=buildStudentUsername(student,cls);
+          changed=true;
+        }
+        if(!student.authPassword){
+          student.authPassword=randomAmazonianPassword();
+          changed=true;
+        }
+      });
+      if(changed) save();
+    }
+
+    function studentCodesAsText(cls=currentClass()){
+      ensureStudentCodes(cls);
+      const header=`ZENQUEST — CODES ÉLÈVES\nClasse : ${cls.name}\n\n`;
+      if(!cls.students.length) return header+"Aucun élève dans cette classe.";
+      return header+cls.students.map(student=>
+        `Élève : ${student.name}\nIdentifiant : ${student.authUsername}\nMDP : ${student.authPassword}`
+      ).join("\n\n------------------------------\n\n");
+    }
+
+    function renderStudentPreviewList(cls=currentClass()){
+      const box=document.getElementById("studentPreviewList");
+      if(!box) return;
+      if(!cls.students.length){
+        box.innerHTML='<div class="muted">Aucun élève à prévisualiser.</div>';
+        return;
+      }
+      box.innerHTML=cls.students.map(student=>`
+        <button class="btn outline previewStudentBtn" data-student-id="${student.id}"
+          style="justify-content:flex-start;text-align:left;padding:10px 12px">
+          <span style="font-size:20px;margin-right:7px">${student.avatar||"🙂"}</span>
+          <span><strong>${student.name}</strong><br><span class="muted" style="font-size:12px">${student.authUsername||""}</span></span>
+        </button>
+      `).join("");
+
+      box.querySelectorAll(".previewStudentBtn").forEach(btn=>{
+        btn.onclick=()=>{
+          document.getElementById("studentCodesModal").classList.remove("show");
+          openStudentPreview(btn.dataset.studentId);
+        };
+      });
+    }
+
+    function openStudentPreview(studentId){
+      openStudentView(studentId);
+      const content=document.getElementById("studentViewContent");
+      if(content){
+        content.insertAdjacentHTML("afterbegin",`
+          <div style="background:#fff7ed;border:1px solid #fdba74;border-radius:16px;padding:10px 12px;margin-bottom:12px;font-weight:800">
+            👁️ Mode aperçu élève — lecture seule
+          </div>
+        `);
+      }
+    }
+
+    function openStudentCodes(){
+      const cls=currentClass();
+      ensureStudentCodes(cls);
+      document.getElementById("studentCodesSubtitle").textContent=`Classe active : ${cls.name} • ${cls.students.length} élève${cls.students.length>1?"s":""}`;
+      document.getElementById("studentCodesText").value=studentCodesAsText(cls);
+      renderStudentPreviewList(cls);
+      document.getElementById("studentCodesModal").classList.add("show");
+    }
+
+    async function copyStudentCodes(){
+      const content=document.getElementById("studentCodesText").value;
+      try{
+        await navigator.clipboard.writeText(content);
+        const btn=document.getElementById("copyStudentCodesBtn");
+        const old=btn.textContent;
+        btn.textContent="✅ Codes copiés";
+        setTimeout(()=>btn.textContent=old,1500);
+      }catch(e){
+        const box=document.getElementById("studentCodesText");
+        box.focus(); box.select();
+        document.execCommand("copy");
+      }
+    }
+
+    function downloadStudentCodes(){
+      const cls=currentClass();
+      const content=studentCodesAsText(cls);
+      const blob=new Blob([content],{type:"text/plain;charset=utf-8"});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a");
+      a.href=url;
+      a.download=`zenquest_codes_${classCode(cls.name)}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
 
     function applyViewAbsences(){
       const cls=currentClass();
@@ -736,15 +1124,23 @@
                 <strong>ℹ️ À quoi correspond cette note ?</strong><br>
                 Cette note concerne <strong>l’implication de l’élève en classe</strong>. Elle tient compte notamment de la participation, de l’investissement dans les activités, du travail fourni, de l’écoute, de la concentration et de l’attitude permettant de travailler dans de bonnes conditions.
                 <br><br>
-                <strong>Elle ne correspond pas à la moyenne générale de l’élève ni à sa moyenne en mathématiques.</strong> Elle constitue un indicateur distinct de son engagement pendant les cours.
+                <strong>Cette note pourra apparaître sur le bulletin</strong> afin de rendre compte de l’implication de l’élève en classe.
+                <br><br>
+                <strong>Attention : elle ne correspond pas à la moyenne générale de l’élève ni à sa moyenne en mathématiques.</strong> C’est un indicateur distinct, consacré à son engagement pendant les cours.
               </div>
               <div class="row wrap" style="margin-top:12px">
                 <span class="toolbar-chip active">Score : ${student.points}/20</span>
                 <span class="toolbar-chip">${trend.emoji} ${trend.label}</span>
                 <span class="toolbar-chip">🏆 #${rank} / ${ranked.length}</span>
               </div>
+              <button id="openStudentRulesBtn"
+                style="width:100%;margin-top:14px;padding:14px 18px;border:0;border-radius:16px;background:#111827;color:white;font-size:16px;font-weight:900;cursor:pointer;box-shadow:0 7px 18px rgba(15,23,42,.18)">
+                📜 Voir les règles et le fonctionnement de ZenQuest
+              </button>
             </div>
           </div>
+
+          ${studentClassMessagesHTML(cls)}
 
           <div class="student-kpis">
             <div class="student-kpi"><span class="muted">Cours comptabilisés</span><br><strong>${ps.count}</strong></div>
@@ -800,6 +1196,8 @@
         </div>
       `;
       document.getElementById("studentViewModal").classList.add("show");
+      const rulesBtn=document.getElementById("openStudentRulesBtn");
+      if(rulesBtn) rulesBtn.onclick=openStudentRules;
     }
 
     function showSummary(summary){
@@ -1081,14 +1479,37 @@
       }
     }
 
+    function usernameToTechnicalEmail(username){
+      const clean=(username||"")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g,"")
+        .replace(/[^a-z0-9._-]/g,"");
+      return clean ? `${clean}@zenquest.local` : "";
+    }
+
     async function login(){
-      const email=document.getElementById("loginEmail").value.trim();
+      const username=document.getElementById("loginUsername").value.trim();
       const password=document.getElementById("loginPassword").value;
       const msg=document.getElementById("loginMessage");
-      if(!email||!password){ msg.textContent="Entre ton e-mail et ton mot de passe."; return; }
+      const email=usernameToTechnicalEmail(username);
+
+      if(!username||!password){
+        msg.textContent="Entre ton identifiant et ton mot de passe.";
+        return;
+      }
+      if(!email){
+        msg.textContent="Identifiant invalide.";
+        return;
+      }
+
       msg.textContent="Connexion…";
       const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
-      if(error){ msg.textContent="Connexion impossible : "+error.message; return; }
+      if(error){
+        msg.textContent="Identifiant ou mot de passe incorrect.";
+        return;
+      }
       await showAuthenticatedApp(data.session);
     }
 
@@ -1097,77 +1518,333 @@
       showLogin("Déconnecté.");
     }
 
-    async function sendPasswordRecovery(){
-      const email=document.getElementById("loginEmail").value.trim();
-      const msg=document.getElementById("loginMessage");
-      if(!email){
-        msg.textContent="Entre d’abord ton adresse e-mail.";
-        document.getElementById("loginEmail").focus();
-        return;
-      }
-      msg.textContent="Envoi du lien de réinitialisation…";
-      const redirectTo=window.location.origin + window.location.pathname;
-      const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo});
-      if(error){
-        msg.textContent="Impossible d’envoyer l’e-mail : "+error.message;
-        return;
-      }
-      msg.textContent="📩 E-mail envoyé. Ouvre le lien reçu puis reviens sur ZenQuest pour choisir ton nouveau mot de passe.";
+    function openStudentRules(){
+      showStudentRuleTab("game");
+      document.getElementById("studentRulesModal").classList.add("show");
     }
 
-    async function saveNewPassword(){
-      const p1=document.getElementById("newPassword").value;
-      const p2=document.getElementById("newPasswordConfirm").value;
-      const msg=document.getElementById("resetMessage");
-      if(p1.length<6){ msg.textContent="Choisis un mot de passe d’au moins 6 caractères."; return; }
-      if(p1!==p2){ msg.textContent="Les deux mots de passe ne correspondent pas."; return; }
-      msg.textContent="Enregistrement…";
-      const {error}=await supabaseClient.auth.updateUser({password:p1});
-      if(error){ msg.textContent="Impossible de modifier le mot de passe : "+error.message; return; }
-      msg.textContent="✅ Mot de passe modifié. Tu peux maintenant utiliser ce nouveau mot de passe.";
-      document.getElementById("resetPasswordBox").style.display="none";
-      const {data:{session}}=await supabaseClient.auth.getSession();
-      if(session) await showAuthenticatedApp(session);
+    function showStudentRuleTab(tab){
+      const game=tab==="game";
+      document.getElementById("studentRuleGame").style.display=game?"block":"none";
+      document.getElementById("studentRuleClass").style.display=game?"none":"block";
+      document.querySelectorAll(".studentRuleTab").forEach(btn=>{
+        const active=btn.dataset.ruleTab===tab;
+        btn.classList.toggle("primary",active);
+        btn.classList.toggle("outline",!active);
+        btn.classList.toggle("active",active);
+      });
     }
 
-    function showRecoveryForm(){
-      document.getElementById("authScreen").style.display="grid";
-      document.getElementById("mainApp").style.display="none";
-      document.getElementById("resetPasswordBox").style.display="block";
-      document.getElementById("loginMessage").textContent="Lien de récupération reconnu.";
+
+    function escapeHTML(value){
+      return String(value??"")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+    }
+
+    const CLASS_MESSAGE_META={
+      message:{icon:"📢",label:"Message du professeur"},
+      work:{icon:"📚",label:"Travail à faire"},
+      bring:{icon:"🎒",label:"À apporter"},
+      reminder:{icon:"⏰",label:"Rappel"}
+    };
+
+    function formatFrenchDate(dateStr){
+      if(!dateStr) return "";
+      const d=new Date(dateStr+"T12:00:00");
+      if(Number.isNaN(d.getTime())) return dateStr;
+      return d.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric"});
+    }
+
+    function studentClassMessagesHTML(cls){
+      const messages=(cls.classMessages||[]).slice().sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
+      if(!messages.length) return `
+        <div class="box" style="border:1px dashed #cbd5e1">
+          <div style="font-size:18px;font-weight:900">📢 Infos de la classe</div>
+          <div class="muted" style="margin-top:5px">Aucun message du professeur pour le moment.</div>
+        </div>
+      `;
+
+      return `
+        <div class="box" style="border:1px solid #bfdbfe;background:#eff6ff">
+          <div style="font-size:20px;font-weight:900;margin-bottom:8px">📢 Infos de la classe</div>
+          <div style="display:grid;gap:9px">
+            ${messages.map(m=>{
+              const meta=CLASS_MESSAGE_META[m.type]||CLASS_MESSAGE_META.message;
+              return `
+                <div style="background:white;border:1px solid #dbeafe;border-radius:14px;padding:12px">
+                  <div class="row wrap" style="justify-content:space-between;gap:8px">
+                    <strong>${meta.icon} ${meta.label}</strong>
+                    ${m.dueDate?`<span class="toolbar-chip">📅 ${formatFrenchDate(m.dueDate)}</span>`:""}
+                  </div>
+                  <div style="margin-top:7px;line-height:1.5;white-space:pre-wrap">${escapeHTML(m.text||"")}</div>
+                </div>
+              `;
+            }).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function openClassMessages(){
+      const cls=currentClass();
+      document.getElementById("classMessagesSubtitle").textContent=`Classe active : ${cls.name}`;
+      renderClassMessagesList();
+      document.getElementById("classMessagesModal").classList.add("show");
+    }
+
+    function renderClassMessagesList(){
+      const cls=currentClass();
+      const box=document.getElementById("classMessagesList");
+      const messages=(cls.classMessages||[]).slice().sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
+
+      if(!messages.length){
+        box.innerHTML='<div class="muted">Aucun message publié pour cette classe.</div>';
+        return;
+      }
+
+      box.innerHTML=messages.map(m=>{
+        const meta=CLASS_MESSAGE_META[m.type]||CLASS_MESSAGE_META.message;
+        return `
+          <div class="box" style="margin-bottom:9px">
+            <div class="row wrap" style="justify-content:space-between;align-items:flex-start;gap:8px">
+              <div style="flex:1;min-width:220px">
+                <strong>${meta.icon} ${meta.label}</strong>
+                ${m.dueDate?`<span class="toolbar-chip" style="margin-left:6px">📅 ${formatFrenchDate(m.dueDate)}</span>`:""}
+                <div style="margin-top:7px;white-space:pre-wrap;line-height:1.5">${escapeHTML(m.text||"")}</div>
+              </div>
+              <button class="btn outline small deleteClassMessageBtn" data-message-id="${m.id}">🗑️ Supprimer</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      box.querySelectorAll(".deleteClassMessageBtn").forEach(btn=>{
+        btn.onclick=()=>{
+          const cls=currentClass();
+          cls.classMessages=(cls.classMessages||[]).filter(m=>m.id!==btn.dataset.messageId);
+          save();
+          renderClassMessagesList();
+        };
+      });
+    }
+
+    function addClassMessage(){
+      const cls=currentClass();
+      const textValue=document.getElementById("classMessageText").value.trim();
+      const type=document.getElementById("classMessageType").value;
+      const dueDate=document.getElementById("classMessageDueDate").value;
+
+      if(!textValue) return;
+
+      if(!Array.isArray(cls.classMessages)) cls.classMessages=[];
+      cls.classMessages.push({
+        id:uid(),
+        type,
+        text:textValue,
+        dueDate:dueDate||"",
+        createdAt:new Date().toISOString()
+      });
+
+      document.getElementById("classMessageText").value="";
+      document.getElementById("classMessageDueDate").value="";
+      document.getElementById("classMessageType").value="message";
+      save();
+      renderClassMessagesList();
+    }
+
+
+    const BOARD_DEFAULTS={
+      welcome:{emoji:"👋",title:"Bonjour !",text:"Sortez vos affaires.\nÉcrivez la date.",minutes:2},
+      work:{emoji:"✏️",title:"Au boulot !",text:"Travaillez dans le calme et le silence.\nNe m’appelez pas pendant ce temps : cherchez, réfléchissez et avancez en autonomie.",minutes:5}
+    };
+    let boardCurrent={...BOARD_DEFAULTS.welcome};
+    let boardRemaining=120;
+    let boardTimerHandle=null;
+
+    function renderBoardPresetOptions(){
+      const cls=currentClass();
+      const sel=document.getElementById("customBoardSelect");
+      sel.innerHTML='<option value="">⭐ Mes messages enregistrés…</option>'+
+        (cls.boardPresets||[]).map(p=>`<option value="${p.id}">${escapeHTML(p.emoji||"📌")} ${escapeHTML(p.title)}</option>`).join("");
+      const list=document.getElementById("boardPresetList");
+      if(!(cls.boardPresets||[]).length){ list.innerHTML='<div class="muted">Aucun message personnalisé enregistré.</div>'; return; }
+      list.innerHTML=cls.boardPresets.map(p=>`
+        <div class="row wrap" style="justify-content:space-between;border-top:1px solid #e2e8f0;padding:9px 0">
+          <div><strong>${escapeHTML(p.emoji||"📌")} ${escapeHTML(p.title)}</strong> <span class="muted">• ${p.minutes} min</span></div>
+          <button class="btn outline small deleteBoardPresetBtn" data-id="${p.id}">🗑️</button>
+        </div>`).join("");
+      list.querySelectorAll(".deleteBoardPresetBtn").forEach(btn=>btn.onclick=()=>{
+        cls.boardPresets=cls.boardPresets.filter(p=>p.id!==btn.dataset.id); save(); renderBoardPresetOptions();
+      });
+    }
+
+    function setBoardPreset(preset){
+      if(!preset) return;
+      boardCurrent={...preset};
+      document.getElementById("boardEmoji").textContent=preset.emoji||"📌";
+      document.getElementById("boardTitle").textContent=preset.title||"";
+      document.getElementById("boardText").textContent=preset.text||"";
+      document.getElementById("boardMinutes").value=Math.max(1,Math.min(60,Number(preset.minutes)||2));
+      resetBoardTimer();
+    }
+    function openBoard(){
+      stopBoardTimer();
+      renderBoardPresetOptions();
+      setBoardPreset(BOARD_DEFAULTS.welcome);
+      document.getElementById("boardManage").style.display="none";
+      document.getElementById("boardModal").classList.add("show");
+    }
+    function updateBoardTimer(){
+      const m=Math.floor(boardRemaining/60), s=boardRemaining%60;
+      document.getElementById("boardTimer").textContent=`${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+    }
+    function stopBoardTimer(){ if(boardTimerHandle){clearInterval(boardTimerHandle);boardTimerHandle=null;} }
+    function resetBoardTimer(){
+      stopBoardTimer();
+      const mins=Math.max(1,Math.min(60,Number(document.getElementById("boardMinutes").value)||2));
+      boardRemaining=Math.round(mins*60); updateBoardTimer();
+    }
+    function startBoardTimer(){
+      if(boardTimerHandle) return;
+      if(boardRemaining<=0) resetBoardTimer();
+      boardTimerHandle=setInterval(()=>{
+        boardRemaining=Math.max(0,boardRemaining-1); updateBoardTimer();
+        if(boardRemaining<=0){ stopBoardTimer(); document.getElementById("boardTimer").textContent="TERMINÉ !"; }
+      },1000);
+    }
+    function saveBoardPreset(){
+      const cls=currentClass();
+      const title=document.getElementById("boardCustomTitle").value.trim();
+      const body=document.getElementById("boardCustomText").value.trim();
+      if(!title||!body) return;
+      cls.boardPresets.push({
+        id:uid(),emoji:document.getElementById("boardCustomEmoji").value.trim()||"📌",
+        title,text:body,minutes:Math.max(1,Math.min(60,Number(document.getElementById("boardCustomMinutes").value)||5))
+      });
+      document.getElementById("boardCustomTitle").value="";
+      document.getElementById("boardCustomText").value="";
+      save(); renderBoardPresetOptions();
+    }
+
+
+    function openMayaSupabaseTest(){
+      document.getElementById("mayaSupabaseTestStatus").innerHTML="Prêt à lancer le test.";
+      document.getElementById("runMayaSupabaseTestBtn").disabled=false;
+      document.getElementById("mayaSupabaseTestModal").classList.add("show");
+    }
+
+    async function runMayaSupabaseTest(){
+      const status=document.getElementById("mayaSupabaseTestStatus");
+      const btn=document.getElementById("runMayaSupabaseTestBtn");
+
+      btn.disabled=true;
+      status.innerHTML="⏳ Création du compte en cours…";
+
+      try{
+        const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
+
+        if(sessionError || !session){
+          throw new Error("Aucune session professeur active. Reconnecte-toi avec le compte prof.");
+        }
+
+        const response=await fetch(
+          "https://afterlxyowjgeoeiijec.supabase.co/functions/v1/create-student",
+          {
+            method:"POST",
+            headers:{
+              "Content-Type":"application/json",
+              "Authorization":`Bearer ${session.access_token}`,
+              "apikey":SUPABASE_ANON_KEY
+            },
+            body:JSON.stringify({
+              student_id:"0a373f50-ad9e-4a23-b9aa-0e57cec8457f",
+              username:"maya6b",
+              password:"awara973"
+            })
+          }
+        );
+
+        let result={};
+        try{ result=await response.json(); }catch{}
+
+        if(!response.ok){
+          throw new Error(result.error || `Erreur HTTP ${response.status}`);
+        }
+
+        status.innerHTML=`
+          <div style="font-size:20px;font-weight:900">✅ Compte créé !</div>
+          <div style="margin-top:8px">Maya possède maintenant un vrai compte Supabase.</div>
+          <div style="margin-top:8px"><strong>Identifiant :</strong> maya6b</div>
+          <div><strong>Mot de passe :</strong> awara973</div>
+          <div class="muted" style="margin-top:10px">Tu peux maintenant vérifier Authentication → Users et la colonne user_id de Maya.</div>
+        `;
+      }catch(err){
+        console.error(err);
+        status.innerHTML=`
+          <div style="font-size:20px;font-weight:900">❌ Le test a échoué</div>
+          <div style="margin-top:8px">${escapeHTML(err?.message || "Erreur inconnue")}</div>
+        `;
+        btn.disabled=false;
+      }
     }
 
     async function initAuth(){
-      supabaseClient.auth.onAuthStateChange(async(event,session)=>{
-        if(event==="PASSWORD_RECOVERY"){
-          showRecoveryForm();
-        }
-      });
-      const hash=window.location.hash||"";
-      const query=window.location.search||"";
-      const recoveryLink=hash.includes("type=recovery") || query.includes("type=recovery");
       const {data:{session}}=await supabaseClient.auth.getSession();
-      if(recoveryLink){
-        showRecoveryForm();
-      }else if(session){
-        await showAuthenticatedApp(session);
-      }else{
-        showLogin();
-      }
+      if(session) await showAuthenticatedApp(session);
+      else showLogin();
     }
 
     function render(){ renderClassSelect(); renderViewButtons(); renderStudentModeControls(); renderStudents(); renderHistory(); }
 
-    document.getElementById("addStudentBtn").onclick=()=>{ const v=document.getElementById("newStudentInput").value.trim(); if(!v) return; currentClass().students.push(createStudent(v,currentClass().students.length)); document.getElementById("newStudentInput").value=""; save(); render(); };
+    document.getElementById("addStudentBtn").onclick=()=>{ 
+      const v=document.getElementById("newStudentInput").value.trim(); 
+      if(!v) return; 
+      const cls=currentClass();
+      const student=createStudent(v,cls.students.length);
+      cls.students.push(student);
+      student.authUsername=buildStudentUsername(student,cls);
+      student.authPassword=randomAmazonianPassword();
+      document.getElementById("newStudentInput").value="";
+      save();
+      render();
+    };
     document.getElementById("addClassBtn").onclick=()=>{ const v=document.getElementById("newClassInput").value.trim(); if(!v) return; const c=createClass(v,[]); state.classes.push(c); state.currentClassId=c.id; document.getElementById("newClassInput").value=""; save(); render(); };
     document.getElementById("classSelect").onchange=(e)=>{ state.currentClassId=e.target.value; state.appMode="prof"; save(); render(); };
     document.getElementById("endLessonBtn").onclick=endLesson;
     document.getElementById("loginBtn").onclick=login;
-    document.getElementById("forgotPasswordBtn").onclick=sendPasswordRecovery;
-    document.getElementById("saveNewPasswordBtn").onclick=saveNewPassword;
 
     document.getElementById("loginPassword").addEventListener("keydown",e=>{ if(e.key==="Enter") login(); });
     document.getElementById("logoutBtn").onclick=logout;
+    document.getElementById("studentCodesBtn").onclick=openStudentCodes;
+    document.getElementById("closeStudentCodesBtn").onclick=()=>document.getElementById("studentCodesModal").classList.remove("show");
+    document.getElementById("copyStudentCodesBtn").onclick=copyStudentCodes;
+    document.getElementById("downloadStudentCodesBtn").onclick=downloadStudentCodes;
+    document.getElementById("testMayaSupabaseBtn").onclick=openMayaSupabaseTest;
+    document.getElementById("closeMayaSupabaseTestBtn").onclick=()=>document.getElementById("mayaSupabaseTestModal").classList.remove("show");
+    document.getElementById("runMayaSupabaseTestBtn").onclick=runMayaSupabaseTest;
+    document.getElementById("classMessagesBtn").onclick=openClassMessages;
+    document.getElementById("closeClassMessagesBtn").onclick=()=>document.getElementById("classMessagesModal").classList.remove("show");
+    document.getElementById("addClassMessageBtn").onclick=addClassMessage;
+    document.getElementById("boardBtn").onclick=openBoard;
+    document.getElementById("closeBoardBtn").onclick=()=>{stopBoardTimer();document.getElementById("boardModal").classList.remove("show");};
+    document.querySelectorAll(".boardPresetBtn").forEach(btn=>btn.onclick=()=>setBoardPreset(BOARD_DEFAULTS[btn.dataset.preset]));
+    document.getElementById("boardTimerStartBtn").onclick=startBoardTimer;
+    document.getElementById("boardTimerPauseBtn").onclick=stopBoardTimer;
+    document.getElementById("boardTimerResetBtn").onclick=resetBoardTimer;
+    document.getElementById("boardMinutes").onchange=resetBoardTimer;
+    document.getElementById("manageBoardBtn").onclick=()=>{
+      const el=document.getElementById("boardManage"); el.style.display=el.style.display==="none"?"block":"none"; renderBoardPresetOptions();
+    };
+    document.getElementById("saveBoardPresetBtn").onclick=saveBoardPreset;
+    document.getElementById("customBoardSelect").onchange=e=>{
+      const p=currentClass().boardPresets.find(x=>x.id===e.target.value); if(p)setBoardPreset(p);
+    };
+    document.getElementById("closeStudentRulesBtn").onclick=()=>document.getElementById("studentRulesModal").classList.remove("show");
+    document.querySelectorAll(".studentRuleTab").forEach(btn=>btn.onclick=()=>showStudentRuleTab(btn.dataset.ruleTab));
     document.getElementById("closeAvatarModalBtn").onclick=()=>{
       document.getElementById("avatarModal").classList.remove("show");
       avatarTargetStudentId=null;
