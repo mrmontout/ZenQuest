@@ -111,7 +111,31 @@
   </style>
 </head>
 <body>
-  <div class="wrap">
+  
+  <div id="authScreen" style="min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(180deg,#ecfeff,#f0fdf4,#fff7ed)">
+    <div class="panel" style="width:min(460px,100%);padding:26px">
+      <div style="font-size:38px;font-weight:900;text-align:center">ZenQuest</div>
+      <div class="muted" style="text-align:center;margin:4px 0 20px">Connexion sécurisée</div>
+      <label style="display:block;font-weight:700;margin-bottom:6px">Adresse e-mail</label>
+      <input id="loginEmail" type="email" autocomplete="username" placeholder="votre@email.fr" style="width:100%;margin-bottom:12px">
+      <label style="display:block;font-weight:700;margin-bottom:6px">Mot de passe</label>
+      <input id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••" style="width:100%;margin-bottom:14px">
+      <button class="btn primary" id="loginBtn" style="width:100%;font-size:16px">🔐 Se connecter</button>
+      <button class="btn outline" id="forgotPasswordBtn" style="width:100%;margin-top:9px">Mot de passe oublié ?</button>
+      <div id="loginMessage" class="muted" style="margin-top:12px;text-align:center"></div>
+
+      <div id="resetPasswordBox" style="display:none;margin-top:18px;padding-top:16px;border-top:1px solid #dbeafe">
+        <div style="font-size:18px;font-weight:800;margin-bottom:8px">🔑 Nouveau mot de passe</div>
+        <div class="muted" style="margin-bottom:10px">Après avoir ouvert le lien reçu par e-mail, choisis ici ton nouveau mot de passe.</div>
+        <input id="newPassword" type="password" autocomplete="new-password" placeholder="Nouveau mot de passe" style="width:100%;margin-bottom:10px">
+        <input id="newPasswordConfirm" type="password" autocomplete="new-password" placeholder="Confirmer le mot de passe" style="width:100%;margin-bottom:10px">
+        <button class="btn primary" id="saveNewPasswordBtn" style="width:100%">Enregistrer le nouveau mot de passe</button>
+        <div id="resetMessage" class="muted" style="margin-top:10px;text-align:center"></div>
+      </div>
+    </div>
+  </div>
+
+<div class="wrap" id="mainApp" style="display:none">
     <div class="topbar">
       <div><div class="pill">Classe exemple</div></div>
       <div class="brand">
@@ -121,6 +145,7 @@
       <div class="actions">
         <button class="btn primary" id="endLessonBtn">Fin d'heure</button>
         <button class="btn outline" id="openHistoryBtn">🕘 Historique</button>
+        <button class="btn outline" id="logoutBtn">🔒 Déconnexion</button>
       </div>
     </div>
 
@@ -295,8 +320,12 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    const STORAGE_KEY = "zenquest_standalone_v13";
+    const SUPABASE_URL = "https://afterlxyowjgeoeiijec.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_YIt7fyla9Uf0dOhPJYAOOA_PBfyCWqw";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    const STORAGE_KEY = "zenquest_standalone_v15_auth_recovery";
     const MAX_POINTS = 20;
     const MAX_INDIVIDUAL_STARS = 6;
     const MAX_COLLECTIVE_STARS = 8;
@@ -1017,12 +1046,128 @@
       save(); renderStudentModeControls();
     }
 
+
+    async function getCurrentProfile(userId){
+      const {data,error}=await supabaseClient
+        .from("profiles")
+        .select("id,role,display_name")
+        .eq("id",userId)
+        .single();
+      if(error) throw error;
+      return data;
+    }
+
+    function showLogin(message=""){
+      document.getElementById("authScreen").style.display="grid";
+      document.getElementById("mainApp").style.display="none";
+      document.getElementById("loginMessage").textContent=message;
+    }
+
+    async function showAuthenticatedApp(session){
+      if(!session?.user){ showLogin(); return; }
+      try{
+        const profile=await getCurrentProfile(session.user.id);
+        if(profile.role!=="teacher"){
+          showLogin("Ce compte n’est pas encore configuré comme compte professeur.");
+          await supabaseClient.auth.signOut();
+          return;
+        }
+        document.getElementById("authScreen").style.display="none";
+        document.getElementById("mainApp").style.display="";
+        render();
+      }catch(err){
+        console.error(err);
+        showLogin("Connexion réussie, mais le profil ZenQuest n’a pas pu être chargé.");
+      }
+    }
+
+    async function login(){
+      const email=document.getElementById("loginEmail").value.trim();
+      const password=document.getElementById("loginPassword").value;
+      const msg=document.getElementById("loginMessage");
+      if(!email||!password){ msg.textContent="Entre ton e-mail et ton mot de passe."; return; }
+      msg.textContent="Connexion…";
+      const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+      if(error){ msg.textContent="Connexion impossible : "+error.message; return; }
+      await showAuthenticatedApp(data.session);
+    }
+
+    async function logout(){
+      await supabaseClient.auth.signOut();
+      showLogin("Déconnecté.");
+    }
+
+    async function sendPasswordRecovery(){
+      const email=document.getElementById("loginEmail").value.trim();
+      const msg=document.getElementById("loginMessage");
+      if(!email){
+        msg.textContent="Entre d’abord ton adresse e-mail.";
+        document.getElementById("loginEmail").focus();
+        return;
+      }
+      msg.textContent="Envoi du lien de réinitialisation…";
+      const redirectTo=window.location.origin + window.location.pathname;
+      const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo});
+      if(error){
+        msg.textContent="Impossible d’envoyer l’e-mail : "+error.message;
+        return;
+      }
+      msg.textContent="📩 E-mail envoyé. Ouvre le lien reçu puis reviens sur ZenQuest pour choisir ton nouveau mot de passe.";
+    }
+
+    async function saveNewPassword(){
+      const p1=document.getElementById("newPassword").value;
+      const p2=document.getElementById("newPasswordConfirm").value;
+      const msg=document.getElementById("resetMessage");
+      if(p1.length<6){ msg.textContent="Choisis un mot de passe d’au moins 6 caractères."; return; }
+      if(p1!==p2){ msg.textContent="Les deux mots de passe ne correspondent pas."; return; }
+      msg.textContent="Enregistrement…";
+      const {error}=await supabaseClient.auth.updateUser({password:p1});
+      if(error){ msg.textContent="Impossible de modifier le mot de passe : "+error.message; return; }
+      msg.textContent="✅ Mot de passe modifié. Tu peux maintenant utiliser ce nouveau mot de passe.";
+      document.getElementById("resetPasswordBox").style.display="none";
+      const {data:{session}}=await supabaseClient.auth.getSession();
+      if(session) await showAuthenticatedApp(session);
+    }
+
+    function showRecoveryForm(){
+      document.getElementById("authScreen").style.display="grid";
+      document.getElementById("mainApp").style.display="none";
+      document.getElementById("resetPasswordBox").style.display="block";
+      document.getElementById("loginMessage").textContent="Lien de récupération reconnu.";
+    }
+
+    async function initAuth(){
+      supabaseClient.auth.onAuthStateChange(async(event,session)=>{
+        if(event==="PASSWORD_RECOVERY"){
+          showRecoveryForm();
+        }
+      });
+      const hash=window.location.hash||"";
+      const query=window.location.search||"";
+      const recoveryLink=hash.includes("type=recovery") || query.includes("type=recovery");
+      const {data:{session}}=await supabaseClient.auth.getSession();
+      if(recoveryLink){
+        showRecoveryForm();
+      }else if(session){
+        await showAuthenticatedApp(session);
+      }else{
+        showLogin();
+      }
+    }
+
     function render(){ renderClassSelect(); renderViewButtons(); renderStudentModeControls(); renderStudents(); renderHistory(); }
 
     document.getElementById("addStudentBtn").onclick=()=>{ const v=document.getElementById("newStudentInput").value.trim(); if(!v) return; currentClass().students.push(createStudent(v,currentClass().students.length)); document.getElementById("newStudentInput").value=""; save(); render(); };
     document.getElementById("addClassBtn").onclick=()=>{ const v=document.getElementById("newClassInput").value.trim(); if(!v) return; const c=createClass(v,[]); state.classes.push(c); state.currentClassId=c.id; document.getElementById("newClassInput").value=""; save(); render(); };
     document.getElementById("classSelect").onchange=(e)=>{ state.currentClassId=e.target.value; state.appMode="prof"; save(); render(); };
     document.getElementById("endLessonBtn").onclick=endLesson;
+    document.getElementById("loginBtn").onclick=login;
+    document.getElementById("forgotPasswordBtn").onclick=sendPasswordRecovery;
+    document.getElementById("saveNewPasswordBtn").onclick=saveNewPassword;
+
+    document.getElementById("loginPassword").addEventListener("keydown",e=>{ if(e.key==="Enter") login(); });
+    document.getElementById("logoutBtn").onclick=logout;
     document.getElementById("closeAvatarModalBtn").onclick=()=>{
       document.getElementById("avatarModal").classList.remove("show");
       avatarTargetStudentId=null;
@@ -1048,7 +1193,7 @@
     document.getElementById("viewG1Btn").onclick=()=>{ state.viewMode="g1"; save(); render(); };
     document.getElementById("viewG2Btn").onclick=()=>{ state.viewMode="g2"; save(); render(); };
 
-    render();
+    initAuth();
   </script>
 </body>
 </html>
