@@ -205,9 +205,10 @@
     <div class="controls">
       <div class="panel">
         <h3>Ajouter un élève</h3>
-        <div class="row">
+        <div class="row wrap">
           <input id="newStudentInput" placeholder="Prénom de l'élève" />
           <button class="btn green" id="addStudentBtn">Ajouter</button>
+          <button class="btn outline" id="bulkStudentsBtn">👥 Ajouter une liste</button>
         </div>
       </div>
 
@@ -281,6 +282,35 @@
     </div>
   </div>
 
+
+  <div class="modal" id="bulkStudentsModal">
+    <div class="modal-card" style="width:min(720px,95vw);max-height:90vh;overflow:auto">
+      <div class="modal-header">
+        <div>
+          <h2 style="margin:0">👥 Ajouter une liste d’élèves</h2>
+          <div class="muted" style="margin-top:4px">Un prénom par ligne. Les comptes et mots de passe seront créés automatiquement.</div>
+        </div>
+        <button class="btn outline" id="closeBulkStudentsBtn">Fermer</button>
+      </div>
+
+      <div class="box" style="margin-top:14px">
+        <textarea id="bulkStudentsTextarea" rows="12"
+          placeholder="Exemple :
+Jade
+Lucas
+Maya
+Noah"
+          style="width:100%;resize:vertical"></textarea>
+
+        <div class="row wrap" style="margin-top:12px;justify-content:space-between">
+          <div class="muted" id="bulkStudentsCount">0 élève</div>
+          <button class="btn green" id="confirmBulkStudentsBtn">Ajouter les élèves</button>
+        </div>
+
+        <div id="bulkStudentsStatus" style="display:none;margin-top:14px;padding:12px 14px;border-radius:14px;background:#f8fafc;white-space:pre-wrap"></div>
+      </div>
+    </div>
+  </div>
 
   <div class="modal" id="rewardRequestsModal">
     <div class="modal-card" style="width:min(760px,95vw);max-height:90vh;overflow:auto">
@@ -3247,27 +3277,12 @@
       }
     }
 
-    async function addStudentToSupabase(){
-      const input=document.getElementById("newStudentInput");
-      const name=input.value.trim();
-      if(!name) return;
-
-      const cls=currentClass();
-      if(!cls?.id || !cls.fromSupabase){
-        alert("Choisis d’abord une classe Supabase.");
-        return;
-      }
-
-      const btn=document.getElementById("addStudentBtn");
-      btn.disabled=true;
-      btn.textContent="Ajout…";
-
+    async function createStudentAccountInSupabase(name,cls){
       let insertedStudent=null;
 
       try{
         const avatar=AVATARS[cls.students.length%AVATARS.length];
 
-        // 1) Crée d'abord la ligne élève dans Supabase
         const {data,error}=await supabaseClient
           .from("students")
           .insert({
@@ -3288,16 +3303,12 @@
         if(error) throw error;
         insertedStudent=data;
 
-        // 2) Génère identifiant + mot de passe
         const tempStudent=mapSupabaseStudent(data,cls.students.length);
         const username=buildStudentUsername(tempStudent,cls);
         const password=randomAmazonianPassword();
 
-        // 3) Récupère la session prof et appelle l'Edge Function sécurisée
         const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
-        if(sessionError || !session){
-          throw new Error("Session professeur introuvable.");
-        }
+        if(sessionError || !session) throw new Error("Session professeur introuvable.");
 
         const response=await fetch(
           "https://afterlxyowjgeoeiijec.supabase.co/functions/v1/create-student",
@@ -3307,36 +3318,21 @@
               "Content-Type":"application/json",
               "Authorization":`Bearer ${session.access_token}`
             },
-            body:JSON.stringify({
-              student_id:data.id,
-              username,
-              password
-            })
+            body:JSON.stringify({student_id:data.id,username,password})
           }
         );
 
         let result={};
         try{ result=await response.json(); }catch{}
+        if(!response.ok) throw new Error(result.error || `Erreur création compte (${response.status})`);
 
-        if(!response.ok){
-          throw new Error(result.error || `Erreur création compte (${response.status})`);
-        }
-
-        // 4) Enregistre EXACTEMENT les codes créés.
-        // Le bouton "Codes élèves" les relira ensuite sans jamais les régénérer.
         const {error:codesError}=await supabaseClient
           .from("students")
-          .update({
-            auth_username:username,
-            auth_password:password
-          })
+          .update({auth_username:username,auth_password:password})
           .eq("id",data.id);
 
-        if(codesError){
-          throw new Error("Compte créé, mais impossible d'enregistrer ses codes : "+codesError.message);
-        }
+        if(codesError) throw new Error("Compte créé, mais impossible d'enregistrer ses codes : "+codesError.message);
 
-        // 5) Recharge la ligne pour récupérer user_id + codes fixes
         const {data:linkedStudent,error:reloadError}=await supabaseClient
           .from("students")
           .select("*")
@@ -3352,36 +3348,119 @@
         cls.students.push(mapped);
         cls.students.sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));
 
+        return {ok:true,name,username,password,student:mapped};
+      }catch(err){
+        console.error("CREATE STUDENT ACCOUNT ERROR",err);
+
+        if(insertedStudent){
+          const mapped=mapSupabaseStudent(insertedStudent,cls.students.length);
+          if(!cls.students.some(s=>s.id===mapped.id)){
+            cls.students.push(mapped);
+            cls.students.sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));
+          }
+        }
+
+        return {ok:false,name,error:err?.message||"Erreur inconnue"};
+      }
+    }
+
+    async function addStudentToSupabase(){
+      const input=document.getElementById("newStudentInput");
+      const name=input.value.trim();
+      if(!name) return;
+
+      const cls=currentClass();
+      if(!cls?.id || !cls.fromSupabase){
+        alert("Choisis d’abord une classe Supabase.");
+        return;
+      }
+
+      const btn=document.getElementById("addStudentBtn");
+      btn.disabled=true;
+      btn.textContent="Ajout…";
+
+      try{
+        const result=await createStudentAccountInSupabase(name,cls);
         input.value="";
         render();
 
-        alert(
-          `✅ Compte créé pour ${name}\n\n`+
-          `Identifiant : ${username}\n`+
-          `Mot de passe : ${password}`
-        );
-
-      }catch(err){
-        console.error(err);
-
-        // Si la ligne a été créée mais le compte Auth a échoué,
-        // on garde l'élève dans Supabase pour éviter de perdre la saisie.
-        if(insertedStudent){
-          const mapped=mapSupabaseStudent(insertedStudent,cls.students.length);
-          cls.students.push(mapped);
-          cls.students.sort((a,b)=>a.name.localeCompare(b.name,"fr",{sensitivity:"base"}));
-          render();
+        if(result.ok){
+          alert(`✅ Compte créé pour ${name}\n\nIdentifiant : ${result.username}\nMot de passe : ${result.password}`);
+        }else{
+          alert("L’élève a été ajouté, mais son compte n’a pas pu être créé automatiquement.\n\n"+result.error);
         }
-
-        alert(
-          "L’élève a été ajouté, mais son compte n’a pas pu être créé automatiquement.\n\n"+
-          (err?.message||"Erreur inconnue")
-        );
       }finally{
         btn.disabled=false;
         btn.textContent="Ajouter";
       }
     }
+
+    function openBulkStudentsModal(){
+      const cls=currentClass();
+      if(!cls?.id || !cls.fromSupabase){
+        alert("Choisis d’abord une classe Supabase.");
+        return;
+      }
+      document.getElementById("bulkStudentsTextarea").value="";
+      document.getElementById("bulkStudentsCount").textContent="0 élève";
+      const status=document.getElementById("bulkStudentsStatus");
+      status.style.display="none";
+      status.textContent="";
+      document.getElementById("bulkStudentsModal").classList.add("show");
+    }
+
+    function parseBulkStudentNames(){
+      return document.getElementById("bulkStudentsTextarea").value
+        .split(/\r?\n/)
+        .map(v=>v.trim())
+        .filter(Boolean);
+    }
+
+    async function addBulkStudentsToSupabase(){
+      const cls=currentClass();
+      if(!cls?.id || !cls.fromSupabase){
+        alert("Choisis d’abord une classe Supabase.");
+        return;
+      }
+
+      const names=parseBulkStudentNames();
+      if(!names.length) return;
+
+      const btn=document.getElementById("confirmBulkStudentsBtn");
+      const status=document.getElementById("bulkStudentsStatus");
+      btn.disabled=true;
+      status.style.display="block";
+
+      const successes=[];
+      const failures=[];
+
+      try{
+        for(let i=0;i<names.length;i++){
+          const name=names[i];
+          btn.textContent=`Ajout ${i+1}/${names.length}…`;
+          status.textContent=`⏳ ${i+1}/${names.length} — création du compte de ${name}…`;
+
+          const result=await createStudentAccountInSupabase(name,cls);
+          if(result.ok) successes.push(result);
+          else failures.push(result);
+
+          render();
+        }
+
+        const codes=successes.map(r=>`${r.name} — ${r.username} — ${r.password}`).join("\n");
+        status.textContent=
+          `✅ ${successes.length} élève${successes.length>1?"s":""} ajouté${successes.length>1?"s":""}.`+
+          (failures.length?`\n⚠️ ${failures.length} compte${failures.length>1?"s":""} à vérifier : ${failures.map(f=>f.name).join(", ")}.`:"")+
+          (codes?`\n\n🔑 Codes créés :\n${codes}`:"");
+
+        document.getElementById("bulkStudentsTextarea").value="";
+        document.getElementById("bulkStudentsCount").textContent="0 élève";
+      }finally{
+        btn.disabled=false;
+        btn.textContent="Ajouter les élèves";
+      }
+    }
+
 
     async function routeAuthenticatedUser(session){
       if(!session?.user) return showLogin();
@@ -3449,6 +3528,13 @@
       setTimeout(()=>{ if(document.getElementById("mainApp")?.style.display!=="none") loadTeacherRewardRequests(false); },0); renderClassSelect(); renderViewButtons(); renderStudentModeControls(); renderStudents(); renderHistory(); }
 
     document.getElementById("addStudentBtn").onclick=addStudentToSupabase;
+    document.getElementById("bulkStudentsBtn").onclick=openBulkStudentsModal;
+    document.getElementById("closeBulkStudentsBtn").onclick=()=>document.getElementById("bulkStudentsModal").classList.remove("show");
+    document.getElementById("confirmBulkStudentsBtn").onclick=addBulkStudentsToSupabase;
+    document.getElementById("bulkStudentsTextarea").addEventListener("input",()=>{
+      const n=parseBulkStudentNames().length;
+      document.getElementById("bulkStudentsCount").textContent=`${n} élève${n>1?"s":""}`;
+    });
     document.getElementById("addClassBtn").onclick=async()=>{
       const input=document.getElementById("newClassInput");
       const btn=document.getElementById("addClassBtn");
