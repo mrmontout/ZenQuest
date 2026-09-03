@@ -2262,7 +2262,7 @@
               <span class="toolbar-chip">📚 ${Number(h.lesson_count||scores.length)} cours</span>
             </div>
             ${scores.length?studentChart(scores):'<div class="muted">Aucune note de fin de cours enregistrée.</div>'}
-            ${scores.length?`<div class="row wrap" style="margin-top:8px">${scores.map((s,i)=>`<span class="toolbar-chip">Cours ${i+1} : ${s}/20</span>`).join('')}</div>`:''}
+            ${scores.length?`<div class="row wrap" style="margin-top:8px">${(h.scores||[]).map(s=>`<span class="toolbar-chip">📅 ${lessonDateLabel(s.created_at)} : ${Number(s.score)}/20</span>`).join('')}</div>`:''}
           </div>`;
         }).join('')}
       </div>`;
@@ -2878,6 +2878,13 @@
       );
     }
 
+    function lessonDateLabel(createdAt){
+      if(!createdAt) return "Cours";
+      const d=new Date(createdAt);
+      if(Number.isNaN(d.getTime())) return "Cours";
+      return d.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"});
+    }
+
     function renderAuthenticatedStudentDashboard(student,cls,currentPeriodName,periodAverage,lessonScores,remarks,classMessages=[],periodHistory=[],rewardRequests=[]){
       document.getElementById("studentClassPill").textContent=cls?.name||"Ma classe";
 
@@ -2909,8 +2916,9 @@
         ? Number(cls?.group1_diamonds||0)
         : group==="g2" ? Number(cls?.group2_diamonds||0) : 0;
 
-      const scoreRows=scores.length
-        ? scores.slice(-8).map((score,i)=>`<span class="toolbar-chip">Cours ${Math.max(1,scores.length-7+i)} : ${score}/20</span>`).join("")
+      const recentLessonRows=(lessonScores||[]).slice(-8);
+      const scoreRows=recentLessonRows.length
+        ? recentLessonRows.map(row=>`<span class="toolbar-chip">📅 ${lessonDateLabel(row.created_at)} : ${Number(row.score)}/20</span>`).join("")
         : '<span class="muted">Aucun score de fin de cours enregistré pour cette période.</span>';
 
       const remarksHtml=remarks.length
