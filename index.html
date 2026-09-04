@@ -219,6 +219,37 @@
       }
     }
 
+
+    #studentRulesModal .modal-card{width:min(1100px,96vw)!important;}
+    #studentRulesTranslated{width:100%;}
+    #studentRulesTranslated .box{margin-bottom:14px;}
+    #studentRulesTranslated h2,#studentRulesTranslated h3{margin-top:0;}
+
+
+    #studentRulesModal .modal-card{
+      width:min(1100px,96vw)!important;
+      min-width:min(900px,92vw);
+      max-height:92vh!important;
+      overflow:auto!important;
+      padding:24px!important;
+    }
+    #studentRulesModal #studentRulesTranslated{
+      width:100%!important;
+      box-sizing:border-box;
+    }
+    #studentRulesModal #studentRulesTranslated > .box{
+      width:100%;
+      box-sizing:border-box;
+      margin-bottom:14px;
+    }
+    @media (max-width:900px){
+      #studentRulesModal .modal-card{
+        min-width:0;
+        width:96vw!important;
+        padding:16px!important;
+      }
+    }
+
 </style>
 </head>
 <body>
@@ -368,7 +399,7 @@
 
   <div class="modal" id="bulkStudentsModal">
     <div class="modal-card" style="width:min(720px,95vw);max-height:90vh;overflow:auto">
-      <div class="modal-header">
+      <div class="modal-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
         <div>
           <h2 style="margin:0">👥 Ajouter une liste d’élèves</h2>
           <div class="muted" style="margin-top:4px">Un prénom par ligne. Les comptes et mots de passe seront créés automatiquement.</div>
@@ -589,13 +620,26 @@ Noah"
 
   
   <div class="modal" id="studentRulesModal">
-    <div class="modal-card" style="width:min(900px,95vw);max-height:90vh;overflow:auto">
+    <div class="modal-card" style="width:min(1100px,96vw);max-height:92vh;overflow:auto;padding:24px">
       <div class="modal-header">
         <div>
           <h2 style="margin:0">📜 Règles de ZenQuest</h2>
           <div class="muted" style="margin-top:4px">Tout ce qu’il faut savoir pour progresser.</div>
         </div>
         <button class="btn outline" id="closeStudentRulesBtn">Fermer</button>
+      </div>
+
+      <div class="box" style="padding:10px 14px;margin-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <strong>🌐 Langue / Langaj / Idioma / Language</strong>
+          <select id="rulesLanguageSelect" style="padding:8px 10px;border-radius:10px;border:1px solid #cbd5e1;font-weight:800">
+            <option value="fr">🇫🇷 Français</option>
+            <option value="ht">🇭🇹 Kreyòl ayisyen</option><option value="gcr">🇬🇫 Kréyòl gwiyannen</option><option value="mq">🇲🇶 Kréyòl Matinik</option><option value="gp">🇬🇵 Kréyòl Gwadloup</option><option value="srn">🇸🇷 Sranan Tongo</option>
+            <option value="pt">🇧🇷 Português</option>
+            <option value="es">🇪🇸 Español</option>
+            <option value="en">🇬🇧 English</option>
+          </select>
+        </div>
       </div>
 
       <div class="row wrap" style="margin:14px 0">
@@ -690,6 +734,8 @@ Noah"
           <div style="font-size:22px;font-weight:950;margin-top:8px">Respecte le cadre, travaille et implique-toi : ZenQuest jouera en ta faveur.</div>
         </div>
       </div>
+
+      <div id="studentRulesTranslated" style="display:none;width:100%"></div>
     </div>
   </div>
 
@@ -2754,9 +2800,70 @@ Noah"
       showLogin("Déconnecté.");
     }
 
+
+    const rulesTranslations={
+      ht:`<div class="box"><h2>🎮 Kijan ZenQuest fonksyone?</h2><p>ZenQuest rekonpanse <strong>angajman ou nan klas</strong>: travay, patisipasyon, fason ou koute, konsantrasyon ak atitid ou.</p></div>
+      <div class="box"><h3>🎯 Nòt ou</h3><p>Nan kòmansman chak peryòd, ou kòmanse ak <strong>15/20</strong>. Pandan kou a, ou ka genyen oswa pèdi pwen. Si ou prezan epi ou fini kou a san pèdi pwen, ou jwenn <strong>+1</strong>, san depase 20/20. Si ou absan, nòt la pa chanje.</p></div>
+      <div class="box"><h3>⭐ Pwogrè</h3><p>Chak kou ou reyisi san pèdi pwen fè ba pwogrè ou avanse. Apre <strong>3 kou reyisi</strong>, ou pwogrese nan ZenQuest.</p><div style="font-size:24px;font-weight:900;text-align:center">2 ⭐ → 🔥 &nbsp; 4 ⭐ → ✨ &nbsp; 6 ⭐ → 👑</div><p>Apre sa ou ka kolekte <strong>💎 dyaman</strong>. Si nòt ou desann twò ba, ou ka pèdi yon zetwal.</p></div>
+      <div class="box"><h3>📝 Devwa ak 🏆 klasman</h3><p>Devwa ou fè yo konte epi yo rekonpanse regilarite ou. Klasman an baze sitou sou <strong>mwayèn angajman ou pandan peryòd la</strong>, apre sa sou pwogrè ZenQuest ou. Nòt lòt elèv yo rete prive.</p></div>
+      <div class="box"><h3>🤝 Pwogrè ansanm</h3><p>Klas la ak gwoup la ka pwogrese ansanm. Si tout elèv ki prezan fini kou a san pèdi pwen, yo ka genyen yon ⭐ kolektif. <strong>8 ⭐ kolektif = 1 💎 kolektif.</strong></p></div>
+      <div class="box" style="background:#ecfdf5"><h3>🌱 Sonje</h3><p>Nòt angajman ZenQuest ou ka parèt sou bilten ou. Li pa mezire nivo matematik ou: li pa mwayèn matematik ou ni mwayèn jeneral ou. Si ou travay, ou angaje w epi ou gen yon bon atitid, ou ka pwogrese.</p><p><strong>🟡 ZenCoins:</strong> nan fen chak peryòd, pwogrè ou ka ba ou ZenCoins pou rekonpans.<br><strong>1 ⭐ = 0 🟡 • 3 ⭐ = 1 🟡 • 5 ⭐ = 2 🟡 • 6 ⭐ = 3 🟡 • 1 💎 = 4 🟡</strong></p></div>
+      <div class="box"><h2>📜 Règ klas la</h2><p style="font-size:22px;font-weight:900;text-align:center">🧘 KALM • 🤫 SILANS • ⏳ PASYANS</p><p>✋ Leve men ou epi tann otorizasyon pou pale.<br>👂 Koute pwofesè a ak kamarad ou yo.<br>🤫 Travay nan kalm ak silans lè yo mande sa.<br>🪑 Pa leve san otorizasyon.<br>🙋 Mande otorizasyon anvan ou fè yon bagay yo pa mande.<br>📚 Mete w travay epi patisipe seryezman.<br>🤝 Respekte travay lòt moun epi pa deranje klas la.<br>⏳ Aprann tann.</p></div>
+      <div class="box" style="background:#fff7ed"><h3>⚖️ Desizyon sou pwen yo</h3><p><strong>Se pwofesè a ki deside bay oswa retire pwen</strong> selon sa li obsève. Yon pwen pa dwe lakòz diskisyon pandan kou a. Si ou pa konprann, mande yon eksplikasyon avèk kalm nan bon moman.</p></div>`,
+      gcr:`<div class="box"><h2>🎮 Kouman ZenQuest ka maché ?</h2><p>ZenQuest ka rékonpansé <strong>angajman to annan klas</strong> : travay, patisipasyon, kouté, konsantrasyon ké konpòrtman pannan kou-a.</p></div>
+      <div class="box"><h3>🎯 To nòt</h3><p>Annan koumansman chak péryòd, to ka koumansé ké <strong>15/20</strong>. Pannan roun kou, to pouvé gannyen ouben pèdi pwen. Si to la épi to fini kou-a <strong>san pèdi pwen</strong>, to ka gannyen <strong>+1</strong>, san janmen pasé 20/20. Si to pa la, to nòt pa ka chanjé.</p></div>
+      <div class="box"><h3>⭐ Progrès</h3><p>Chak kou to ka rivé fini san pèdi pwen ka fè to jauj vansé. Apré <strong>3 kou réussi</strong>, to ka progrésé annan ZenQuest.</p><div style="font-size:24px;font-weight:900;text-align:center">2 ⭐ → 🔥 &nbsp; 4 ⭐ → ✨ &nbsp; 6 ⭐ → 👑</div><p>Apré sa, to pouvé ranmasé <strong>💎 dyaman</strong>. Si to nòt ka désann trò ba, to pouvé pèdi roun zétwal.</p></div>
+      <div class="box"><h3>📝 Déwè ké 🏆 klasman</h3><p>Déwè to fè-ya ka konté é yé ka rékonpansé to régilarité. Klasman-an ka bazé an prémyé asou <strong>mwayenn angajman to annan péryòd-a</strong>, apré sa asou to progrès annan ZenQuest. Nòt ròt élèv-ya ka rété privé.</p></div>
+      <div class="box"><h3>🤝 Progrès ansanm</h3><p>Klas-a ké group-a pouvé progrésé ansanm. Si tout élèv ki la fini kou-a san pèdi pwen, yé pouvé gannyen roun ⭐ kolèktif. <strong>8 ⭐ kolèktif = 1 💎 kolèktif.</strong></p></div>
+      <div class="box" style="background:#ecfdf5"><h3>🌱 Pou sonjé</h3><p>To nòt angajman ZenQuest pouvé parèt asou to bilten. I pa ka mezuré to nivo matématik : i pa to mwayenn matématik ni to mwayenn jénéral. Si to ka travay, to ka angajé to kò épi to ka gen roun bon konpòrtman, to pouvé progrésé.</p><p><strong>🟡 ZenCoins :</strong> annan fin chak péryòd, to progrès pouvé fè to gannyen ZenCoins pou chanjé ké rékonpans.<br><strong>1 ⭐ = 0 🟡 • 3 ⭐ = 1 🟡 • 5 ⭐ = 2 🟡 • 6 ⭐ = 3 🟡 • 1 💎 = 4 🟡</strong></p></div>
+      <div class="box"><h2>📜 Règ klas-a</h2><p style="font-size:22px;font-weight:900;text-align:center">🧘 KALM • 🤫 SILANS • ⏳ PASYANS</p><p>✋ Lévé to lanmen épi antann otorizasyon pou palé.<br>👂 Kouté profésèr-a ké to kanmarad-ya.<br>🤫 Travay annan kalm ké silans lò yé ka doumandé sa.<br>🪑 Pa lévé san otorizasyon.<br>🙋 Doumandé otorizasyon anvan to fè roun bagaj yé pa doumandé.<br>📚 Mété to kò annan travay-a épi patisipé séré.<br>🤝 Rèspèkté travay ròt moun épi pa déranjé klas-a.<br>⏳ Savé antann.</p></div>
+      <div class="box" style="background:#fff7ed"><h3>⚖️ Désizyon asou pwen-yan</h3><p><strong>Sa profésèr-a ki ka désidé si i ka bay ouben tiré pwen</strong>, dapré sa i ka wè pannan kou-a. Roun pwen gannyen ouben pèdi pa pou vini roun diskisyon pannan kou-a. Si to pa konprann roun désizyon, to pouvé doumandé roun èsplikasyon trankilman annan bon moman-an.</p></div>`,
+      mq:`<div class="box"><h2>🎮 Ki manniè ZenQuest ka maché ?</h2><p>ZenQuest ka rékonpansé <strong>lenplikasion'w an klas</strong> : travay, patisipasion, kouté, konsantrasion épi konpowtman.</p></div><div class="box"><h3>🎯 Nòt-ou</h3><p>An koumansman chak périod, ou ka koumansé épi <strong>15/20</strong>. Pannan kou-a, ou pé genyen oben pèd pwen. Si ou la épi ou fini san pèd pwen, ou ka genyen <strong>+1</strong>, san pasé 20/20. Si ou absan, nòt-ou pa ka chanjé.</p></div><div class="box"><h3>⭐ Pwogrésyon</h3><p>Chak kou ou ka fini san pèd pwen ka fè ba pwogrésyon'w vansé. Apré <strong>3 kou réussi</strong>, ou ka pwogresé adan ZenQuest.</p><div style="font-size:24px;font-weight:900;text-align:center">2 ⭐ → 🔥 &nbsp; 4 ⭐ → ✨ &nbsp; 6 ⭐ → 👑</div><p>Apré sa, ou pé ranmasé 💎 diamants. Si nòt-ou ka désann twò ba, ou pé pèd an zétwal.</p></div><div class="box"><h3>📝 Dévwa épi 🏆 klasman</h3><p>Dévwa ou fè ka konté. Klasman-an ka bazé avan tout anlè <strong>mwayenn lenplikasion'w pannan périod-la</strong>, apré anlè pwogrésyon ZenQuest-ou. Nòt sé lézòt élèv-la ka rété privé.</p></div><div class="box"><h3>🤝 Pwogrésyon ansanm</h3><p>Klas-la épi group-la pé pwogresé ansanm. Si tout élèv ki la fini kou-a san pèd pwen, yo pé genyen an ⭐ kolèktif. <strong>8 ⭐ kolèktif = 1 💎 kolèktif.</strong></p></div><div class="box" style="background:#ecfdf5"><h3>🌱 Pou sonjé</h3><p>Nòt lenplikasion ZenQuest-ou pé parèt anlè bilten'w. I pa ka mezuré nivo matematik-ou épi i pa mwayenn matematik-ou ni mwayenn jénéral-ou.</p></div><div class="box"><h2>📜 Règ klas-la</h2><p style="font-size:22px;font-weight:900;text-align:center">🧘 KALM • 🤫 SILANS • ⏳ PASIANS</p><p>✋ Lévé lanmen'w épi atann lotorizasion pou palé.<br>👂 Kouté pwofesè-a épi kanmarad-ou.<br>🤫 Travay an kalm épi an silans lè yo ka mandé sa.<br>🪑 Pa lévé san lotorizasion.<br>🙋 Mandé lotorizasion avan ou fè an bagay yo pa mandé.<br>📚 Mété kò'w ka travay épi patisipé sérié.<br>🤝 Rèspèkté travay lézòt épi pa déranjé klas-la.<br>⏳ Aprann atann.</p></div><div class="box" style="background:#fff7ed"><h3>⚖️ Désizion anlè pwen</h3><p><strong>Sé pwofesè-a ki ka désidé si i ka ba oben tiré pwen</strong> dapré sa i ka wè. Si ou pa konprann, mandé an èsplikasion an bon moman-an, san diskision pannan kou-a.</p></div>`,
+      gp:`<div class="box"><h2>🎮 Kijan ZenQuest ka maché ?</h2><p>ZenQuest ka rékonpansé <strong>enplikasyon a-w an klas</strong> : travay, patisipasyon, kouté, konsantrasyon é atitid.</p></div><div class="box"><h3>🎯 Nòt a-w</h3><p>An koumansman a chak péryòd, ou ka koumansé èvè <strong>15/20</strong>. Pannan kou-la, ou pé gannyé oben pèd pwen. Si ou la é ou fini san pèd pwen, ou ka gannyé <strong>+1</strong>, san pasé 20/20. Si ou absan, nòt a-w pa ka chanjé.</p></div><div class="box"><h3>⭐ Pwogrésyon</h3><p>Chak kou ou ka fini san pèd pwen ka fè ba pwogrésyon a-w vansé. Apré <strong>3 kou réussi</strong>, ou ka pwogresé adan ZenQuest.</p><div style="font-size:24px;font-weight:900;text-align:center">2 ⭐ → 🔥 &nbsp; 4 ⭐ → ✨ &nbsp; 6 ⭐ → 👑</div><p>Apré sa, ou pé ranmasé 💎 dyaman. Si nòt a-w ka désann twò ba, ou pé pèd on zétwal.</p></div><div class="box"><h3>📝 Dévwa é 🏆 klasman</h3><p>Dévwa ou fè ka konté. Klasman-la ka bazé avan tout asi <strong>mwayenn enplikasyon a-w pannan péryòd-la</strong>, apré asi pwogrésyon ZenQuest a-w. Nòt a sé lézòt élèv-la ka rété privé.</p></div><div class="box"><h3>🤝 Pwogrésyon ansanm</h3><p>Klas-la é group-la pé pwogresé ansanm. Si tout élèv ki la fini kou-la san pèd pwen, yo pé gannyé on ⭐ kolèktif. <strong>8 ⭐ kolèktif = 1 💎 kolèktif.</strong></p></div><div class="box" style="background:#ecfdf5"><h3>🌱 Pou sonjé</h3><p>Nòt enplikasyon ZenQuest a-w pé parèt asi bilten a-w. I pa ka miziré nivo matematik a-w é i pa mwayenn a matematik ni mwayenn jénéral a-w.</p></div><div class="box"><h2>📜 Règ a klas-la</h2><p style="font-size:22px;font-weight:900;text-align:center">🧘 KALM • 🤫 SILANS • ⏳ PASYANS</p><p>✋ Lévé men a-w é atann otorizasyon pou palé.<br>👂 Kouté pwofesè-la é kanmarad a-w.<br>🤫 Travay an kalm é an silans lè yo ka mandé sa.<br>🪑 Pa lévé san otorizasyon.<br>🙋 Mandé otorizasyon avan ou fè on biten yo pa mandé.<br>📚 Mété-w ka travay é patisipé séryé.<br>🤝 Rèspèkté travay a lézòt é pa déranjé klas-la.<br>⏳ Sav atann.</p></div><div class="box" style="background:#fff7ed"><h3>⚖️ Désizyon asi pwen</h3><p><strong>Sé pwofesè-la ki ka désidé si i ka ba oben tiré pwen</strong> dapré sa i ka vwè. Si ou pa konprann, mandé on èsplikasyon an bon moman-la, san diskisyon pannan kou-la.</p></div>`,
+      srn:`<div class="box"><h2>🎮 Fa ZenQuest e wroko ?</h2><p>ZenQuest e warderi <strong>fa yu e teki prati ini klas</strong>: wroko, prati, arki, konsentrasi nanga gedrag.</p></div><div class="box"><h3>🎯 Yu score</h3><p>Na a bigin fu ibri periode, yu e bigin nanga <strong>15/20</strong>. Ini wan les yu kan kisi of lasi point. Efu yu de na les en yu kaba sondro lasi point, yu e kisi <strong>+1</strong>, te na 20/20. Efu yu no de na les, a score no e kenki.</p></div><div class="box"><h3>⭐ Progress</h3><p>Ibri les san yu kaba sondro lasi point e meki yu progress bar go moro fara. Baka <strong>3 bun les</strong>, yu e progress ini ZenQuest.</p><div style="font-size:24px;font-weight:900;text-align:center">2 ⭐ → 🔥 &nbsp; 4 ⭐ → ✨ &nbsp; 6 ⭐ → 👑</div><p>Dan yu kan kisi 💎 diamant. Efu yu score e go tumsi leri, yu kan lasi wan star.</p></div><div class="box"><h3>📝 Huiswerk nanga 🏆 ranking</h3><p>Huiswerk san yu du e teki prati. A ranking e luku fosi na <strong>yu gemiddelde engagement score fu a periode</strong>, dan na yu ZenQuest progress. A score fu tra pikin de private.</p></div><div class="box"><h3>🤝 Progress makandra</h3><p>A klas nanga a grup kan progress makandra. Efu ala pikin san de na les kaba sondro lasi point, den kan kisi wan ⭐ fu a grup. <strong>8 ⭐ = 1 💎 fu a grup.</strong></p></div><div class="box" style="background:#ecfdf5"><h3>🌱 Memre</h3><p>Yu ZenQuest engagement score kan de na yu report. A no e sori yu nivo fu matematik, en a no yu matematik gemiddelde of algemene gemiddelde.</p></div><div class="box"><h2>📜 Regels fu a klas</h2><p style="font-size:22px;font-weight:900;text-align:center">🧘 KALM • 🤫 STIL • ⏳ PASENSI</p><p>✋ Ligi yu anu en wakti permission fu taki.<br>👂 Arki a leraar nanga yu klasmati.<br>🤫 Wroko kalm en stil te den aksi dati.<br>🪑 No opo sondro permission.<br>🙋 Aksi permission fosi yu du wan sani san den no aksi.<br>📚 Bigin wroko en teki prati bun.<br>🤝 Respek a wroko fu trawan en no sturu a klas.<br>⏳ Leri fu wakti.</p></div><div class="box" style="background:#fff7ed"><h3>⚖️ Besluit abra point</h3><p><strong>A leraar e bepaal efu yu e kisi of lasi point</strong> na basi fu san a e si ini a les. Efu yu no ferstan wan besluit, aksi kalm fu wan uitleg na wan bun momenti.</p></div>`,
+      pt:`<div class="box"><h2>🎮 Como funciona o ZenQuest?</h2><p>O ZenQuest recompensa o seu <strong>envolvimento em sala</strong>: trabalho, participação, atenção, concentração e atitude.</p></div><div class="box"><h3>🎯 Sua nota</h3><p>No início de cada período, você começa com <strong>15/20</strong>. Durante a aula, pode ganhar ou perder pontos. Se estiver presente e terminar sem perder pontos, ganha <strong>+1</strong>, até 20/20. Se estiver ausente, a nota não muda.</p></div><div class="box"><h3>⭐ Progressão</h3><p>Cada aula concluída sem perda de pontos faz sua barra avançar. Após <strong>3 aulas bem-sucedidas</strong>, você progride no ZenQuest.</p><div style="font-size:24px;font-weight:900;text-align:center">2 ⭐ → 🔥 &nbsp; 4 ⭐ → ✨ &nbsp; 6 ⭐ → 👑</div><p>Depois, você pode acumular 💎 diamantes. Se a nota cair demais, pode perder uma estrela.</p></div><div class="box"><h3>📝 Tarefas e 🏆 classificação</h3><p>As tarefas realizadas contam e valorizam sua regularidade. A classificação se baseia principalmente na <strong>média de envolvimento do período</strong> e depois na progressão no ZenQuest. As notas dos outros alunos permanecem privadas.</p></div><div class="box"><h3>🤝 Progressão coletiva</h3><p>A turma e o grupo também podem progredir juntos. Se todos os alunos presentes terminarem sem perder pontos, podem ganhar uma ⭐ coletiva. <strong>8 ⭐ coletivas = 1 💎 coletivo.</strong></p></div><div class="box" style="background:#ecfdf5"><h3>🌱 Importante</h3><p>A nota de envolvimento ZenQuest poderá aparecer no boletim. Ela não mede seu nível em matemática e não é sua média de matemática nem sua média geral. Trabalhando, participando e mantendo uma boa atitude, você pode progredir.</p><p><strong>🟡 ZenCoins:</strong> no fim de cada período, sua progressão pode render ZenCoins para trocar por recompensas.<br><strong>1 ⭐ = 0 🟡 • 3 ⭐ = 1 🟡 • 5 ⭐ = 2 🟡 • 6 ⭐ = 3 🟡 • 1 💎 = 4 🟡</strong></p></div><div class="box"><h2>📜 Regras da sala</h2><p style="font-size:22px;font-weight:900;text-align:center">🧘 CALMA • 🤫 SILÊNCIO • ⏳ PACIÊNCIA</p><p>✋ Levante a mão e espere autorização para falar.<br>👂 Escute o professor e os colegas.<br>🤫 Trabalhe com calma e silêncio quando solicitado.<br>🪑 Não se levante sem autorização.<br>🙋 Peça autorização antes de fazer algo que não foi solicitado.<br>📚 Comece a trabalhar e participe seriamente.<br>🤝 Respeite o trabalho dos outros e não perturbe a aula.<br>⏳ Saiba esperar.</p></div><div class="box" style="background:#fff7ed"><h3>⚖️ Decisões sobre os pontos</h3><p><strong>O professor decide a atribuição ou retirada dos pontos</strong> com base no que observa. Um ponto ganho ou perdido não deve provocar discussão durante a aula. Se não entender, peça uma explicação com calma no momento adequado.</p></div>`,
+      es:`<div class="box"><h2>🎮 ¿Cómo funciona ZenQuest?</h2><p>ZenQuest recompensa tu <strong>implicación en clase</strong>: trabajo, participación, atención, concentración y actitud.</p></div><div class="box"><h3>🎯 Tu puntuación</h3><p>Al inicio de cada período empiezas con <strong>15/20</strong>. Durante una clase puedes ganar o perder puntos. Si estás presente y terminas sin perder puntos, ganas <strong>+1</strong>, hasta 20/20. Si estás ausente, tu puntuación no cambia.</p></div><div class="box"><h3>⭐ Progresión</h3><p>Cada clase superada sin perder puntos hace avanzar tu barra. Después de <strong>3 clases superadas</strong>, progresas en ZenQuest.</p><div style="font-size:24px;font-weight:900;text-align:center">2 ⭐ → 🔥 &nbsp; 4 ⭐ → ✨ &nbsp; 6 ⭐ → 👑</div><p>Después puedes acumular 💎 diamantes. Si tu puntuación baja demasiado, puedes perder una estrella.</p></div><div class="box"><h3>📝 Deberes y 🏆 clasificación</h3><p>Los deberes realizados cuentan y premian tu regularidad. La clasificación se basa principalmente en tu <strong>media de implicación del período</strong> y después en tu progresión ZenQuest. Las notas de los demás alumnos son privadas.</p></div><div class="box"><h3>🤝 Progresión colectiva</h3><p>La clase y el grupo también pueden progresar juntos. Si todos los alumnos presentes terminan sin perder puntos, pueden ganar una ⭐ colectiva. <strong>8 ⭐ colectivas = 1 💎 colectivo.</strong></p></div><div class="box" style="background:#ecfdf5"><h3>🌱 Importante</h3><p>Tu nota de implicación ZenQuest podrá aparecer en tu boletín. No mide tu nivel de matemáticas y no es ni tu media de matemáticas ni tu media general. Si trabajas, te implicas y mantienes una buena actitud, puedes progresar.</p><p><strong>🟡 ZenCoins:</strong> al final de cada período, tu progresión puede darte ZenCoins para canjear por recompensas.<br><strong>1 ⭐ = 0 🟡 • 3 ⭐ = 1 🟡 • 5 ⭐ = 2 🟡 • 6 ⭐ = 3 🟡 • 1 💎 = 4 🟡</strong></p></div><div class="box"><h2>📜 Reglas de la clase</h2><p style="font-size:22px;font-weight:900;text-align:center">🧘 CALMA • 🤫 SILENCIO • ⏳ PACIENCIA</p><p>✋ Levanto la mano y espero autorización para hablar.<br>👂 Escucho al profesor y a mis compañeros.<br>🤫 Trabajo con calma y en silencio cuando se pide.<br>🪑 No me levanto sin autorización.<br>🙋 Pido autorización antes de hacer algo que no se ha pedido.<br>📚 Me pongo a trabajar y participo seriamente.<br>🤝 Respeto el trabajo de los demás y no molesto a la clase.<br>⏳ Sé esperar.</p></div><div class="box" style="background:#fff7ed"><h3>⚖️ Decisiones sobre los puntos</h3><p><strong>El profesor decide la atribución o retirada de puntos</strong> según lo que observa. Un punto ganado o perdido no debe provocar una discusión durante la clase. Si no entiendes una decisión, pide una explicación con calma en el momento adecuado.</p></div>`,
+      en:`<div class="box"><h2>🎮 How does ZenQuest work?</h2><p>ZenQuest rewards your <strong>classroom engagement</strong>: work, participation, listening, concentration and attitude.</p></div><div class="box"><h3>🎯 Your score</h3><p>At the start of each period, you begin at <strong>15/20</strong>. During a lesson you can gain or lose points. If you are present and finish without losing a point, you automatically gain <strong>+1</strong>, up to 20/20. If you are absent, your score does not change.</p></div><div class="box"><h3>⭐ Progress</h3><p>Each successful lesson without losing a point advances your progress bar. After <strong>3 successful lessons</strong>, you progress in ZenQuest.</p><div style="font-size:24px;font-weight:900;text-align:center">2 ⭐ → 🔥 &nbsp; 4 ⭐ → ✨ &nbsp; 6 ⭐ → 👑</div><p>You can then collect 💎 diamonds. If your score drops too low, you may lose a star.</p></div><div class="box"><h3>📝 Homework and 🏆 ranking</h3><p>Completed homework is counted and rewards consistency. Ranking is based mainly on your <strong>average engagement score for the period</strong>, then your ZenQuest progress. Other students’ scores remain private.</p></div><div class="box"><h3>🤝 Collective progress</h3><p>Your class and group can progress together. If every student present finishes without losing a point, a collective ⭐ may be earned. <strong>8 collective ⭐ = 1 collective 💎.</strong></p></div><div class="box" style="background:#ecfdf5"><h3>🌱 Remember</h3><p>Your ZenQuest engagement score may appear on your report card. It does not measure your mathematics level and is neither your mathematics average nor your overall average. If you work, get involved and maintain a good attitude, you can progress.</p><p><strong>🟡 ZenCoins:</strong> at the end of each period, your progress can earn ZenCoins that can be exchanged for rewards.<br><strong>1 ⭐ = 0 🟡 • 3 ⭐ = 1 🟡 • 5 ⭐ = 2 🟡 • 6 ⭐ = 3 🟡 • 1 💎 = 4 🟡</strong></p></div><div class="box"><h2>📜 Classroom rules</h2><p style="font-size:22px;font-weight:900;text-align:center">🧘 CALM • 🤫 SILENCE • ⏳ PATIENCE</p><p>✋ Raise your hand and wait for permission before speaking.<br>👂 Listen to the teacher and classmates.<br>🤫 Work calmly and quietly when asked.<br>🪑 Do not get up without permission.<br>🙋 Ask permission before doing something that was not requested.<br>📚 Get to work and participate seriously.<br>🤝 Respect other people’s work and do not disrupt the class.<br>⏳ Learn to wait.</p></div><div class="box" style="background:#fff7ed"><h3>⚖️ Decisions about points</h3><p><strong>The teacher decides whether points are awarded or removed</strong> based on what is observed during the lesson. A gained or lost point should not cause an argument during class. If you do not understand a decision, calmly ask for an explanation at an appropriate time.</p></div>`
+    };
+
+    function applyRulesLanguage(lang){
+      const game=document.getElementById("studentRuleGame");
+      const cls=document.getElementById("studentRuleClass");
+      const translated=document.getElementById("studentRulesTranslated");
+      const tabs=document.querySelectorAll(".studentRuleTab");
+
+      if(!game || !cls || !translated) return;
+
+      if(lang==="fr"){
+        translated.innerHTML="";
+        translated.style.display="none";
+        tabs.forEach(x=>x.style.display="");
+        game.style.display="block";
+        cls.style.display="none";
+        document.querySelectorAll(".studentRuleTab").forEach(btn=>{
+          const active=btn.dataset.ruleTab==="game";
+          btn.classList.toggle("primary",active);
+          btn.classList.toggle("outline",!active);
+          btn.classList.toggle("active",active);
+        });
+      }else{
+        game.style.display="none";
+        cls.style.display="none";
+        tabs.forEach(x=>x.style.display="none");
+        translated.innerHTML=rulesTranslations[lang] || rulesTranslations.en;
+        translated.style.display="block";
+        translated.scrollIntoView({block:"nearest"});
+      }
+      try{localStorage.setItem("zenquest_rules_lang",lang);}catch{}
+    }
+
     function openStudentRules(){
-      showStudentRuleTab("game");
       document.getElementById("studentRulesModal").classList.add("show");
+      const sel=document.getElementById("rulesLanguageSelect");
+      let lang="fr"; try{lang=localStorage.getItem("zenquest_rules_lang")||"fr";}catch{}
+      if(!["fr","ht","gcr","mq","gp","srn","pt","es","en"].includes(lang)) lang="fr";
+      if(sel){sel.value=lang; sel.onchange=()=>applyRulesLanguage(sel.value);}
+      applyRulesLanguage(lang);
     }
 
     function showStudentRuleTab(tab){
@@ -3286,6 +3393,8 @@ Noah"
           </div>
 
           <div id="studentParentsPanel" style="display:none">
+<div class="box" style="padding:10px 14px"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><strong>🌐 Langue / Langaj / Idioma / Language</strong><select id="parentLanguageSelect" style="padding:8px 10px;border-radius:10px;border:1px solid #cbd5e1;font-weight:800"><option value="fr">🇫🇷 Français</option><option value="ht">🇭🇹 Kreyòl ayisyen</option><option value="gcr">🇬🇫 Kréyòl gwiyannen</option><option value="mq">🇲🇶 Kréyòl Matinik</option><option value="gp">🇬🇵 Kréyòl Gwadloup</option><option value="srn">🇸🇷 Sranan Tongo</option><option value="pt">🇧🇷 Português</option><option value="es">🇪🇸 Español</option><option value="en">🇬🇧 English</option></select></div></div>
+<div class="parent-lang-panel" data-lang="fr" style="display:block">
             <div class="box" style="border:2px solid #99f6e4;background:linear-gradient(135deg,#f0fdfa,#ffffff)">
               <div style="font-size:24px;font-weight:900">👨‍👩‍👧 Bienvenue sur ZenQuest</div>
               <div style="margin-top:10px;line-height:1.65;font-size:15px">
@@ -3361,8 +3470,65 @@ Noah"
                 ZenQuest est actualisé au fil des cours. Une seule consultation ne permet donc pas de suivre l’évolution de votre enfant.
               </div>
               <button type="button" class="btn primary" id="parentsGoCurrentBtn" style="margin-top:14px">Voir la période actuelle</button>
-            </div>
-          </div>
+            </div></div><div class="parent-lang-panel" data-lang="ht" style="display:none"><div class="box"><h2>👨‍👩‍👧 Byenvini sou ZenQuest</h2><p>ZenQuest pèmèt ou suiv <strong>angajman pitit ou nan kou matematik</strong> pandan tout ane a. Nòt la evolye selon travay li, patisipasyon li, fason li koute, konsantrasyon li ak atitid li.</p><p><strong>📌 Sonje:</strong> nòt angajman sa a diferan ak mwayèn matematik la ak mwayèn jeneral la.</p><p><strong>📌 Apre chak vakans lekòl, nòt la rekòmanse a 15/20.</strong> Chak elèv kòmanse nouvo peryòd la sou yon nouvo baz.</p></div><div class="box"><h3>👀 Kisa pou w gade?</h3><p>📈 Evolisyon nòt angajman an<br>💬 Remak ak mesaj pwofesè a<br>⭐ Pwogrè ZenQuest la<br>📚 Ansyen peryòd yo</p></div><div class="box" style="border:2px solid #86efac;background:#f0fdf4"><h3>🟢 Lè tout bagay ap mache byen</h3><p>Lè pitit ou <strong>travay, fè devwa li, patisipe, koute, suiv enstriksyon yo epi respekte règ klas la</strong>, li gen tout chans pou li jwenn yon bon nòt angajman.</p><p><strong>Nòt sa a se yon endikatè sou angajman pitit ou nan kou matematik.</strong></p></div><div class="box" style="border:2px solid #fdba74;background:#fff7ed"><h3>🟠 Si nòt angajman an vin twò ba</h3><p>Si mank angajman an repete (travay ensifizan, mank patisipasyon, atansyon oswa konsantrasyon, devwa ki pa fèt, règ yo pa respekte oswa atitid ki pa adapte), <strong>pwofesè a ka kontakte fanmi an dirèkteman sou WhatsApp</strong>.</p></div><div class="box"><h3>❓ Kesyon yo poze souvan</h3><p><strong>Èske ZenQuest ranplase Pronote?</strong><br>Non. Pou kontakte pwofesè a, tanpri itilize Pronote.</p><p><strong>Èske se nòt matematik?</strong><br>Non. Yo mezire angajman nan klas, pa rezilta lekòl yo.</p><p><strong>Konbyen fwa pou m gade ZenQuest?</strong><br>Regilyèman. Enfòmasyon yo mete ajou pandan kou yo.</p></div><div class="box" style="text-align:center;border:2px solid #bfdbfe;background:#eff6ff"><h3>🔔 Sonje retounen regilyèman</h3><p>Yon sèl vizit pa sifi pou suiv evolisyon pitit ou.</p></div></div><div class="parent-lang-panel" data-lang="gcr" style="display:none">
+<div class="box">
+  <h2>👨‍👩‍👧 Byenvini asou ZenQuest</h2>
+  <p>ZenQuest ka pèrmèt zòt swiv <strong>kouman zòt timoun ka angajé so kò annan kou matématik</strong> pannan tout lannen-an. Nòt-a ka chanjé piti piti dapré so travay, so patisipasyon, so kouté, so konsantrasyon ké so konpòrtman annan klas-a.</p>
+  <p><strong>📌 Pou savé :</strong> nòt angajman-a pa menm bagaj ké mwayenn matématik-a ni mwayenn jénéral-a.</p>
+  <p><strong>📌 Apré chak vakans lékòl, nòt angajman-a ka roukoumansé a 15/20.</strong> Konsa, chak élèv ka koumansé nouvo péryòd-a asou roun nouvo baz.</p>
+</div>
+<div class="box">
+  <h3>👀 Kisa pou zòt gadé ?</h3>
+  <p>📈 <strong>Kouman nòt angajman-a ka évolué</strong> pannan kou-ya.<br>
+  💬 <strong>Remak ké mésaj profésèr-a</strong>, si i gen.<br>
+  ⭐ <strong>Progrès ZenQuest-a</strong> : nivo, zétwal ké òbjèktif.<br>
+  📚 <strong>Ansyen péryòd-ya</strong> pou wè kouman timoun-an ka évolué.</p>
+</div>
+<div class="box" style="border:2px solid #86efac;background:#f0fdf4">
+  <h3>🟢 Lò tout bagaj ka byen maché</h3>
+  <p>Lò zòt timoun <strong>ka travay, ka fè so déwè, ka patisipé, ka kouté, ka swiv konsiy-ya épi ka rèspèkté règ klas-a</strong>, i ka alé annan sans roun bon nòt angajman.</p>
+  <p><strong>Nòt-a sa roun endikatèr pou montré kouman zòt timoun ka angajé so kò annan kou matématik.</strong></p>
+</div>
+<div class="box" style="border:2px solid #fdba74;background:#fff7ed">
+  <h3>🟠 Si nòt angajman-a ka désann trò ba</h3>
+  <p>Si mank angajman-an ka répété (pa asé travay, pa asé patisipasyon, pa kouté, pa konsantré, déwè pa fèt, règ pa rèspèkté ouben konpòrtman pa adapté annan klas-a), <strong>profésèr-a pouvé kontakté fanmi-an dirèktman asou WhatsApp</strong> pou fè pwen-an épi réaji vit.</p>
+</div>
+<div class="box">
+  <h3>❓ Kèsyon moun ka pozé souvan</h3>
+  <p><strong>Ès ZenQuest ka ranplasé Pronote ?</strong><br>Non. ZenQuest sa roun zouti pou swiv angajman annan klas. <strong>Pou kontakté profésèr-a, pasé pa Pronote.</strong></p>
+  <p><strong>Ès nòt ZenQuest-ya sa nòt matématik ?</strong><br>Non. Yé ka gadé angajman annan klas : travay, patisipasyon, kouté, konsantrasyon ké konpòrtman. <strong>Yé pa menm bagaj ké rézilta lékòl.</strong></p>
+  <p><strong>Konbyen fwa pou gadé ZenQuest ?</strong><br>Gadé li souvan. Nòt-ya, progrès-a ké remak-ya <strong>ka mété ajou pannan kou-ya.</strong></p>
+</div>
+<div class="box" style="text-align:center;border:2px solid #bfdbfe;background:#eff6ff">
+  <h3>🔔 Sonjé rouvin gadé li souvan</h3>
+  <p>ZenQuest ka chanjé pannan kou-ya. Gadé li roun sèl kou pa ka sifi pou swiv évolisyon zòt timoun.</p>
+</div>
+</div><div class="parent-lang-panel" data-lang="mq" style="display:none">
+<div class="box"><h2>👨‍👩‍👧 Byenvini anlè ZenQuest</h2><p>ZenQuest ka pèwmèt zot suiv <strong>lenplikasion timoun-zot adan kou matematik</strong> tout lanné-a. Nòt-la ka évolué dapré travay-li, patisipasion-li, kouté-li, konsantrasion-li épi konpowtman-li an klas.</p><p><strong>📌 Pou sonjé :</strong> nòt lenplikasion-tala pa menm bagay ki mwayenn matematik-la oben mwayenn jénéral-la.</p><p><strong>📌 Apré chak vakans lékol, nòt-la ka viré a 15/20.</strong> Konsa, chak élèv ka koumansé nouvo périod-la anlè an nouvo baz.</p></div>
+<div class="box"><h3>👀 Kisa pou gadé ?</h3><p>📈 Évolision nòt lenplikasion-an<br>💬 Rimak épi mésaj pwofesè-a<br>⭐ Pwogrésyon ZenQuest-la<br>📚 Sé périod pasé-a pou wè évolision-an</p></div>
+<div class="box" style="border:2px solid #86efac;background:#f0fdf4"><h3>🟢 Lè tout bagay ka maché bien</h3><p>Lè timoun-zot <strong>ka travay, ka fè dévwa-li, ka patisipé, ka kouté, ka suiv sé konsiy-la épi ka rèspèkté sé règ klas-la</strong>, i pé ni an bon nòt lenplikasion.</p><p><strong>Nòt-tala sé avan tout an endikatè pou montré lenplikasion timoun-zot adan kou matematik.</strong></p></div>
+<div class="box" style="border:2px solid #fdba74;background:#fff7ed"><h3>🟠 Si nòt lenplikasion-an ka désann twò ba</h3><p>Si mank lenplikasion-an ka répété (travay pa asé, pa patisipé, pa kouté oben pa konsantré, dévwa pa fèt, règ pa rèspèkté oben konpowtman pa adapté), <strong>pwofesè-a pé kontakté fanmi-an dirèktiman anlè WhatsApp</strong> pou fè an bilan épi réaji vit.</p></div>
+<div class="box"><h3>❓ Kèsion moun ka pozé souvan</h3><p><strong>Ès ZenQuest ka ranplasé Pronote ?</strong><br>Non. Pou kontakté pwofesè-a, sèvi Pronote.</p><p><strong>Ès sé nòt matematik ?</strong><br>Non. Yo ka montré lenplikasion an klas, pa rézilta lékol.</p><p><strong>Konmen fwa pou gadé ZenQuest ?</strong><br>Régilièman. Enfòmasion-an ka mété ajou an fil sé kou-a.</p></div>
+<div class="box" style="text-align:center;border:2px solid #bfdbfe;background:#eff6ff"><h3>🔔 Sonjé viré gadé régilièman</h3><p>An sèl konsiltasion pa ka sifi pou suiv évolision timoun-zot.</p></div></div>
+
+<div class="parent-lang-panel" data-lang="gp" style="display:none">
+<div class="box"><h2>👨‍👩‍👧 Byenvini asi ZenQuest</h2><p>ZenQuest ka pèwmèt zòt suiv <strong>jan timoun a zòt ka enpliké-y adan kou a matematik</strong> tout lanné-la. Nòt-la ka évoliyé dapré travay a-y, patisipasyon a-y, jan i ka kouté, konsantrasyon a-y é atitid a-y an klas.</p><p><strong>📌 Pou sonjé :</strong> nòt enplikasyon-lasa pa menm biten ki mwayenn a matematik ni mwayenn jénéral-la.</p><p><strong>📌 Apré chak vakans lékòl, nòt-la ka viré a 15/20.</strong> Konsa, chak élèv ka koumansé nouvo péryòd-la asi on nouvo baz.</p></div>
+<div class="box"><h3>👀 Ka pou zòt gadé ?</h3><p>📈 Évolisyon a nòt enplikasyon-la<br>💬 Rimak é mésaj a pwofesè-la<br>⭐ Pwogrésyon ZenQuest-la<br>📚 Sé péryòd pasé-la pou vwè évolisyon-la</p></div>
+<div class="box" style="border:2px solid #86efac;background:#f0fdf4"><h3>🟢 Lè tout biten ka maché byen</h3><p>Lè timoun a zòt <strong>ka travay, ka fè dévwa a-y, ka patisipé, ka kouté, ka suiv konsiy é ka rèspèkté règ a klas-la</strong>, i pé ni on bon nòt enplikasyon.</p><p><strong>Nòt-lasa sé on endikatè pou montré jan timoun a zòt ka enpliké-y adan kou a matematik.</strong></p></div>
+<div class="box" style="border:2px solid #fdba74;background:#fff7ed"><h3>🟠 Si nòt enplikasyon-la ka désann twò ba</h3><p>Si mank enplikasyon-la ka répété (travay pa asé, pa patisipé, pa kouté oben pa konsantré, dévwa pa fèt, règ pa rèspèkté oben atitid pa adapté), <strong>pwofesè-la pé kontakté fanmi-la dirèktèman asi WhatsApp</strong> pou fè on bilan é réyaji vit.</p></div>
+<div class="box"><h3>❓ Kèsyon moun ka pozé souvan</h3><p><strong>Ès ZenQuest ka ranplasé Pronote ?</strong><br>Non. Pou kontakté pwofesè-la, sèvi èvè Pronote.</p><p><strong>Ès sé nòt a matematik ?</strong><br>Non. Yo ka montré enplikasyon an klas, pa rézilta lékòl.</p><p><strong>Konmen fwa pou gadé ZenQuest ?</strong><br>Régilyèman. Enfòmasyon-la ka mété ajou an fil a sé kou-la.</p></div>
+<div class="box" style="text-align:center;border:2px solid #bfdbfe;background:#eff6ff"><h3>🔔 Sonjé viré gadé régilyèman</h3><p>On sèl konsiltasyon pa ka sifi pou suiv évolisyon a timoun a zòt.</p></div></div>
+
+<div class="parent-lang-panel" data-lang="srn" style="display:none">
+<div class="box"><h2>👨‍👩‍👧 Welkom na ZenQuest</h2><p>ZenQuest e meki yu kan luku <strong>fa yu pikin e teki prati nanga e wroko na matematik les</strong> ini a heri skolyari. A score e kenki na fasi fu a wroko, prati, arki, konsentrasi nanga a fasi san a e tan na ini klas.</p><p><strong>📌 Importanti:</strong> disi na wan score fu engagement. A no a matematik gemiddelde, en a no a algemene gemiddelde.</p><p><strong>📌 Baka ibri skoli ferlof, a score e bigin baka na 15/20.</strong> So ibri pikin e kisi wan nyun start fu a nyun periode.</p></div>
+<div class="box"><h3>👀 San yu musu luku ?</h3><p>📈 Fa a engagement score e kenki<br>💬 A opmerkingen nanga boskopu fu a leraar<br>⭐ A progress ini ZenQuest<br>📚 A vorige periodes fu luku fa a pikin e go moro fara</p></div>
+<div class="box" style="border:2px solid #86efac;background:#f0fdf4"><h3>🟢 Te ala sani e go bun</h3><p>Te yu pikin <strong>e wroko, e du a huiswerk, e teki prati, e arki, e hori a regels nanga a opdrachten</strong>, dan a kan kisi wan bun engagement score.</p><p><strong>Disi score e sori fa yu pikin e teki prati ini a matematik les.</strong></p></div>
+<div class="box" style="border:2px solid #fdba74;background:#fff7ed"><h3>🟠 Efu a engagement score e go tumsi leri</h3><p>Efu a pikin no e teki prati bun moro wan lesi (no e wroko nofo, no e prati, no e arki of konsentre, huiswerk no du, regels no hori of gedrag no bun), <strong>a leraar kan teki contact nanga a familie direct na WhatsApp</strong> fu taki abra a situasi nanga teki aksi esi.</p></div>
+<div class="box"><h3>❓ Wan pikinso vraag</h3><p><strong>ZenQuest e teki a presi fu Pronote ?</strong><br>Nono. Fu teki contact nanga a leraar, gebruiki Pronote.</p><p><strong>Den ZenQuest score na matematik cijfers ?</strong><br>Nono. Den e sori engagement ini klas, no a schoolresultaten.</p><p><strong>O meni tron mi musu luku ZenQuest ?</strong><br>Luku en regular. A informatie e kenki na fasi den les e go.</p></div>
+<div class="box" style="text-align:center;border:2px solid #bfdbfe;background:#eff6ff"><h3>🔔 Kon baka fu luku en regular</h3><p>Wan luku nomo no e meki yu kan si fa yu pikin e progress.</p></div></div>
+
+<div class="parent-lang-panel" data-lang="pt" style="display:none"><div class="box"><h2>👨‍👩‍👧 Bem-vindo ao ZenQuest</h2><p>O ZenQuest permite acompanhar <strong>o envolvimento do seu filho nas aulas de matemática</strong> ao longo do ano. A nota evolui conforme o trabalho, a participação, a atenção, a concentração e a atitude em sala.</p><p><strong>📌 Importante:</strong> esta nota é diferente da média de matemática e da média geral.</p><p><strong>📌 Após cada período de férias escolares, a nota volta para 15/20.</strong> Cada aluno começa o novo período com uma nova base.</p></div><div class="box"><h3>👀 O que observar?</h3><p>📈 Evolução da nota de envolvimento<br>💬 Observações e mensagens do professor<br>⭐ Progressão no ZenQuest<br>📚 Períodos anteriores</p></div><div class="box" style="border:2px solid #86efac;background:#f0fdf4"><h3>🟢 Quando tudo vai bem</h3><p>Quando seu filho <strong>trabalha, faz as tarefas, participa, presta atenção, segue as orientações e respeita as regras</strong>, ele só pode obter uma boa nota de envolvimento.</p><p><strong>Esta nota é um indicador do envolvimento do seu filho nas aulas de matemática.</strong></p></div><div class="box" style="border:2px solid #fdba74;background:#fff7ed"><h3>🟠 Se a nota ficar muito baixa</h3><p>Em caso de falta de envolvimento repetida (trabalho insuficiente, pouca participação, falta de atenção ou concentração, tarefas não realizadas, desrespeito às regras ou atitude inadequada), <strong>a família poderá ser contatada diretamente pelo professor via WhatsApp</strong>.</p></div><div class="box"><h3>❓ Perguntas frequentes</h3><p><strong>O ZenQuest substitui o Pronote?</strong><br>Não. Para entrar em contato com o professor, utilize o Pronote.</p><p><strong>São notas de matemática?</strong><br>Não. Avaliam o envolvimento em sala, não os resultados escolares.</p><p><strong>Com que frequência consultar?</strong><br>Regularmente. As informações são atualizadas ao longo das aulas.</p></div><div class="box" style="text-align:center;border:2px solid #bfdbfe;background:#eff6ff"><h3>🔔 Volte regularmente</h3><p>Uma única consulta não permite acompanhar a evolução do seu filho.</p></div></div><div class="parent-lang-panel" data-lang="es" style="display:none"><div class="box"><h2>👨‍👩‍👧 Bienvenido a ZenQuest</h2><p>ZenQuest permite seguir <strong>la implicación de su hijo en las clases de matemáticas</strong> durante todo el año. La nota evoluciona según su trabajo, participación, atención, concentración y actitud.</p><p><strong>📌 Importante:</strong> esta nota es distinta de la media de matemáticas y de la media general.</p><p><strong>📌 Después de cada período de vacaciones escolares, la nota vuelve a 15/20.</strong> Cada alumno comienza el nuevo período sobre una nueva base.</p></div><div class="box"><h3>👀 ¿Qué hay que observar?</h3><p>📈 Evolución de la nota de implicación<br>💬 Observaciones y mensajes del profesor<br>⭐ Progresión en ZenQuest<br>📚 Períodos anteriores</p></div><div class="box" style="border:2px solid #86efac;background:#f0fdf4"><h3>🟢 Cuando todo va bien</h3><p>Cuando su hijo <strong>trabaja, hace sus deberes, participa, presta atención, sigue las instrucciones y respeta las reglas</strong>, solo puede obtener una buena nota de implicación.</p><p><strong>Esta nota es un indicador de la implicación de su hijo en las clases de matemáticas.</strong></p></div><div class="box" style="border:2px solid #fdba74;background:#fff7ed"><h3>🟠 Si la nota baja demasiado</h3><p>En caso de falta de implicación repetida (trabajo insuficiente, poca participación, falta de atención o concentración, deberes no realizados, incumplimiento de las reglas o actitud inadecuada), <strong>el profesor podrá contactar directamente con la familia por WhatsApp</strong>.</p></div><div class="box"><h3>❓ Preguntas frecuentes</h3><p><strong>¿ZenQuest sustituye a Pronote?</strong><br>No. Para contactar con el profesor, utilice Pronote.</p><p><strong>¿Son notas de matemáticas?</strong><br>No. Evalúan la implicación en clase, no los resultados escolares.</p><p><strong>¿Con qué frecuencia hay que consultarlo?</strong><br>Regularmente. La información se actualiza a lo largo de las clases.</p></div><div class="box" style="text-align:center;border:2px solid #bfdbfe;background:#eff6ff"><h3>🔔 Vuelva regularmente</h3><p>Una sola consulta no permite seguir la evolución de su hijo.</p></div></div><div class="parent-lang-panel" data-lang="en" style="display:none"><div class="box"><h2>👨‍👩‍👧 Welcome to ZenQuest</h2><p>ZenQuest lets you follow <strong>your child’s engagement in mathematics lessons</strong> throughout the year. The score changes according to their work, participation, attention, concentration and classroom attitude.</p><p><strong>📌 Important:</strong> this engagement score is separate from the mathematics average and overall school average.</p><p><strong>📌 After each school holiday period, the score resets to 15/20.</strong> Every student starts the new period on a fresh basis.</p></div><div class="box"><h3>👀 What should you look at?</h3><p>📈 Changes in the engagement score<br>💬 Teacher comments and messages<br>⭐ ZenQuest progress<br>📚 Previous periods</p></div><div class="box" style="border:2px solid #86efac;background:#f0fdf4"><h3>🟢 When things are going well</h3><p>When your child <strong>works, completes homework, participates, listens, follows instructions and respects classroom rules</strong>, they can only achieve a good engagement score.</p><p><strong>This score is an indicator of your child’s engagement in mathematics lessons.</strong></p></div><div class="box" style="border:2px solid #fdba74;background:#fff7ed"><h3>🟠 If the engagement score becomes too low</h3><p>If there is a repeated lack of engagement (insufficient work, lack of participation, attention or concentration, missing homework, failure to follow rules or inappropriate attitude), <strong>the family may be contacted directly by the teacher via WhatsApp</strong>.</p></div><div class="box"><h3>❓ Frequently asked questions</h3><p><strong>Does ZenQuest replace Pronote?</strong><br>No. To contact the teacher, please use Pronote.</p><p><strong>Are these mathematics grades?</strong><br>No. They assess classroom engagement, not academic results.</p><p><strong>How often should I check?</strong><br>Regularly. Information is updated as lessons take place.</p></div><div class="box" style="text-align:center;border:2px solid #bfdbfe;background:#eff6ff"><h3>🔔 Check back regularly</h3><p>A single visit is not enough to follow your child’s progress.</p></div></div>
+</div>
 
           <div id="studentCurrentPeriodPanel">
           ${(lessonScores||[]).length===0 ? `<div style="margin-bottom:14px;padding:12px 16px;border-radius:16px;background:#eef2ff;border:1px solid #c7d2fe;font-weight:900">
@@ -3494,6 +3660,17 @@ Noah"
       if(currentTabBtn) currentTabBtn.onclick=()=>showStudentTab("current");
       if(historyTabBtn) historyTabBtn.onclick=()=>showStudentTab("history");
       if(parentsTabBtn) parentsTabBtn.onclick=()=>showStudentTab("parents");
+      const parentLanguageSelect=document.getElementById("parentLanguageSelect");
+      const setParentLanguage=(lang)=>{
+        document.querySelectorAll("#studentParentsPanel .parent-lang-panel").forEach(p=>p.style.display=p.dataset.lang===lang?"block":"none");
+        try{ localStorage.setItem("zenquest_parent_lang",lang); }catch{}
+      };
+      if(parentLanguageSelect){
+        let lang="fr"; try{ lang=localStorage.getItem("zenquest_parent_lang")||"fr"; }catch{}
+        if(!["fr","ht","gcr","mq","gp","srn","pt","es","en"].includes(lang)) lang="fr";
+        parentLanguageSelect.value=lang; setParentLanguage(lang);
+        parentLanguageSelect.onchange=()=>setParentLanguage(parentLanguageSelect.value);
+      }
       const parentsGoCurrentBtn=document.getElementById("parentsGoCurrentBtn");
       if(parentsGoCurrentBtn) parentsGoCurrentBtn.onclick=()=>showStudentTab("current");
 
@@ -4033,6 +4210,7 @@ Noah"
       const p=currentClass().boardPresets.find(x=>x.id===e.target.value); if(p)setBoardPreset(p);
     };
     document.getElementById("closeStudentRulesBtn").onclick=()=>document.getElementById("studentRulesModal").classList.remove("show");
+    document.getElementById("rulesLanguageSelect").onchange=(e)=>applyRulesLanguage(e.target.value);
     document.querySelectorAll(".studentRuleTab").forEach(btn=>btn.onclick=()=>showStudentRuleTab(btn.dataset.ruleTab));
     document.getElementById("closeAvatarModalBtn").onclick=()=>{
       document.getElementById("avatarModal").classList.remove("show");
