@@ -3279,9 +3279,89 @@ Noah"
       document.getElementById("authenticatedStudentView").innerHTML=`
         <div class="student-dashboard">
 
-          <div class="mode-switch" style="margin-bottom:16px;width:100%;display:flex">
-            <button type="button" id="studentCurrentTabBtn" class="active" style="flex:1">🎮 Période actuelle</button>
-            <button type="button" id="studentHistoryTabBtn" style="flex:1">📚 Mes anciennes périodes</button>
+          <div class="mode-switch" style="margin-bottom:16px;width:100%;display:flex;flex-wrap:wrap">
+            <button type="button" id="studentCurrentTabBtn" class="active" style="flex:1;min-width:190px">🎮 Période actuelle</button>
+            <button type="button" id="studentHistoryTabBtn" style="flex:1;min-width:190px">📚 Mes anciennes périodes</button>
+            <button type="button" id="studentParentsTabBtn" style="flex:1;min-width:190px">👨‍👩‍👧 Espace parents</button>
+          </div>
+
+          <div id="studentParentsPanel" style="display:none">
+            <div class="box" style="border:2px solid #99f6e4;background:linear-gradient(135deg,#f0fdfa,#ffffff)">
+              <div style="font-size:24px;font-weight:900">👨‍👩‍👧 Bienvenue sur ZenQuest</div>
+              <div style="margin-top:10px;line-height:1.65;font-size:15px">
+                ZenQuest permet de suivre <strong>l’implication de votre enfant en cours de mathématiques</strong> tout au long de l’année.
+                La note affichée évolue au fil des cours selon son travail, sa participation, son écoute, sa concentration et son attitude.
+              </div>
+              <div style="margin-top:12px;padding:12px 14px;border-radius:14px;background:#fff7ed;border:1px solid #fed7aa;line-height:1.5">
+                <strong>📌 À retenir :</strong> cette note d’implication est distincte de la moyenne de mathématiques et de la moyenne générale.
+              </div>
+              <div style="margin-top:10px;padding:12px 14px;border-radius:14px;background:#eff6ff;border:1px solid #bfdbfe;line-height:1.5">
+                <strong>📌 À noter :</strong> après chaque période de vacances scolaires, la note d’implication repart à <strong>15/20</strong>.
+                Chaque élève commence ainsi la nouvelle période sur une nouvelle base.
+              </div>
+            </div>
+            <div class="box">
+              <div style="font-size:20px;font-weight:900">👀 Que regarder ?</div>
+              <div style="display:grid;gap:10px;margin-top:12px">
+                <div>📈 <strong>L’évolution de la note d’implication</strong> au fil des cours.</div>
+                <div>💬 <strong>Les remarques et messages du professeur</strong>, lorsqu’il y en a.</div>
+                <div>⭐ <strong>La progression ZenQuest</strong> : niveaux, étoiles et objectifs.</div>
+                <div>📚 <strong>Les anciennes périodes</strong> pour observer l’évolution dans le temps.</div>
+              </div>
+            </div>
+            <div class="box" style="border:2px solid #86efac;background:#f0fdf4">
+              <div style="font-size:21px;font-weight:900">🟢 Quand tout se passe bien</div>
+              <div style="margin-top:8px;line-height:1.6">
+                Lorsque votre enfant <strong>travaille, fait ses devoirs, participe, reste à l’écoute, suit les consignes et respecte les règles de la classe</strong>,
+                il ne peut qu’obtenir une bonne note d’implication.
+              </div>
+              <div style="margin-top:10px;line-height:1.6">
+                <strong>Cette note est avant tout un indicateur de l’implication de votre enfant dans le cours de mathématiques.</strong>
+                Une note satisfaisante signifie donc que son investissement en classe est satisfaisant. 👍
+              </div>
+            </div>
+
+            <div class="box" style="border:2px solid #fdba74;background:#fff7ed">
+              <div style="font-size:21px;font-weight:900">🟠 Si la note d’implication devient trop basse</div>
+              <div style="margin-top:8px;line-height:1.6">
+                En cas de <strong>manque d’implication répété</strong> (travail insuffisant, manque de participation, d’écoute ou de concentration, devoirs non faits, non-respect des règles ou attitude inadaptée en classe),
+                <strong>la famille pourra être contactée directement par le professeur via WhatsApp</strong>
+                afin de faire le point et de réagir rapidement.
+              </div>
+            </div>
+
+            <div class="box">
+              <div style="font-size:21px;font-weight:900">❓ Questions fréquentes</div>
+
+              <div style="margin-top:14px;padding-bottom:12px;border-bottom:1px solid #e2e8f0">
+                <strong>ZenQuest remplace-t-il Pronote ?</strong>
+                <div class="muted" style="margin-top:5px;line-height:1.5">
+                  Non. ZenQuest est un outil de suivi de l’implication en classe. <strong>Pour contacter le professeur, merci de passer par Pronote.</strong>
+                </div>
+              </div>
+
+              <div style="padding:12px 0;border-bottom:1px solid #e2e8f0">
+                <strong>Les scores ZenQuest sont-ils des notes de mathématiques ?</strong>
+                <div class="muted" style="margin-top:5px;line-height:1.5">
+                  Non. Ils évaluent l’implication en classe : travail, participation, écoute, concentration et attitude. <strong>Ils sont distincts des résultats scolaires.</strong>
+                </div>
+              </div>
+
+              <div style="padding-top:12px">
+                <strong>À quelle fréquence faut-il consulter ZenQuest ?</strong>
+                <div class="muted" style="margin-top:5px;line-height:1.5">
+                  Régulièrement. Les scores, la progression et les éventuelles remarques sont <strong>actualisés au fil des cours.</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="box" style="text-align:center;border:2px solid #bfdbfe;background:#eff6ff">
+              <div style="font-size:20px;font-weight:900">🔔 Pensez à revenir régulièrement</div>
+              <div style="margin-top:7px;line-height:1.55">
+                ZenQuest est actualisé au fil des cours. Une seule consultation ne permet donc pas de suivre l’évolution de votre enfant.
+              </div>
+              <button type="button" class="btn primary" id="parentsGoCurrentBtn" style="margin-top:14px">Voir la période actuelle</button>
+            </div>
           </div>
 
           <div id="studentCurrentPeriodPanel">
@@ -3397,17 +3477,25 @@ Noah"
 
       const currentTabBtn=document.getElementById("studentCurrentTabBtn");
       const historyTabBtn=document.getElementById("studentHistoryTabBtn");
+      const parentsTabBtn=document.getElementById("studentParentsTabBtn");
       const currentPanel=document.getElementById("studentCurrentPeriodPanel");
       const historyPanel=document.getElementById("studentHistoryPanel");
+      const parentsPanel=document.getElementById("studentParentsPanel");
       const showStudentTab=(tab)=>{
         const history=tab==="history";
-        currentPanel.style.display=history?"none":"block";
+        const parents=tab==="parents";
+        currentPanel.style.display=(!history&&!parents)?"block":"none";
         historyPanel.style.display=history?"block":"none";
-        currentTabBtn.classList.toggle("active",!history);
+        parentsPanel.style.display=parents?"block":"none";
+        currentTabBtn.classList.toggle("active",!history&&!parents);
         historyTabBtn.classList.toggle("active",history);
+        parentsTabBtn.classList.toggle("active",parents);
       };
       if(currentTabBtn) currentTabBtn.onclick=()=>showStudentTab("current");
       if(historyTabBtn) historyTabBtn.onclick=()=>showStudentTab("history");
+      if(parentsTabBtn) parentsTabBtn.onclick=()=>showStudentTab("parents");
+      const parentsGoCurrentBtn=document.getElementById("parentsGoCurrentBtn");
+      if(parentsGoCurrentBtn) parentsGoCurrentBtn.onclick=()=>showStudentTab("current");
 
       document.querySelectorAll(".reward-request-btn").forEach(btn=>{
         btn.onclick=()=>requestReward(btn.dataset.rewardCode);
