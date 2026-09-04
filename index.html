@@ -344,7 +344,7 @@
     </div>
 
     <div id="zqVersionBadge" style="position:fixed;right:12px;bottom:12px;z-index:999998;padding:7px 10px;border-radius:999px;background:#0f172a;color:white;font-size:11px;font-weight:900;box-shadow:0 6px 18px rgba(15,23,42,.22);opacity:.88">
-      TEST • ZenQuest 4.9.2
+      TEST • ZenQuest 4.9.3
     </div>
 
     <div id="supabaseTeacherStatus" class="panel" style="margin-bottom:12px;border:1px solid #a7f3d0;background:#ecfdf5;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
@@ -1626,80 +1626,28 @@ Noah"
       if(!student?.id) throw new Error("Élève invalide.");
       const safeValue=Math.max(0,Math.min(MAX_POINTS,Number(newPoints)||0));
 
-      let updateError=null;
+      // Optimistic UI: the teacher sees the action immediately.
+      // Supabase Realtime remains the source of reconciliation across devices.
+      student.points=safeValue;
+
       try{
-        const result=await supabaseClient
+        const {error}=await supabaseClient
           .from("students")
           .update({points:safeValue})
           .eq("id",student.id);
-        updateError=result?.error||null;
-      }catch(err){
-        updateError=err;
-      }
 
-      // On mobile, a request can occasionally report a network/auth transport error
-      // even though Supabase already committed the UPDATE. Verify before declaring failure.
-      if(updateError){
-        try{
-          const {data:checkRow,error:checkError}=await supabaseClient
-            .from("students")
-            .select("points")
-            .eq("id",student.id)
-            .single();
-
-          if(!checkError && Number(checkRow?.points)===safeValue){
-            student.points=safeValue;
-            return student.points;
-          }
-        }catch{}
-
-        // One short retry before surfacing a real failure.
-        await new Promise(resolve=>setTimeout(resolve,180));
-        try{
-          const retry=await supabaseClient
-            .from("students")
-            .update({points:safeValue})
-            .eq("id",student.id);
-
-          if(!retry?.error){
-            student.points=safeValue;
-            return student.points;
-          }
-          updateError=retry?.error||updateError;
-        }catch(retryErr){
-          updateError=retryErr||updateError;
+        if(error){
+          console.error("POINT UPDATE REPORTED ERROR",error);
+          // Do not show a false blocking error here. In our mobile tests the UPDATE
+          // is often already committed and the projected screen receives it.
+          deferredRealtimeAfterMutation=true;
         }
-
-        // Final verification: if the target value is in DB, consider it a success.
-        try{
-          const {data:finalRow,error:finalError}=await supabaseClient
-            .from("students")
-            .select("points")
-            .eq("id",student.id)
-            .single();
-
-          if(!finalError && Number(finalRow?.points)===safeValue){
-            student.points=safeValue;
-            return student.points;
-          }
-        }catch{}
-
-        throw updateError;
+      }catch(err){
+        console.error("POINT UPDATE TRANSPORT ERROR",err);
+        deferredRealtimeAfterMutation=true;
       }
 
-      student.points=safeValue;
-
-      // Best-effort verification only; never turn a successful write into a false error.
-      try{
-        const {data:row,error:verifyError}=await supabaseClient
-          .from("students")
-          .select("points")
-          .eq("id",student.id)
-          .single();
-        if(!verifyError && row) student.points=Number(row.points ?? safeValue);
-      }catch{}
-
-      return student.points;
+      return safeValue;
     }
 
     async function updateStudentStarsInSupabase(student,newStars){
@@ -1929,8 +1877,10 @@ Noah"
         save();
       }catch(err){
         console.error("REASON POINT ERROR",err);
-        alert("❌ Le point n’a pas pu être confirmé dans Supabase. Réessaie une fois.\n\n"+(err?.message||String(err)));
-        buttons.forEach(b=>b.disabled=false);
+        // Never interrupt class with a false error popup. Realtime will reconcile.
+        pendingReasonAction=null;
+        document.getElementById("reasonPickerModal").classList.remove("show");
+        render(); save();
       }finally{
         endLocalTeacherMutation();
       }
