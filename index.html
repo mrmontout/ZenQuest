@@ -344,7 +344,7 @@
     </div>
 
     <div id="zqVersionBadge" style="position:fixed;right:12px;bottom:12px;z-index:999998;padding:7px 10px;border-radius:999px;background:#0f172a;color:white;font-size:11px;font-weight:900;box-shadow:0 6px 18px rgba(15,23,42,.22);opacity:.88">
-      TEST • ZenQuest 4.9.1
+      TEST • ZenQuest 4.9.2
     </div>
 
     <div id="supabaseTeacherStatus" class="panel" style="margin-bottom:12px;border:1px solid #a7f3d0;background:#ecfdf5;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
@@ -1626,18 +1626,70 @@ Noah"
       if(!student?.id) throw new Error("Élève invalide.");
       const safeValue=Math.max(0,Math.min(MAX_POINTS,Number(newPoints)||0));
 
-      const {error}=await supabaseClient
-        .from("students")
-        .update({points:safeValue})
-        .eq("id",student.id);
+      let updateError=null;
+      try{
+        const result=await supabaseClient
+          .from("students")
+          .update({points:safeValue})
+          .eq("id",student.id);
+        updateError=result?.error||null;
+      }catch(err){
+        updateError=err;
+      }
 
-      if(error) throw error;
+      // On mobile, a request can occasionally report a network/auth transport error
+      // even though Supabase already committed the UPDATE. Verify before declaring failure.
+      if(updateError){
+        try{
+          const {data:checkRow,error:checkError}=await supabaseClient
+            .from("students")
+            .select("points")
+            .eq("id",student.id)
+            .single();
 
-      // The write is authoritative. Do not make a successful −1/+1 look like a failure
-      // just because a follow-up SELECT or realtime refresh is momentarily late.
+          if(!checkError && Number(checkRow?.points)===safeValue){
+            student.points=safeValue;
+            return student.points;
+          }
+        }catch{}
+
+        // One short retry before surfacing a real failure.
+        await new Promise(resolve=>setTimeout(resolve,180));
+        try{
+          const retry=await supabaseClient
+            .from("students")
+            .update({points:safeValue})
+            .eq("id",student.id);
+
+          if(!retry?.error){
+            student.points=safeValue;
+            return student.points;
+          }
+          updateError=retry?.error||updateError;
+        }catch(retryErr){
+          updateError=retryErr||updateError;
+        }
+
+        // Final verification: if the target value is in DB, consider it a success.
+        try{
+          const {data:finalRow,error:finalError}=await supabaseClient
+            .from("students")
+            .select("points")
+            .eq("id",student.id)
+            .single();
+
+          if(!finalError && Number(finalRow?.points)===safeValue){
+            student.points=safeValue;
+            return student.points;
+          }
+        }catch{}
+
+        throw updateError;
+      }
+
       student.points=safeValue;
 
-      // Best-effort verification only.
+      // Best-effort verification only; never turn a successful write into a false error.
       try{
         const {data:row,error:verifyError}=await supabaseClient
           .from("students")
@@ -1877,7 +1929,7 @@ Noah"
         save();
       }catch(err){
         console.error("REASON POINT ERROR",err);
-        alert("❌ Impossible d’enregistrer le point.\n\n"+(err?.message||String(err)));
+        alert("❌ Le point n’a pas pu être confirmé dans Supabase. Réessaie une fois.\n\n"+(err?.message||String(err)));
         buttons.forEach(b=>b.disabled=false);
       }finally{
         endLocalTeacherMutation();
