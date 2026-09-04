@@ -143,6 +143,32 @@
       margin-top:0 !important;
     }
 
+
+    .zenquest-footer{
+      max-width:1500px;
+      margin:24px auto 10px;
+      padding:16px 20px 24px;
+      text-align:center;
+      color:#64748b;
+      font-size:13px;
+      line-height:1.6;
+    }
+    .zenquest-footer strong{color:#334155}
+
+    .zenquest-footer-fixed{
+      width:100%;
+      max-width:1500px;
+      margin:22px auto 0;
+      padding:18px 20px 26px;
+      text-align:center;
+      color:#64748b;
+      font-size:13px;
+      line-height:1.55;
+      box-sizing:border-box;
+      clear:both;
+    }
+    .zenquest-footer-fixed strong{color:#334155}
+
 </style>
 </head>
 <body>
@@ -168,7 +194,7 @@
         <div class="topbar" style="margin-bottom:16px">
           <div><div class="pill" id="studentClassPill">Classe</div></div>
           <div class="brand">
-            <h1>ZenQuest</h1>
+<h1>ZenQuest</h1>
             <p>Espace élève • lecture seule</p>
           </div>
           <div class="actions">
@@ -183,7 +209,7 @@
     <div class="topbar">
       <div><div class="pill">Classe exemple</div></div>
       <div class="brand">
-        <h1>ZenQuest</h1>
+<h1>ZenQuest</h1>
         <p>Classe sereine • progression • rituel</p>
       </div>
       <div class="actions">
@@ -1203,15 +1229,33 @@ Noah"
         btn.style.padding="10px";
         btn.style.minHeight="54px";
         btn.textContent=avatar;
-        btn.onclick=()=>{
+        btn.onclick=async()=>{
           const student=currentClass().students.find(s=>s.id===avatarTargetStudentId);
-          if(student){
-            student.avatar=avatar;
+          if(!student) return;
+
+          btn.disabled=true;
+          const previousAvatar=student.avatar;
+          try{
+            const {data,error}=await supabaseClient
+              .from("students")
+              .update({avatar})
+              .eq("id",student.id)
+              .select("avatar")
+              .single();
+
+            if(error) throw error;
+
+            student.avatar=data?.avatar||avatar;
             save();
             render();
+            document.getElementById("avatarModal").classList.remove("show");
+            avatarTargetStudentId=null;
+          }catch(err){
+            student.avatar=previousAvatar;
+            console.error("AVATAR UPDATE ERROR",err);
+            alert("❌ Impossible d’enregistrer l’emoji dans Supabase.\n\n"+(err?.message||String(err)));
+            btn.disabled=false;
           }
-          document.getElementById("avatarModal").classList.remove("show");
-          avatarTargetStudentId=null;
         };
         grid.appendChild(btn);
       });
@@ -3652,5 +3696,11 @@ Noah"
 
     initAuth();
   </script>
+
+  <footer class="zenquest-footer-fixed">
+    <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
+    © 2026 ZenQuest — Tous droits réservés.
+  </footer>
+
 </body>
 </html>
