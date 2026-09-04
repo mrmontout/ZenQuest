@@ -277,6 +277,10 @@
       #boardText{font-size:27px!important}
       #boardTimer{font-size:76px!important}
     }
+    @media(max-width:620px){
+      #boardQuickCommands{grid-template-columns:1fr 1fr!important}
+      #boardRemoteModal .modal-card{padding:14px!important}
+    }
 </style>
 </head>
 <body>
@@ -332,6 +336,7 @@
           <button class="btn outline" id="rewardRequestsBtn">🎁 Récompenses <span id="rewardRequestsBadge"></span></button>
           <button class="btn outline" id="studentCodesBtn">🔑 Codes élèves</button>
           <button class="btn outline" id="classMessagesBtn">📢 Message classe</button>
+          <button class="btn outline" id="boardRemoteBtn">📱 Télécommande</button>
           <button class="btn outline" id="boardBtn">🖥️ Écran de classe</button>
           <button class="btn outline" id="logoutBtn">🔒 Déconnexion</button>
         </div>
@@ -339,7 +344,7 @@
     </div>
 
     <div id="zqVersionBadge" style="position:fixed;right:12px;bottom:12px;z-index:999998;padding:7px 10px;border-radius:999px;background:#0f172a;color:white;font-size:11px;font-weight:900;box-shadow:0 6px 18px rgba(15,23,42,.22);opacity:.88">
-      TEST • ZenQuest 4.8.4
+      TEST • ZenQuest 4.9.0
     </div>
 
     <div id="supabaseTeacherStatus" class="panel" style="margin-bottom:12px;border:1px solid #a7f3d0;background:#ecfdf5;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
@@ -867,83 +872,73 @@ Noah"
 
 
   <div class="modal" id="boardModal">
-    <div class="modal-card" style="width:min(1100px,97vw);max-height:94vh;overflow:auto">
-      <div class="modal-header">
-        <div>
-          <h2 style="margin:0">🖥️ Écran de classe</h2>
-          <div class="muted">À afficher au tableau pendant l’accueil ou le travail autonome.</div>
-        </div>
-        <button class="btn outline" id="closeBoardBtn">Retour ZenQuest</button>
-      </div>
+    <div class="modal-card" style="width:min(1200px,98vw);height:min(92vh,900px);max-height:94vh;overflow:hidden;padding:18px;position:relative">
+      <button class="btn outline" id="closeBoardBtn" title="Retour ZenQuest"
+        style="position:absolute;right:14px;top:14px;z-index:3;opacity:.28;font-size:12px;padding:6px 9px">✕</button>
 
-      <div class="row wrap" style="margin:14px 0">
-        <button class="btn primary boardPresetBtn" data-preset="welcome">👋 Accueil</button>
-        <button class="btn outline boardPresetBtn" data-preset="work">✏️ Au boulot !</button>
-        <select id="customBoardSelect" style="min-width:210px"><option value="">⭐ Mes messages enregistrés…</option></select>
-        <button class="btn outline" id="manageBoardBtn">⚙️ Mes messages</button>
-      </div>
-
-      <div class="box" id="boardRemoteControl" style="margin-bottom:14px;border:2px solid #bfdbfe;background:#eff6ff">
-        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
-          <div>
-            <div style="font-size:20px;font-weight:950">📱 Télécommande du tableau</div>
-            <div class="muted" style="margin-top:3px">Depuis le téléphone, envoie un message : il s’affiche automatiquement au tableau avec son chrono.</div>
-          </div>
-          <label class="toolbar-chip" style="font-weight:900">⏱️ Durée
-            <input id="remoteBoardMinutes" type="number" min="1" max="60" value="5" style="width:66px;margin-left:6px"> min
-          </label>
-        </div>
-
-        <div id="boardQuickCommands" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;margin-top:12px">
-          <button class="btn outline boardQuickBtn" data-command="silence">🤫 Silence</button>
-          <button class="btn outline boardQuickBtn" data-command="listen">👂 Écoute</button>
-          <button class="btn outline boardQuickBtn" data-command="individual">✍️ Travail individuel</button>
-          <button class="btn outline boardQuickBtn" data-command="group">👥 Travail en groupe</button>
-          <button class="btn outline boardQuickBtn" data-command="copy">📖 Copiez</button>
-          <button class="btn outline boardQuickBtn" data-command="finish">🎒 Rangez</button>
-        </div>
-
-        <div style="display:grid;grid-template-columns:88px minmax(160px,.7fr) minmax(220px,1.3fr);gap:8px;margin-top:12px">
-          <input id="remoteBoardEmoji" value="📌" maxlength="4" aria-label="Emoji" style="min-width:0">
-          <input id="remoteBoardTitle" placeholder="Titre — ex. Exercice 4" style="min-width:0">
-          <input id="remoteBoardText" placeholder="Message — ex. Faites les questions 1 à 5 en silence." style="min-width:0">
-        </div>
-        <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:8px">
-          <button class="btn danger" id="remoteBoardCloseBtn">✖️ Fermer au tableau</button>
-          <button class="btn green" id="remoteBoardSendBtn">📺 Afficher + démarrer</button>
-        </div>
-      </div>
-
-      <div id="boardDisplay" style="border:1px solid #e2e8f0;border-radius:24px;padding:38px;min-height:520px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:#f8fafc">
-        <div id="boardEmoji" style="font-size:84px">👋</div>
-        <div id="boardTitle" style="font-size:64px;font-weight:950;margin-top:10px">Bonjour !</div>
-        <div id="boardText" style="font-size:36px;line-height:1.45;margin-top:18px;white-space:pre-wrap;font-weight:800">Sortez vos affaires.
+      <div id="boardDisplay" style="height:100%;border:0;border-radius:28px;padding:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:#f8fafc">
+        <div id="boardEmoji" style="font-size:96px">👋</div>
+        <div id="boardTitle" style="font-size:72px;font-weight:950;margin-top:12px">Bonjour !</div>
+        <div id="boardText" style="font-size:38px;line-height:1.45;margin-top:20px;white-space:pre-wrap;font-weight:800;max-width:980px">Sortez vos affaires.
 Écrivez la date.</div>
-        <div id="boardTimer" style="font-size:104px;font-weight:950;letter-spacing:3px;margin-top:28px">02:00</div>
-        <div class="row wrap" style="justify-content:center;margin-top:14px">
-          <button class="btn green" id="boardTimerStartBtn">▶️ Démarrer</button>
-          <button class="btn outline" id="boardTimerPauseBtn">⏸️ Pause</button>
-          <button class="btn outline" id="boardTimerResetBtn">↩️ Recommencer</button>
-          <label class="toolbar-chip">Durée <input id="boardMinutes" type="number" min="1" max="60" value="2" style="width:62px;margin-left:6px"> min</label>
-        </div>
-      </div>
-
-      <div id="boardManage" class="box" style="display:none;margin-top:14px">
-        <div style="font-size:19px;font-weight:900">⭐ Ajouter un message personnalisé</div>
-        <div class="row wrap" style="margin-top:10px">
-          <input id="boardCustomEmoji" value="📌" maxlength="4" style="width:80px" aria-label="Emoji">
-          <input id="boardCustomTitle" placeholder="Titre — ex. Correction" style="flex:1;min-width:180px">
-          <input id="boardCustomMinutes" type="number" min="1" max="60" value="5" style="width:90px" aria-label="Minutes">
-        </div>
-        <textarea id="boardCustomText" placeholder="Écris le message à afficher au tableau…"
-          style="width:100%;min-height:100px;margin-top:10px;border:1px solid #e2e8f0;border-radius:16px;padding:12px;font:inherit"></textarea>
-        <button class="btn green" id="saveBoardPresetBtn" style="margin-top:10px">💾 Enregistrer ce message</button>
-        <div id="boardPresetList" style="margin-top:12px"></div>
+        <div id="boardTimer" style="font-size:118px;font-weight:950;letter-spacing:3px;margin-top:30px">02:00</div>
       </div>
     </div>
   </div>
 
-  <div class="modal" id="mayaSupabaseTestModal">
+  
+  <div class="modal" id="boardRemoteModal">
+    <div class="modal-card" style="width:min(760px,95vw);max-height:92vh;overflow:auto">
+      <div class="modal-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div>
+          <h2 style="margin:0">📱 Télécommande du tableau</h2>
+          <div class="muted" style="margin-top:4px">Le tableau n’affiche que la consigne et le chrono. Les réglages restent ici.</div>
+        </div>
+        <button class="btn outline" id="closeBoardRemoteBtn">Fermer</button>
+      </div>
+
+      <div class="box" style="margin-top:14px;border:2px solid #bfdbfe;background:#eff6ff">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+          <strong>⏱️ Durée du message</strong>
+          <label class="toolbar-chip" style="font-weight:900">
+            <input id="remoteBoardMinutes" type="number" min="1" max="60" value="5" style="width:70px"> min
+          </label>
+        </div>
+
+        <div id="boardQuickCommands" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px">
+          <button class="btn outline boardQuickBtn" data-command="silence">🤫 Silence</button>
+          <button class="btn outline boardQuickBtn" data-command="listen">👂 Écoute</button>
+          <button class="btn outline boardQuickBtn" data-command="individual">✍️ Travail individuel</button>
+          <button class="btn outline boardQuickBtn" data-command="group">👥 Travail en groupe</button>
+          <button class="btn outline boardQuickBtn" data-command="copy">📖 À copier</button>
+          <button class="btn outline boardQuickBtn" data-command="finish">🎒 On range</button>
+        </div>
+      </div>
+
+      <div class="box" style="margin-top:12px">
+        <div style="font-size:18px;font-weight:900">✍️ Message personnalisé</div>
+        <div style="display:grid;grid-template-columns:78px 1fr;gap:8px;margin-top:10px">
+          <input id="remoteBoardEmoji" value="📌" maxlength="4" aria-label="Emoji">
+          <input id="remoteBoardTitle" placeholder="Titre — ex. Exercice 4">
+          <textarea id="remoteBoardText" placeholder="Message — ex. Faites les questions 1 à 5 en silence."
+            style="grid-column:1 / -1;width:100%;min-height:90px;border:1px solid #e2e8f0;border-radius:14px;padding:11px;font:inherit"></textarea>
+        </div>
+        <button class="btn green" id="remoteBoardSendBtn" style="width:100%;margin-top:9px">📺 Afficher + démarrer</button>
+      </div>
+
+      <div class="box" style="margin-top:12px">
+        <div style="font-size:18px;font-weight:900">⏱️ Contrôle du chrono affiché</div>
+        <div class="row wrap" style="margin-top:10px">
+          <button class="btn green" id="remoteTimerStartBtn">▶️ Démarrer / reprendre</button>
+          <button class="btn outline" id="remoteTimerPauseBtn">⏸️ Pause</button>
+          <button class="btn outline" id="remoteTimerResetBtn">↩️ Recommencer</button>
+          <button class="btn danger" id="remoteBoardCloseBtn">✖️ Fermer au tableau</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="modal" id="mayaSupabaseTestModal">
     <div class="modal-card" style="width:min(680px,94vw)">
       <div class="modal-header">
         <div>
@@ -1629,15 +1624,29 @@ Noah"
 
     async function updateStudentPointsInSupabase(student,newPoints){
       if(!student?.id) throw new Error("Élève invalide.");
-      const {data,error}=await supabaseClient
+      const safeValue=Math.max(0,Math.min(MAX_POINTS,Number(newPoints)||0));
+
+      const {error}=await supabaseClient
         .from("students")
-        .update({points:newPoints})
-        .eq("id",student.id)
-        .select("points")
-        .single();
+        .update({points:safeValue})
+        .eq("id",student.id);
 
       if(error) throw error;
-      student.points=Number(data?.points ?? newPoints);
+
+      // The write is authoritative. Do not make a successful −1/+1 look like a failure
+      // just because a follow-up SELECT or realtime refresh is momentarily late.
+      student.points=safeValue;
+
+      // Best-effort verification only.
+      try{
+        const {data:row,error:verifyError}=await supabaseClient
+          .from("students")
+          .select("points")
+          .eq("id",student.id)
+          .single();
+        if(!verifyError && row) student.points=Number(row.points ?? safeValue);
+      }catch{}
+
       return student.points;
     }
 
@@ -2779,19 +2788,11 @@ Noah"
           classStarGained:everyonePerfect
         };
 
-        // Public classroom feedback: show the lesson ending on the projected board.
-        const endBoardPreset={
-          emoji:"🔔",
-          title:"FIN DU COURS",
-          text:`${bonusPointNames.length} élève${bonusPointNames.length>1?"s":""} gagne${bonusPointNames.length>1?"nt":""} le +1 de fin de cours.\n${perfectNames.length} élève${perfectNames.length>1?"s":""} sans perte de point.`,
-          minutes:1
-        };
+        // Show the exact same existing summary popup on this device and all other teacher devices.
         try{
-          const endAt=Date.now()+15000;
-          applyBoardShow({...endBoardPreset,endAt,autoStart:true});
-          sendBoardCommand({action:"show",...endBoardPreset,endAt,autoStart:true});
-        }catch(boardErr){
-          console.error("END LESSON BOARD ERROR",boardErr);
+          sendBoardCommand({action:"summary",summary:lessonSummary});
+        }catch(summarySyncErr){
+          console.error("SUMMARY SYNC ERROR",summarySyncErr);
         }
 
         showEndLessonStatus("Fin de cours validée !", "success", true);
@@ -3696,22 +3697,7 @@ Noah"
     let boardRemoteChannel=null;
     let boardRemoteClassId=null;
 
-    function renderBoardPresetOptions(){
-      const cls=currentClass();
-      const sel=document.getElementById("customBoardSelect");
-      sel.innerHTML='<option value="">⭐ Mes messages enregistrés…</option>'+
-        (cls.boardPresets||[]).map(p=>`<option value="${p.id}">${escapeHTML(p.emoji||"📌")} ${escapeHTML(p.title)}</option>`).join("");
-      const list=document.getElementById("boardPresetList");
-      if(!(cls.boardPresets||[]).length){ list.innerHTML='<div class="muted">Aucun message personnalisé enregistré.</div>'; return; }
-      list.innerHTML=cls.boardPresets.map(p=>`
-        <div class="row wrap" style="justify-content:space-between;border-top:1px solid #e2e8f0;padding:9px 0">
-          <div><strong>${escapeHTML(p.emoji||"📌")} ${escapeHTML(p.title)}</strong> <span class="muted">• ${p.minutes} min</span></div>
-          <button class="btn outline small deleteBoardPresetBtn" data-id="${p.id}">🗑️</button>
-        </div>`).join("");
-      list.querySelectorAll(".deleteBoardPresetBtn").forEach(btn=>btn.onclick=()=>{
-        cls.boardPresets=cls.boardPresets.filter(p=>p.id!==btn.dataset.id); save(); renderBoardPresetOptions();
-      });
-    }
+    function renderBoardPresetOptions(){ /* configuration moved to Télécommande */ }
 
     function setBoardPreset(preset,opts={}){
       if(!preset) return;
@@ -3719,7 +3705,7 @@ Noah"
       document.getElementById("boardEmoji").textContent=preset.emoji||"📌";
       document.getElementById("boardTitle").textContent=preset.title||"";
       document.getElementById("boardText").textContent=preset.text||"";
-      document.getElementById("boardMinutes").value=Math.max(1,Math.min(60,Number(preset.minutes)||2));
+      if(document.getElementById("remoteBoardMinutes")) document.getElementById("remoteBoardMinutes").value=Math.max(1,Math.min(60,Number(preset.minutes)||2));
       if(opts.remainingSeconds!==undefined){
         stopBoardTimer(false);
         boardRemaining=Math.max(0,Math.round(Number(opts.remainingSeconds)||0));
@@ -3732,9 +3718,7 @@ Noah"
     }
 
     function openBoard(reset=true){
-      renderBoardPresetOptions();
       if(reset) setBoardPreset(BOARD_DEFAULTS.welcome);
-      document.getElementById("boardManage").style.display="none";
       document.getElementById("boardModal").classList.add("show");
     }
 
@@ -3770,7 +3754,7 @@ Noah"
 
     function resetBoardTimer(broadcast=true){
       stopBoardTimer(false);
-      const mins=Math.max(1,Math.min(60,Number(document.getElementById("boardMinutes").value)||2));
+      const mins=Math.max(1,Math.min(60,Number(document.getElementById("remoteBoardMinutes")?.value)||2));
       boardRemaining=Math.round(mins*60);
       updateBoardTimer();
       if(broadcast) sendBoardCommand({action:"reset",remaining:boardRemaining});
@@ -3823,6 +3807,9 @@ Noah"
         stopBoardTimer(false);
         boardRemaining=Math.max(0,Math.round(Number(payload.remaining)||0));
         updateBoardTimer();
+      }else if(payload.action==="summary"){
+        // Same summary popup on every connected teacher device.
+        showSummary(payload.summary||{perfectNames:[],bonusPointNames:[],stayedAt20:[],levelUps:[],starNames:[],classStarGained:false});
       }else if(payload.action==="close"){
         stopBoardTimer(false);
         document.getElementById("boardModal").classList.remove("show");
@@ -3893,19 +3880,7 @@ Noah"
       sendBoardCommand({action:"show",...preset,endAt,autoStart:true});
     }
 
-    function saveBoardPreset(){
-      const cls=currentClass();
-      const title=document.getElementById("boardCustomTitle").value.trim();
-      const body=document.getElementById("boardCustomText").value.trim();
-      if(!title||!body) return;
-      cls.boardPresets.push({
-        id:uid(),emoji:document.getElementById("boardCustomEmoji").value.trim()||"📌",
-        title,text:body,minutes:Math.max(1,Math.min(60,Number(document.getElementById("boardCustomMinutes").value)||5))
-      });
-      document.getElementById("boardCustomTitle").value="";
-      document.getElementById("boardCustomText").value="";
-      save(); renderBoardPresetOptions();
-    }
+    function saveBoardPreset(){ /* moved out of projected display */ }
 
 
     function openMayaSupabaseTest(){
@@ -5198,30 +5173,33 @@ Noah"
     document.getElementById("closeClassMessagesBtn").onclick=()=>document.getElementById("classMessagesModal").classList.remove("show");
     document.getElementById("addClassMessageBtn").onclick=addClassMessage;
     document.getElementById("boardBtn").onclick=()=>openBoard(true);
-    document.getElementById("closeBoardBtn").onclick=()=>{stopBoardTimer(false);document.getElementById("boardModal").classList.remove("show");sendBoardCommand({action:"close"});};
-    document.querySelectorAll(".boardPresetBtn").forEach(btn=>btn.onclick=()=>{
-      const p=BOARD_DEFAULTS[btn.dataset.preset];
-      setBoardPreset(p);
-      sendBoardCommand({action:"show",...p,remaining:boardRemaining});
-    });
-    document.getElementById("boardTimerStartBtn").onclick=()=>startBoardTimer(true);
-    document.getElementById("boardTimerPauseBtn").onclick=()=>stopBoardTimer(true);
-    document.getElementById("boardTimerResetBtn").onclick=()=>resetBoardTimer(true);
-    document.getElementById("boardMinutes").onchange=()=>resetBoardTimer(true);
-    document.querySelectorAll(".boardQuickBtn").forEach(btn=>btn.onclick=()=>sendQuickBoardCommand(btn.dataset.command));
-    document.getElementById("remoteBoardSendBtn").onclick=sendCustomBoardCommand;
-    document.getElementById("remoteBoardCloseBtn").onclick=()=>{
+    document.getElementById("boardRemoteBtn").onclick=()=>{
+      document.getElementById("boardRemoteModal").classList.add("show");
+    };
+    document.getElementById("closeBoardRemoteBtn").onclick=()=>document.getElementById("boardRemoteModal").classList.remove("show");
+
+    document.getElementById("closeBoardBtn").onclick=()=>{
       stopBoardTimer(false);
       document.getElementById("boardModal").classList.remove("show");
       sendBoardCommand({action:"close"});
     };
-    document.getElementById("manageBoardBtn").onclick=()=>{
-      const el=document.getElementById("boardManage"); el.style.display=el.style.display==="none"?"block":"none"; renderBoardPresetOptions();
+
+    document.querySelectorAll(".boardQuickBtn").forEach(btn=>btn.onclick=()=>sendQuickBoardCommand(btn.dataset.command));
+    document.getElementById("remoteBoardSendBtn").onclick=sendCustomBoardCommand;
+
+    document.getElementById("remoteTimerStartBtn").onclick=()=>startBoardTimer(true);
+    document.getElementById("remoteTimerPauseBtn").onclick=()=>stopBoardTimer(true);
+    document.getElementById("remoteTimerResetBtn").onclick=()=>{
+      const mins=Math.max(1,Math.min(60,Number(document.getElementById("remoteBoardMinutes").value)||5));
+      boardRemaining=Math.round(mins*60);
+      updateBoardTimer();
+      sendBoardCommand({action:"reset",remaining:boardRemaining});
     };
-    document.getElementById("saveBoardPresetBtn").onclick=saveBoardPreset;
-    document.getElementById("customBoardSelect").onchange=e=>{
-      const p=currentClass().boardPresets.find(x=>x.id===e.target.value);
-      if(p){setBoardPreset(p);sendBoardCommand({action:"show",...p,remaining:boardRemaining});}
+
+    document.getElementById("remoteBoardCloseBtn").onclick=()=>{
+      stopBoardTimer(false);
+      document.getElementById("boardModal").classList.remove("show");
+      sendBoardCommand({action:"close"});
     };
     document.getElementById("closeStudentRulesBtn").onclick=()=>document.getElementById("studentRulesModal").classList.remove("show");
     document.getElementById("closeReasonPickerBtn").onclick=()=>{pendingReasonAction=null;document.getElementById("reasonPickerModal").classList.remove("show");};
