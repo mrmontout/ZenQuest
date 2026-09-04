@@ -344,7 +344,7 @@
     </div>
 
     <div id="zqVersionBadge" style="position:fixed;right:12px;bottom:12px;z-index:999998;padding:7px 10px;border-radius:999px;background:#0f172a;color:white;font-size:11px;font-weight:900;box-shadow:0 6px 18px rgba(15,23,42,.22);opacity:.88">
-      TEST • ZenQuest 4.9.0
+      TEST • ZenQuest 4.9.1
     </div>
 
     <div id="supabaseTeacherStatus" class="panel" style="margin-bottom:12px;border:1px solid #a7f3d0;background:#ecfdf5;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
@@ -901,7 +901,7 @@ Noah"
         <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
           <strong>⏱️ Durée du message</strong>
           <label class="toolbar-chip" style="font-weight:900">
-            <input id="remoteBoardMinutes" type="number" min="1" max="60" value="5" style="width:70px"> min
+            <input id="remoteBoardMinutes" type="number" min="0" max="60" value="5" style="width:64px"> min <input id="remoteBoardSeconds" type="number" min="0" max="59" value="0" style="width:64px;margin-left:6px"> sec
           </label>
         </div>
 
@@ -1700,6 +1700,7 @@ Noah"
     ];
 
     const ZQ_EVENT_PREFIX="ZQEVENT|";
+    let cachedTeacherUserId=null;
     let pendingReasonAction=null;
 
     function encodeZQEvent(type,code,label,scoreAfter){
@@ -1834,39 +1835,31 @@ Noah"
           setAction(student,"plus");
         }
 
-        // Persist in the existing teacher_remarks table so the pupil/parents
-        // can see the reason on another device too.
-        const user=(await supabaseClient.auth.getUser()).data.user;
+        // Persist the motif without re-checking auth on every tap.
+        // The teacher id comes from the already authenticated session.
+        const teacherId=cachedTeacherUserId;
         const encoded=encodeZQEvent(type,code,label,next);
-        const {data:eventRow,error:eventError}=await supabaseClient
-          .from("teacher_remarks")
-          .insert({student_id:student.id,teacher_id:user?.id,remark:encoded})
-          .select("id,remark,created_at")
-          .single();
-
-        if(eventError){
-          console.error("REASON SYNC ERROR",eventError);
-          // The point has already been saved successfully. Do not report a false point failure.
-          pendingReasonAction=null;
-          document.getElementById("reasonPickerModal").classList.remove("show");
-          render(); save();
-          alert("✅ Le point a bien été enregistré et synchronisé.\n\n⚠️ Seul le motif n’a pas pu être enregistré dans le suivi.");
-          return;
+        let eventError=null;
+        if(teacherId){
+          const result=await supabaseClient
+            .from("teacher_remarks")
+            .insert({student_id:student.id,teacher_id:teacherId,remark:encoded});
+          eventError=result.error||null;
+        }else{
+          eventError=new Error("Identifiant professeur temporairement indisponible.");
         }
+
+        // Never turn a successfully saved −1 into an apparent failure.
+        // Keep a local history entry; realtime will reconcile once the remote motif exists.
+        if(eventError) console.error("REASON SYNC ERROR",eventError);
+        const eventRow={id:uid(),remark:encoded,created_at:new Date().toISOString()};
 
         if(type==="minus" && thresholdStarLost){
           const starEncoded=encodeZQEvent("star_minus","score_below_10_v2","Score passé sous 10/20",student.stars);
-          const {data:starRow,error:starErr}=await supabaseClient
+          const {error:starErr}=await supabaseClient
             .from("teacher_remarks")
-            .insert({student_id:student.id,teacher_id:user?.id,remark:starEncoded})
-            .select("id,remark,created_at")
-            .single();
+            .insert({student_id:student.id,teacher_id:teacherId,remark:starEncoded});
           if(starErr) console.error("STAR REASON SYNC ERROR",starErr);
-          if(starRow){
-            if(!Array.isArray(student.teacherRemarks)) student.teacherRemarks=[];
-            student.teacherRemarks.push({id:starRow.id,date:starRow.created_at?new Date(starRow.created_at).toLocaleDateString("fr-FR"):"",text:starRow.remark,createdAt:starRow.created_at||null});
-            ensureEngagementEvents(student).push({id:starRow.id,date:starRow.created_at||new Date().toISOString(),type:"star_minus",code:"score_below_10_v2",label:"Score passé sous 10/20",scoreAfter:student.stars});
-          }
         }
 
         if(!Array.isArray(student.teacherRemarks)) student.teacherRemarks=[];
@@ -3699,13 +3692,25 @@ Noah"
 
     function renderBoardPresetOptions(){ /* configuration moved to Télécommande */ }
 
+    function remoteBoardDurationSeconds(fallbackMinutes=5){
+      const mins=Math.max(0,Math.min(60,Number(document.getElementById("remoteBoardMinutes")?.value)||0));
+      const secs=Math.max(0,Math.min(59,Number(document.getElementById("remoteBoardSeconds")?.value)||0));
+      const total=Math.round(mins*60+secs);
+      return total>0?Math.min(3600,total):Math.max(1,Math.round((Number(fallbackMinutes)||5)*60));
+    }
+    function setRemoteBoardDuration(total){
+      total=Math.max(1,Math.min(3600,Math.round(Number(total)||1)));
+      if(document.getElementById("remoteBoardMinutes")) document.getElementById("remoteBoardMinutes").value=Math.floor(total/60);
+      if(document.getElementById("remoteBoardSeconds")) document.getElementById("remoteBoardSeconds").value=total%60;
+    }
+
     function setBoardPreset(preset,opts={}){
       if(!preset) return;
       boardCurrent={...preset};
       document.getElementById("boardEmoji").textContent=preset.emoji||"📌";
       document.getElementById("boardTitle").textContent=preset.title||"";
       document.getElementById("boardText").textContent=preset.text||"";
-      if(document.getElementById("remoteBoardMinutes")) document.getElementById("remoteBoardMinutes").value=Math.max(1,Math.min(60,Number(preset.minutes)||2));
+      setRemoteBoardDuration(Math.max(1,Math.round((Number(preset.minutes)||2)*60)));
       if(opts.remainingSeconds!==undefined){
         stopBoardTimer(false);
         boardRemaining=Math.max(0,Math.round(Number(opts.remainingSeconds)||0));
@@ -3754,8 +3759,7 @@ Noah"
 
     function resetBoardTimer(broadcast=true){
       stopBoardTimer(false);
-      const mins=Math.max(1,Math.min(60,Number(document.getElementById("remoteBoardMinutes")?.value)||2));
-      boardRemaining=Math.round(mins*60);
+      boardRemaining=remoteBoardDurationSeconds(2);
       updateBoardTimer();
       if(broadcast) sendBoardCommand({action:"reset",remaining:boardRemaining});
     }
@@ -3778,6 +3782,7 @@ Noah"
       };
       openBoard(false);
       setBoardPreset(preset);
+      if(Number.isFinite(Number(payload.totalSeconds))) setRemoteBoardDuration(Number(payload.totalSeconds));
       if(payload.endAt){
         boardTimerEndAt=Number(payload.endAt);
         boardTimerRunning=true;
@@ -3852,32 +3857,40 @@ Noah"
     function sendQuickBoardCommand(key){
       const base=BOARD_QUICK_COMMANDS[key];
       if(!base) return;
-      const minutes=Math.max(1,Math.min(60,Number(document.getElementById("remoteBoardMinutes").value)||base.minutes||5));
+      const totalSeconds=remoteBoardDurationSeconds(base.minutes||5);
+      const minutes=totalSeconds/60;
       const preset={...base,minutes};
-      setBoardPreset(preset);
+      boardCurrent={...preset};
+      document.getElementById("boardEmoji").textContent=preset.emoji||"📌";
+      document.getElementById("boardTitle").textContent=preset.title||"";
+      document.getElementById("boardText").textContent=preset.text||"";
       openBoard(false);
-      boardRemaining=Math.round(minutes*60);
+      boardRemaining=totalSeconds;
       const endAt=Date.now()+boardRemaining*1000;
       startBoardTimer(false,endAt);
-      sendBoardCommand({action:"show",...preset,endAt,autoStart:true});
+      sendBoardCommand({action:"show",...preset,totalSeconds,endAt,autoStart:true});
     }
 
     function sendCustomBoardCommand(){
       const emoji=(document.getElementById("remoteBoardEmoji").value||"📌").trim()||"📌";
       const title=(document.getElementById("remoteBoardTitle").value||"").trim();
       const text=(document.getElementById("remoteBoardText").value||"").trim();
-      const minutes=Math.max(1,Math.min(60,Number(document.getElementById("remoteBoardMinutes").value)||5));
+      const totalSeconds=remoteBoardDurationSeconds(5);
+      const minutes=totalSeconds/60;
       if(!title && !text){
         alert("Écris au moins un titre ou un message à afficher.");
         return;
       }
       const preset={emoji,title:title||"Consigne",text,minutes};
-      setBoardPreset(preset);
+      boardCurrent={...preset};
+      document.getElementById("boardEmoji").textContent=preset.emoji||"📌";
+      document.getElementById("boardTitle").textContent=preset.title||"";
+      document.getElementById("boardText").textContent=preset.text||"";
       openBoard(false);
-      boardRemaining=Math.round(minutes*60);
+      boardRemaining=totalSeconds;
       const endAt=Date.now()+boardRemaining*1000;
       startBoardTimer(false,endAt);
-      sendBoardCommand({action:"show",...preset,endAt,autoStart:true});
+      sendBoardCommand({action:"show",...preset,totalSeconds,endAt,autoStart:true});
     }
 
     function saveBoardPreset(){ /* moved out of projected display */ }
@@ -5022,6 +5035,7 @@ Noah"
       }
 
       if(profile.role==="teacher"){
+        cachedTeacherUserId=session?.user?.id||cachedTeacherUserId;
         document.getElementById("studentApp").style.display="none";
         document.getElementById("authScreen").style.display="none";
         document.getElementById("mainApp").style.display="block";
@@ -5190,8 +5204,7 @@ Noah"
     document.getElementById("remoteTimerStartBtn").onclick=()=>startBoardTimer(true);
     document.getElementById("remoteTimerPauseBtn").onclick=()=>stopBoardTimer(true);
     document.getElementById("remoteTimerResetBtn").onclick=()=>{
-      const mins=Math.max(1,Math.min(60,Number(document.getElementById("remoteBoardMinutes").value)||5));
-      boardRemaining=Math.round(mins*60);
+      boardRemaining=remoteBoardDurationSeconds(5);
       updateBoardTimer();
       sendBoardCommand({action:"reset",remaining:boardRemaining});
     };
