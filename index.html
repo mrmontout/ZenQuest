@@ -338,6 +338,10 @@
       </div>
     </div>
 
+    <div id="zqVersionBadge" style="position:fixed;right:12px;bottom:12px;z-index:999998;padding:7px 10px;border-radius:999px;background:#0f172a;color:white;font-size:11px;font-weight:900;box-shadow:0 6px 18px rgba(15,23,42,.22);opacity:.88">
+      TEST • ZenQuest 4.8.4
+    </div>
+
     <div id="supabaseTeacherStatus" class="panel" style="margin-bottom:12px;border:1px solid #a7f3d0;background:#ecfdf5;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
       <div>
         <strong>☁️ Supabase actif</strong>
@@ -1801,6 +1805,7 @@ Noah"
 
       const buttons=[...document.querySelectorAll("#reasonPickerGrid button")];
       buttons.forEach(b=>b.disabled=true);
+      beginLocalTeacherMutation();
       try{
         await updateStudentPointsInSupabase(student,next);
 
@@ -1870,8 +1875,10 @@ Noah"
         save();
       }catch(err){
         console.error("REASON POINT ERROR",err);
-        alert("❌ Impossible d’enregistrer le point et son motif.\n\n"+(err?.message||String(err)));
+        alert("❌ Impossible d’enregistrer le point.\n\n"+(err?.message||String(err)));
         buttons.forEach(b=>b.disabled=false);
+      }finally{
+        endLocalTeacherMutation();
       }
     }
 
@@ -2771,11 +2778,36 @@ Noah"
           perfectNames,bonusPointNames,stayedAt20,levelUps,starNames,
           classStarGained:everyonePerfect
         };
+
+        // Public classroom feedback: show the lesson ending on the projected board.
+        const endBoardPreset={
+          emoji:"🔔",
+          title:"FIN DU COURS",
+          text:`${bonusPointNames.length} élève${bonusPointNames.length>1?"s":""} gagne${bonusPointNames.length>1?"nt":""} le +1 de fin de cours.\n${perfectNames.length} élève${perfectNames.length>1?"s":""} sans perte de point.`,
+          minutes:1
+        };
+        try{
+          const endAt=Date.now()+15000;
+          applyBoardShow({...endBoardPreset,endAt,autoStart:true});
+          sendBoardCommand({action:"show",...endBoardPreset,endAt,autoStart:true});
+        }catch(boardErr){
+          console.error("END LESSON BOARD ERROR",boardErr);
+        }
+
         showEndLessonStatus("Fin de cours validée !", "success", true);
         setTimeout(()=>{
           try{ showSummary(lessonSummary); }
           catch(summaryErr){ console.error("SUMMARY ERROR", summaryErr); }
         },350);
+
+        // Re-read the newly created lesson_scores: they are the boundary of the finished lesson.
+        // The very next −/+ therefore starts a clean new lesson, even on the phone.
+        const keepClassId=state.currentClassId;
+        const keepViewMode=state.viewMode;
+        await loadTeacherSupabaseData();
+        state.currentClassId=keepClassId;
+        state.viewMode=keepViewMode;
+        render();
 
       }catch(err){
         console.error("FIN D'HEURE ERROR",err);
@@ -4896,6 +4928,18 @@ Noah"
     }
 
 
+    let localTeacherMutationDepth=0;
+    let deferredRealtimeAfterMutation=false;
+
+    function beginLocalTeacherMutation(){ localTeacherMutationDepth+=1; }
+    function endLocalTeacherMutation(){
+      localTeacherMutationDepth=Math.max(0,localTeacherMutationDepth-1);
+      if(localTeacherMutationDepth===0 && deferredRealtimeAfterMutation){
+        deferredRealtimeAfterMutation=false;
+        setTimeout(refreshTeacherFromRealtime,120);
+      }
+    }
+
     let teacherRealtimeChannel=null;
     let realtimeRefreshTimer=null;
     let realtimeRefreshRunning=false;
@@ -4954,8 +4998,12 @@ Noah"
 
     function scheduleRealtimeRefresh(){
       lastRealtimeEventAt=Date.now();
+      if(localTeacherMutationDepth>0){
+        deferredRealtimeAfterMutation=true;
+        return;
+      }
       clearTimeout(realtimeRefreshTimer);
-      realtimeRefreshTimer=setTimeout(refreshTeacherFromRealtime,140);
+      realtimeRefreshTimer=setTimeout(refreshTeacherFromRealtime,220);
     }
 
     function stopTeacherRealtime(){
