@@ -250,6 +250,33 @@
       }
     }
 
+@keyframes zqFeedbackIn{from{opacity:.35;transform:translateY(4px)}to{opacity:1;transform:none}} .student{animation:zqFeedbackIn .25s ease}
+
+    .reason-modal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+    .reason-modal-btn{border:1px solid #dbe3ee;background:white;border-radius:15px;padding:13px 12px;font-size:14px;font-weight:850;line-height:1.25;cursor:pointer;text-align:left;transition:.15s ease}
+    .reason-modal-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(15,23,42,.08)}
+    .reason-modal-btn.negative{border-color:#fdba74;background:#fff7ed}
+    .reason-modal-btn.positive{border-color:#86efac;background:#f0fdf4}
+    @media(max-width:620px){.reason-modal-grid{grid-template-columns:1fr}.reason-modal-btn{font-size:13px}}
+
+
+    #customReasonInput:focus{outline:2px solid #93c5fd;outline-offset:1px}
+@keyframes zqLivePulse{0%,100%{opacity:1}50%{opacity:.35}}
+    #realtimeSyncStatus.live #realtimeSyncDot{animation:zqLivePulse 1.7s infinite}
+    @media(max-width:620px){#realtimeSyncStatus{width:100%;justify-content:center}}
+@media(max-width:700px){
+      .student .score-row .btn{min-width:46px;min-height:46px;font-size:20px}
+      .student .score{font-size:27px}
+      .student{padding:12px}
+    }
+    @media(max-width:700px){
+      #boardRemoteControl > div:nth-of-type(3){grid-template-columns:72px 1fr!important}
+      #remoteBoardText{grid-column:1 / -1}
+      #boardDisplay{padding:24px!important;min-height:420px!important}
+      #boardTitle{font-size:44px!important}
+      #boardText{font-size:27px!important}
+      #boardTimer{font-size:76px!important}
+    }
 </style>
 </head>
 <body>
@@ -298,7 +325,7 @@
           <button class="btn primary" id="endLessonBtn">Fin d'heure</button>
           <button class="btn outline" id="teacherRulesBtn">📜 Règles</button>
           <button class="btn outline" id="openHistoryBtn">🕘 Historique</button>
-          <button class="btn outline" id="averagesBtn">📊 Moyennes</button>
+          <button class="btn outline" id="averagesBtn">📊 Indices d’implication</button>
           <button class="btn outline" id="classAnalyticsBtn">📈 Analyse classe</button>
         </div>
         <div class="teacher-nav-row teacher-nav-tools">
@@ -311,9 +338,15 @@
       </div>
     </div>
 
-    <div id="supabaseTeacherStatus" class="panel" style="margin-bottom:12px;border:1px solid #a7f3d0;background:#ecfdf5">
-      <strong>☁️ Supabase actif</strong>
-      <div class="muted" style="margin-top:4px">Les classes et élèves affichés ici viennent maintenant de Supabase.</div>
+    <div id="supabaseTeacherStatus" class="panel" style="margin-bottom:12px;border:1px solid #a7f3d0;background:#ecfdf5;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+      <div>
+        <strong>☁️ Supabase actif</strong>
+        <div class="muted" style="margin-top:4px">Les classes et élèves affichés ici viennent maintenant de Supabase.</div>
+      </div>
+      <div id="realtimeSyncStatus" style="display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:999px;background:white;border:1px solid #a7f3d0;font-size:12px;font-weight:900">
+        <span id="realtimeSyncDot" style="width:9px;height:9px;border-radius:50%;background:#f59e0b"></span>
+        <span id="realtimeSyncText">Connexion au direct…</span>
+      </div>
     </div>
 
     <div class="controls">
@@ -386,7 +419,7 @@
       <h3>Période de notation</h3>
       <div class="row wrap">
         <div class="toolbar-chip active" id="periodLabel">Période 1</div>
-        <div class="toolbar-chip" id="periodAverageLabel">Moyenne calculée sur les scores de fin de cours</div>
+        <div class="toolbar-chip" id="periodAverageLabel">Indice = 5 derniers cours, pondéré vers les plus récents</div>
         <button class="btn primary small" id="openPeriodBtn">Gérer les périodes</button>
       </div>
     </div>
@@ -447,7 +480,7 @@ Noah"
       <div class="box" style="margin-top:14px">
         <div style="font-size:19px;font-weight:900">Classement actuel</div>
         <div class="muted" style="margin:4px 0 12px">
-          Moyenne d’implication de la période, du meilleur résultat au plus faible.
+          Indice d’implication récent, du meilleur au plus faible (5 derniers cours pondérés).
         </div>
         <div id="classRankingChart"></div>
       </div>
@@ -458,7 +491,7 @@ Noah"
     <div class="modal-card" style="width:min(760px,95vw);max-height:90vh;overflow:auto">
       <div class="modal-header">
         <div>
-          <h2 style="margin:0">📊 Moyennes de la classe</h2>
+          <h2 style="margin:0">📊 Indices d’implication de la classe</h2>
           <div class="muted" id="averagesSubtitle" style="margin-top:4px"></div>
         </div>
         <button class="btn outline" id="closeAveragesBtn">Fermer</button>
@@ -466,7 +499,7 @@ Noah"
 
       <div class="box" style="margin-top:14px">
         <div class="muted" style="margin-bottom:8px">
-          Ce texte s’actualise automatiquement avec les scores de fin de cours de la période actuelle.
+          L’indice utilise les 5 derniers cours et donne davantage de poids aux cours les plus récents.
         </div>
         <textarea id="averagesText" rows="18" readonly
           style="width:100%;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;line-height:1.55"></textarea>
@@ -560,7 +593,7 @@ Noah"
 
       <div class="box" id="periodCloseBox" style="margin-top:12px">
         <div style="font-size:18px;font-weight:700;margin-bottom:10px">Clôturer la période</div>
-        <div class="muted" style="margin-bottom:10px">Les moyennes seront archivées. Les scores repartent à 15/20, mais étoiles, niveaux, diamants et devoirs restent acquis.</div>
+        <div class="muted" style="margin-bottom:10px">Les résultats de la période seront archivés. La nouvelle période repart à 15/20, mais étoiles, niveaux, diamants et devoirs restent acquis.</div>
         <div class="row">
           <input id="nextPeriodNameInput" placeholder="Nom de la prochaine période" value="Nouvelle période" />
           <button class="btn primary" id="confirmClosePeriodBtn">Clôturer et démarrer la suivante</button>
@@ -619,6 +652,62 @@ Noah"
   </div>
 
   
+  
+  
+  
+  <div class="modal" id="starAdjustModal">
+    <div class="modal-card" style="width:min(520px,94vw)">
+      <div class="modal-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div>
+          <h2 style="margin:0">⚙️ Ajuster les étoiles</h2>
+          <div id="starAdjustSubtitle" class="muted" style="margin-top:4px"></div>
+        </div>
+        <button class="btn outline" id="closeStarAdjustBtn">Fermer</button>
+      </div>
+      <div style="margin-top:14px;padding:12px;border-radius:14px;background:#eff6ff;border:1px solid #bfdbfe">
+        Utilise ceci uniquement pour corriger un test ou une erreur. La valeur choisie devient la valeur officielle dans Supabase.
+      </div>
+      <div id="starAdjustChoices" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px"></div>
+    </div>
+  </div>
+
+<div class="modal" id="starLossModal">
+    <div class="modal-card" style="width:min(620px,94vw);max-height:88vh;overflow:auto">
+      <div class="modal-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div>
+          <h2 style="margin:0">⭐ Retirer une étoile</h2>
+          <div id="starLossSubtitle" class="muted" style="margin-top:4px"></div>
+        </div>
+        <button class="btn outline" id="closeStarLossBtn">Fermer</button>
+      </div>
+      <div style="margin-top:14px;padding:12px;border-radius:14px;background:#fef2f2;border:1px solid #fecaca">
+        Cette action est exceptionnelle. Le motif sera visible par l’élève et sa famille dans <strong>Suivi d’implication</strong>.
+      </div>
+      <label style="display:block;margin-top:14px;font-size:12px;font-weight:900;color:#475569">Motif de la perte d’étoile</label>
+      <textarea id="starLossReason" rows="4" maxlength="220" placeholder="Ex. : Plusieurs cours consécutifs avec des pertes de points sans changement de comportement." style="width:100%;margin-top:6px;padding:11px 12px;border:1px solid #cbd5e1;border-radius:12px;font:inherit;resize:vertical"></textarea>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn outline" id="cancelStarLossBtn">Annuler</button>
+        <button class="btn danger" id="confirmStarLossBtn">Confirmer : −1 ⭐</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="reasonPickerModal">
+    <div class="modal-card" style="width:min(620px,94vw);max-height:88vh;overflow:auto">
+      <div class="modal-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div>
+          <h2 id="reasonPickerTitle" style="margin:0">Motif du point</h2>
+          <div id="reasonPickerSubtitle" class="muted" style="margin-top:4px"></div>
+        </div>
+        <button class="btn outline" id="closeReasonPickerBtn">Fermer</button>
+      </div>
+      <div id="reasonPickerGrid" class="reason-modal-grid"></div>
+      <div class="muted" style="margin-top:12px;font-size:12px">
+        Le motif et le point ajouté ou retiré seront visibles dans le suivi de l’élève et de sa famille.
+      </div>
+    </div>
+  </div>
+
   <div class="modal" id="studentRulesModal">
     <div class="modal-card" style="width:min(1100px,96vw);max-height:92vh;overflow:auto;padding:24px">
       <div class="modal-header">
@@ -665,7 +754,7 @@ Noah"
           <p>Chaque cours réussi sans perte de point fait également progresser ta jauge. Après <strong>3 cours réussis</strong>, tu progresses dans ZenQuest.</p>
           <div style="font-size:24px;font-weight:900;text-align:center;padding:8px">2 ⭐ → 🔥 &nbsp;&nbsp; 4 ⭐ → ✨ &nbsp;&nbsp; 6 ⭐ → 👑</div>
           <p>En continuant à progresser, tu peux ensuite accumuler des <strong>💎 diamants</strong>.</p>
-          <p>Attention : si ton score descend trop bas, tu peux perdre une étoile.</p>
+          <p>Attention : une étoile est perdue automatiquement lorsque ton score passe sous <strong>10/20</strong>. Le professeur peut également retirer exceptionnellement une étoile lorsque l’implication ou le comportement le justifie ; le motif est alors indiqué dans <strong>🧭 Suivi d’implication</strong>.</p>
         </div>
 
         <div class="student-columns">
@@ -688,8 +777,8 @@ Noah"
 
         <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:18px;padding:16px;line-height:1.55">
           <div style="font-size:19px;font-weight:900">🌱 À retenir</div>
-          <p>Ta <strong>note d’implication ZenQuest pourra apparaître sur ton bulletin</strong> afin de rendre compte de ton implication en classe.</p>
-          <p>Mais ZenQuest ne mesure pas ton niveau scolaire : cette note n’est <strong>ni ta moyenne générale, ni ta moyenne en mathématiques</strong>.</p>
+          <p><strong>C’est l’indice d’implication ZenQuest qui sera pris en compte dans la moyenne</strong>, et non le score actuel affichée.</p>
+          <p>Le score actuel indique ta situation du moment ; l’indice tient davantage compte de tes cours récents.</p>
           <p>Tu n’as donc pas besoin d’être le meilleur en maths pour réussir dans ZenQuest.</p>
           <strong>Si tu travailles, que tu t’impliques et que tu adoptes une bonne attitude en classe, tu ne peux que progresser.</strong>
           <div style="margin-top:16px;padding-top:14px;border-top:1px solid #a7f3d0">
@@ -790,6 +879,37 @@ Noah"
         <button class="btn outline" id="manageBoardBtn">⚙️ Mes messages</button>
       </div>
 
+      <div class="box" id="boardRemoteControl" style="margin-bottom:14px;border:2px solid #bfdbfe;background:#eff6ff">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+          <div>
+            <div style="font-size:20px;font-weight:950">📱 Télécommande du tableau</div>
+            <div class="muted" style="margin-top:3px">Depuis le téléphone, envoie un message : il s’affiche automatiquement au tableau avec son chrono.</div>
+          </div>
+          <label class="toolbar-chip" style="font-weight:900">⏱️ Durée
+            <input id="remoteBoardMinutes" type="number" min="1" max="60" value="5" style="width:66px;margin-left:6px"> min
+          </label>
+        </div>
+
+        <div id="boardQuickCommands" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;margin-top:12px">
+          <button class="btn outline boardQuickBtn" data-command="silence">🤫 Silence</button>
+          <button class="btn outline boardQuickBtn" data-command="listen">👂 Écoute</button>
+          <button class="btn outline boardQuickBtn" data-command="individual">✍️ Travail individuel</button>
+          <button class="btn outline boardQuickBtn" data-command="group">👥 Travail en groupe</button>
+          <button class="btn outline boardQuickBtn" data-command="copy">📖 Copiez</button>
+          <button class="btn outline boardQuickBtn" data-command="finish">🎒 Rangez</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:88px minmax(160px,.7fr) minmax(220px,1.3fr);gap:8px;margin-top:12px">
+          <input id="remoteBoardEmoji" value="📌" maxlength="4" aria-label="Emoji" style="min-width:0">
+          <input id="remoteBoardTitle" placeholder="Titre — ex. Exercice 4" style="min-width:0">
+          <input id="remoteBoardText" placeholder="Message — ex. Faites les questions 1 à 5 en silence." style="min-width:0">
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:8px">
+          <button class="btn danger" id="remoteBoardCloseBtn">✖️ Fermer au tableau</button>
+          <button class="btn green" id="remoteBoardSendBtn">📺 Afficher + démarrer</button>
+        </div>
+      </div>
+
       <div id="boardDisplay" style="border:1px solid #e2e8f0;border-radius:24px;padding:38px;min-height:520px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:#f8fafc">
         <div id="boardEmoji" style="font-size:84px">👋</div>
         <div id="boardTitle" style="font-size:64px;font-weight:950;margin-top:10px">Bonjour !</div>
@@ -856,7 +976,7 @@ Noah"
     const AVATARS = ['👦','👦🏻','👦🏼','👦🏽','👦🏾','👦🏿','👧','👧🏻','👧🏼','👧🏽','👧🏾','👧🏿','🧑','🧑🏻','🧑🏼','🧑🏽','🧑🏾','🧑🏿','👨','👨🏻','👨🏼','👨🏽','👨🏾','👨🏿','👩','👩🏻','👩🏼','👩🏽','👩🏾','👩🏿','🧒','🧒🏻','🧒🏼','🧒🏽','🧒🏾','🧒🏿','👱','👱🏻','👱🏼','👱🏽','👱🏾','👱🏿','👱\u200d♀️','👱🏻\u200d♀️','👱🏼\u200d♀️','👱🏽\u200d♀️','👱🏾\u200d♀️','👱🏿\u200d♀️','👱\u200d♂️','👱🏻\u200d♂️','👱🏼\u200d♂️','👱🏽\u200d♂️','👱🏾\u200d♂️','👱🏿\u200d♂️','🧑\u200d🦱','🧑🏻\u200d🦱','🧑🏼\u200d🦱','🧑🏽\u200d🦱','🧑🏾\u200d🦱','🧑🏿\u200d🦱','👩\u200d🦱','👩🏻\u200d🦱','👩🏼\u200d🦱','👩🏽\u200d🦱','👩🏾\u200d🦱','👩🏿\u200d🦱','👨\u200d🦱','👨🏻\u200d🦱','👨🏼\u200d🦱','👨🏽\u200d🦱','👨🏾\u200d🦱','👨🏿\u200d🦱','🧑\u200d🦰','🧑🏻\u200d🦰','🧑🏼\u200d🦰','🧑🏽\u200d🦰','🧑🏾\u200d🦰','🧑🏿\u200d🦰','👩\u200d🦰','👩🏻\u200d🦰','👩🏼\u200d🦰','👩🏽\u200d🦰','👩🏾\u200d🦰','👩🏿\u200d🦰','👨\u200d🦰','👨🏻\u200d🦰','👨🏼\u200d🦰','👨🏽\u200d🦰','👨🏾\u200d🦰','👨🏿\u200d🦰','🧑\u200d🦳','🧑🏻\u200d🦳','🧑🏼\u200d🦳','🧑🏽\u200d🦳','🧑🏾\u200d🦳','🧑🏿\u200d🦳'];
 
     function uid(){ return `${Date.now()}_${Math.random().toString(36).slice(2,9)}`; }
-    function createStudent(name,index=0){ return {id:uid(),name,avatar:AVATARS[index%AVATARS.length],points:15,progress:0,level:1,stars:0,diamonds:0,homeworks:0,isAbsent:false,isAutoAbsent:false,lostThisLesson:false,lostStarThisLesson:false,pointsLostThisLesson:0,homeworkAddedThisLesson:false,totalLessons:0,perfectLessons:0,totalPointsLost:0,currentStreak:0,history:[],notes:"",teacherRemarks:[],lastAction:null,group:null,periodScores:[],archivedPeriods:[],authUsername:"",authPassword:""}; }
+    function createStudent(name,index=0){ return {id:uid(),name,avatar:AVATARS[index%AVATARS.length],points:15,progress:0,level:1,stars:0,diamonds:0,homeworks:0,isAbsent:false,isAutoAbsent:false,lostThisLesson:false,lostStarThisLesson:false,pointsLostThisLesson:0,homeworkAddedThisLesson:false,totalLessons:0,perfectLessons:0,totalPointsLost:0,currentStreak:0,history:[],notes:"",teacherRemarks:[],engagementEvents:[],lastAction:null,group:null,periodScores:[],archivedPeriods:[],authUsername:"",authPassword:""}; }
     function createClass(name,names=[]){ return {id:uid(),name,students:names.map((n,i)=>createStudent(n,i)),collectiveStars:0,collectiveDiamonds:0,groupStars:{g1:0,g2:0},groupDiamonds:{g1:0,g2:0},currentPeriodName:"Période 1",periodArchive:[],history:[],classMessages:[],boardPresets:[]}; }
     function getDefaultData(){ return {currentClassId:null,viewMode:"all",selectionMode:false,selectedStudentIds:[],appMode:"prof",periodView:"current",classes:[createClass("Classe exemple",["Paul","Clara","Emma","Lucas","Alya","Yanis","Lina","Noah"])]}; }
     function loadData(){ try{ const raw=localStorage.getItem(STORAGE_KEY); if(!raw) return getDefaultData(); const parsed=JSON.parse(raw); if(!parsed.classes||!parsed.classes.length) return getDefaultData(); if(!("viewMode" in parsed)) parsed.viewMode="all"; if(!("selectionMode" in parsed)) parsed.selectionMode=false; if(!("selectedStudentIds" in parsed)) parsed.selectedStudentIds=[]; if(!("appMode" in parsed)) parsed.appMode="prof"; if(!("periodView" in parsed)) parsed.periodView="current"; parsed.classes.forEach(c=>{ if(!c.groupStars) c.groupStars={g1:0,g2:0}; if(!c.groupDiamonds) c.groupDiamonds={g1:0,g2:0}; if(!("collectiveDiamonds" in c)) c.collectiveDiamonds=0; if(!c.currentPeriodName) c.currentPeriodName="Période 1"; if(!Array.isArray(c.periodArchive)) c.periodArchive=[]; if(!Array.isArray(c.classMessages)) c.classMessages=[]; if(!Array.isArray(c.boardPresets)) c.boardPresets=[]; c.students.forEach(s=>{ if(!("group" in s)) s.group=null; if(!("isAutoAbsent" in s)) s.isAutoAbsent=false; if(!Array.isArray(s.periodScores)) s.periodScores=[]; if(!Array.isArray(s.archivedPeriods)) s.archivedPeriods=[]; if(typeof s.points!=="number") s.points=15; }); }); return parsed; }catch{ return getDefaultData(); } }
@@ -1225,9 +1345,28 @@ Noah"
     function applyViewAbsences(){
       const cls=currentClass();
       cls.students.forEach(s=>{
-        if(state.viewMode==="all"){ if(s.isAutoAbsent) s.isAbsent=false; s.isAutoAbsent=false; return; }
-        if(state.viewMode==="g1"){ if(s.group==="g2"){ s.isAbsent=true; s.isAutoAbsent=true; } else { if(s.isAutoAbsent) s.isAbsent=false; s.isAutoAbsent=false; } }
-        if(state.viewMode==="g2"){ if(s.group==="g1"){ s.isAbsent=true; s.isAutoAbsent=true; } else { if(s.isAutoAbsent) s.isAbsent=false; s.isAutoAbsent=false; } }
+        if(state.viewMode==="all"){
+          if(s.isAutoAbsent) s.isAbsent=false;
+          s.isAutoAbsent=false;
+          s.manualPresenceOverride=false;
+          return;
+        }
+        const outsideGroup=(state.viewMode==="g1" && s.group==="g2") || (state.viewMode==="g2" && s.group==="g1");
+        if(outsideGroup){
+          // Par défaut l'autre groupe est absent, mais le prof peut remettre
+          // exceptionnellement un élève présent sans que render() annule son choix.
+          if(!s.manualPresenceOverride){
+            s.isAbsent=true;
+            s.isAutoAbsent=true;
+          }else{
+            s.isAbsent=false;
+            s.isAutoAbsent=false;
+          }
+        }else{
+          if(s.isAutoAbsent) s.isAbsent=false;
+          s.isAutoAbsent=false;
+          s.manualPresenceOverride=false;
+        }
       });
     }
 
@@ -1249,11 +1388,77 @@ Noah"
     function getDecoration(stars){ if(stars>=6) return "crown"; if(stars>=4) return "sparkles"; if(stars>=2) return "fire"; return "none"; }
     function getDiamondsForLevel(level){ if(level<8) return 0; return 1+Math.floor((level-8)/2); }
     function round1(n){ return Math.round(n*10)/10; }
+    function engagementIndexTheme(value){
+      const v=Number(value);
+      if(!Number.isFinite(v)) return {color:"#475569",bg:"#f8fafc",border:"#cbd5e1"};
+      if(v>=16) return {color:"#047857",bg:"#ecfdf5",border:"#86efac"};
+      if(v>=13) return {color:"#a16207",bg:"#fefce8",border:"#fde047"};
+      if(v>=10) return {color:"#c2410c",bg:"#fff7ed",border:"#fdba74"};
+      return {color:"#b91c1c",bg:"#fef2f2",border:"#fca5a5"};
+    }
+
+    function engagementTrend(values){
+      const vals=(values||[]).map(Number).filter(Number.isFinite);
+      if(vals.length<2) return {delta:null,arrow:"→",label:"Pas encore assez de recul"};
+      const now=weightedEngagementIndex(vals), before=weightedEngagementIndex(vals.slice(0,-1));
+      const delta=(now===null||before===null)?null:round1(now-before);
+      if(delta===null) return {delta:null,arrow:"→",label:"Pas encore assez de recul"};
+      return delta>=.4?{delta,arrow:"↗",label:"En progression"}:delta<=-.4?{delta,arrow:"↘",label:"En baisse"}:{delta,arrow:"→",label:"Stable"};
+    }
+    function engagementStreak(student){
+      const a=(student?.periodScores||[]).map(x=>Number(typeof x==="number"?x:x.score)).filter(Number.isFinite);
+      let n=0; for(let i=a.length-1;i>=0;i--){const prev=i?a[i-1]:15;if(a[i]>=prev)n++;else break;} return n;
+    }
+    function engagementNextObjective(v){
+      v=Number(v); if(!Number.isFinite(v))return "Construire ton premier indice.";
+      if(v<10)return `Encore ${round1(10-v).toString().replace(".",",")} point(s) pour quitter la zone rouge 🔴`;
+      if(v<13)return `Encore ${round1(13-v).toString().replace(".",",")} point(s) pour atteindre la zone satisfaisante 🟡`;
+      if(v<16)return `Encore ${round1(16-v).toString().replace(".",",")} point(s) pour atteindre la zone verte 🟢`;
+      if(v<20)return `Encore ${round1(20-v).toString().replace(".",",")} point(s) pour atteindre 20 👑`;
+      return "20/20 👑 Maintiens cette régularité !";
+    }
+    function engagementFeedback(v,t){
+      v=Number(v); if(!Number.isFinite(v))return "Les prochains cours permettront de construire un premier indice.";
+      if(v>=16)return t.delta<=-.4?"Très bonne implication, avec un léger recul récent à surveiller.":"Très bonne dynamique : implication régulière et solide.";
+      if(v>=13)return t.delta>=.4?"Implication satisfaisante et en progression.":t.delta<=-.4?"Implication satisfaisante, mais en baisse récente.":"Implication satisfaisante et régulière.";
+      if(v>=10)return t.delta>=.4?"Indice encore fragile, mais amélioration encourageante.":t.delta<=-.4?"Vigilance : l’implication diminue sur les derniers cours.":"L’implication doit encore progresser.";
+      return t.delta>=.4?"Indice insuffisant, mais une amélioration apparaît. Continue les efforts.":"Implication actuellement insuffisante : une amélioration est attendue.";
+    }
+    function engagementMiniDashboard(student,v){
+      const all=(student?.periodScores||[]).map(x=>Number(typeof x==="number"?x:x.score)).filter(Number.isFinite), vals=all.slice(-5), t=engagementTrend(all), th=engagementIndexTheme(v);
+      const dt=t.delta===null?"":`${t.delta>0?"+":""}${String(t.delta).replace(".",",")}`;
+      const dots=vals.length?vals.map((x,i)=>`<span style="display:inline-flex;justify-content:center;align-items:center;min-width:34px;height:34px;padding:0 7px;border-radius:999px;background:${engagementIndexTheme(x).bg};border:${i===vals.length-1?2:1}px solid ${engagementIndexTheme(x).border};color:${engagementIndexTheme(x).color};font-weight:900">${String(x).replace(".",",")}</span>`).join(""):`<span class="muted">Pas encore de cours</span>`;
+      return `<div style="margin-top:12px">
+      <div style="height:8px;border-radius:999px;background:linear-gradient(90deg,#fee2e2 0 50%,#ffedd5 50% 65%,#fef9c3 65% 80%,#dcfce7 80% 100%);position:relative"><span style="position:absolute;left:calc(${Math.max(0,Math.min(100,(Number(v)||0)*5))}% - 7px);top:-4px;width:16px;height:16px;border-radius:50%;background:${th.color};border:3px solid white;box-shadow:0 1px 5px #0003"></span></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:#64748b"><span>0</span><span>10</span><span>13</span><span>16</span><span>20</span></div>
+      <div style="margin-top:10px"><small><b>5 DERNIERS COURS</b></small><div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:5px">${dots}</div></div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:10px"><span style="padding:6px 9px;border:1px solid #e2e8f0;border-radius:999px"><b>${t.arrow} ${dt} ${t.label}</b></span><span style="padding:6px 9px;border:1px solid #fed7aa;background:#fff7ed;border-radius:999px"><b>🔥 Série : ${engagementStreak(student)} cours</b></span></div>
+      <div style="margin-top:8px;padding:9px;border:1px solid #e2e8f0;border-radius:11px"><b>🎯 Prochain objectif :</b> ${engagementNextObjective(v)}</div>
+      <div style="margin-top:7px;padding:9px;border:1px solid ${th.border};background:${th.bg};color:${th.color};border-radius:11px"><b>💬 Bilan :</b> ${engagementFeedback(v,t)}${(()=>{const r=eventReasonSummary(student);return r.negative?` <span style="display:block;margin-top:5px"><b>Point de vigilance récent :</b> ${r.negative}.</span>`:r.positive?` <span style="display:block;margin-top:5px"><b>Point fort récent :</b> ${r.positive}.</span>`:""})()}</div></div>`;
+    }
+
+    function weightedEngagementIndex(values){
+      const recent=(values||[]).map(Number).filter(Number.isFinite).slice(-5);
+      if(!recent.length) return null;
+      let weighted=0, weightSum=0;
+      recent.forEach((v,i)=>{ const w=i+1; weighted+=v*w; weightSum+=w; });
+      return round1(weighted/weightSum);
+    }
+
     function periodStats(student){
       const scores=student.periodScores||[];
-      if(!scores.length) return {average:null,count:0,best:null,worst:null};
-      const values=scores.map(x=>typeof x==="number"?x:x.score);
-      return {average:round1(values.reduce((a,b)=>a+b,0)/values.length),count:values.length,best:Math.max(...values),worst:Math.min(...values)};
+      if(!scores.length) return {average:null,index:null,count:0,best:null,worst:null};
+      const values=scores.map(x=>Number(typeof x==="number"?x:x.score)).filter(Number.isFinite);
+      if(!values.length) return {average:null,index:null,count:0,best:null,worst:null};
+      const classicAverage=round1(values.reduce((a,b)=>a+b,0)/values.length);
+      return {
+        average:weightedEngagementIndex(values),
+        index:weightedEngagementIndex(values),
+        classicAverage,
+        count:values.length,
+        best:Math.max(...values),
+        worst:Math.min(...values)
+      };
     }
     function addCollectiveReward(obj, starsKey, diamondsKey){
       obj[starsKey]=(obj[starsKey]||0)+1;
@@ -1432,6 +1637,27 @@ Noah"
       return student.points;
     }
 
+    async function updateStudentStarsInSupabase(student,newStars){
+      if(!student?.id) throw new Error("Élève invalide.");
+      const safeValue=Math.max(0,Math.min(MAX_INDIVIDUAL_STARS,Number(newStars)||0));
+
+      const {error:updateError}=await supabaseClient
+        .from("students")
+        .update({stars:safeValue})
+        .eq("id",student.id);
+      if(updateError) throw updateError;
+
+      const {data:row,error:reloadError}=await supabaseClient
+        .from("students")
+        .select("stars")
+        .eq("id",student.id)
+        .single();
+      if(reloadError) throw reloadError;
+
+      student.stars=Number(row?.stars ?? safeValue);
+      return student.stars;
+    }
+
     async function updateStudentHomeworksInSupabase(student,newHomeworks){
       if(!student?.id) throw new Error("Élève invalide.");
       const safeValue=Math.max(0,Number(newHomeworks)||0);
@@ -1440,6 +1666,333 @@ Noah"
         .eq("id",student.id).select("homeworks").single();
       if(error) throw error;
       student.homeworks=Number(data?.homeworks ?? safeValue);
+    }
+
+    const NEGATIVE_REASONS=[
+      ["🗣️","Bavardage","bavardage"],
+      ["🎯","Concentration","concentration"],
+      ["📚","Travail insuffisant","travail"],
+      ["🎒","Oubli de matériel","materiel"],
+      ["⚠️","Consigne non respectée","consigne"],
+      ["🤝","Comportement","comportement"],
+      ["✍️","Autre","autre"]
+    ];
+    const POSITIVE_REASONS=[
+      ["🙋","Participation","participation"],
+      ["💪","Travail sérieux","travail_serieux"],
+      ["👂","Écoute / concentration","ecoute"],
+      ["🤝","Entraide","entraide"],
+      ["📈","Effort / progrès","progres"],
+      ["✨","Autre","autre_pos"]
+    ];
+
+    const ZQ_EVENT_PREFIX="ZQEVENT|";
+    let pendingReasonAction=null;
+
+    function encodeZQEvent(type,code,label,scoreAfter){
+      const safeLabel=String(label||"").replace(/\|/g,"/");
+      return `${ZQ_EVENT_PREFIX}${type}|${code}|${safeLabel}|${scoreAfter}`;
+    }
+    function parseZQEventRemark(value){
+      const s=String(value||"");
+      if(!s.startsWith(ZQ_EVENT_PREFIX)) return null;
+      const parts=s.split("|");
+      if(parts.length<5) return null;
+      return {type:parts[1],code:parts[2],label:parts.slice(3,-1).join("|"),scoreAfter:Number(parts[parts.length-1])};
+    }
+    function legacyStarTargetFromRemarks(rows,currentStars){
+      const parsed=(rows||[]).map(r=>parseZQEventRemark(r.remark ?? r.text)).filter(Boolean);
+      if(parsed.some(e=>e.type==="star_sync" && e.code==="legacy_repaired_v1")) return null;
+      const starEvents=parsed.filter(e=>e.type==="star_minus" && ["manual_star","score_below_10"].includes(e.code) && Number.isFinite(e.scoreAfter));
+      if(!starEvents.length) return null;
+      // Each old event stored the number of stars that should have remained.
+      // Use the lowest target among those legacy events, but never increase stars.
+      const target=Math.max(0,Math.min(...starEvents.map(e=>Number(e.scoreAfter))));
+      return target < Number(currentStars) ? target : null;
+    }
+
+    function visibleTeacherRemarks(rows){
+      return (rows||[]).filter(r=>!parseZQEventRemark(r.remark ?? r.text));
+    }
+    function zqEventsFromRemarks(rows){
+      return (rows||[]).map(r=>{
+        const e=parseZQEventRemark(r.remark ?? r.text);
+        if(!e) return null;
+        return {...e,id:r.id,date:r.created_at||r.date||null};
+      }).filter(Boolean);
+    }
+    function zqReasonHistoryHTML(rows,limit=10){
+      const events=zqEventsFromRemarks(rows).filter(e=>e.type!=="star_sync").slice(0,limit);
+      if(!events.length) return '<div style="padding:14px;border-radius:14px;background:#f0fdf4;border:1px solid #bbf7d0;text-align:center"><strong>✅ Rien à signaler</strong></div>';
+      return `<div style="display:grid;gap:8px">${events.map(e=>{
+        const starLoss=e.type==="star_minus";
+        const positive=e.type==="plus";
+        const bg=starLoss?"#fef2f2":positive?"#f0fdf4":"#fff7ed";
+        const border=starLoss?"#fca5a5":positive?"#86efac":"#fdba74";
+        const sign=starLoss?"−1 ⭐ ÉTOILE":positive?"+1":"−1";
+        const signBg=starLoss?"#991b1b":positive?"#16a34a":"#dc2626";
+        const date=e.date?new Date(e.date).toLocaleDateString("fr-FR"):"";
+        return `<div style="padding:10px 12px;border-radius:13px;background:${bg};border:1px solid ${border};display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:10px;min-width:0">
+            <span style="display:inline-flex;align-items:center;justify-content:center;min-width:${starLoss?"112px":"42px"};height:34px;padding:0 10px;border-radius:999px;background:${signBg};color:white;font-size:15px;font-weight:950;box-shadow:0 1px 3px #0002">${sign}</span>
+            <div><strong>${escapeHTML(e.label)}</strong>${date?`<div class="muted" style="font-size:11px;margin-top:2px">${date}</div>`:""}</div>
+          </div>
+          <div style="font-weight:850;color:#475569">${starLoss?`Il reste ${Number.isFinite(e.scoreAfter)?e.scoreAfter:"—"} ⭐`:`Score : ${Number.isFinite(e.scoreAfter)?e.scoreAfter+"/20":"—"}`}</div>
+        </div>`;
+      }).join("")}</div>`;
+    }
+
+    function openReasonPicker(student,type){
+      pendingReasonAction={student,type};
+      const modal=document.getElementById("reasonPickerModal");
+      const grid=document.getElementById("reasonPickerGrid");
+      const title=document.getElementById("reasonPickerTitle");
+      const subtitle=document.getElementById("reasonPickerSubtitle");
+      const reasons=type==="minus"?NEGATIVE_REASONS:POSITIVE_REASONS;
+      title.textContent=type==="minus"?"➖ Pourquoi retirer ce point ?":"➕ Pourquoi ajouter ce point ?";
+      subtitle.textContent=`${student.name} • score actuel ${student.points}/20`;
+      grid.innerHTML=reasons.map(([ico,label,code])=>`<button type="button" class="reason-modal-btn ${type==="minus"?"negative":"positive"}" data-code="${code}" data-label="${label}">${ico} ${label}</button>`).join("");
+      grid.querySelectorAll(".reason-modal-btn").forEach(btn=>{
+        btn.onclick=()=>confirmReasonSelection(btn.dataset.code,btn.dataset.label);
+      });
+      modal.classList.add("show");
+    }
+
+    async function confirmReasonSelection(code,label){
+      const action=pendingReasonAction;
+      if(!action) return;
+      const {student,type}=action;
+      if(code==="autre"||code==="autre_pos"){
+        const grid=document.getElementById("reasonPickerGrid");
+        const existing=document.getElementById("customReasonBox");
+        if(existing){
+          const input=document.getElementById("customReasonInput");
+          if(input) input.focus();
+          return;
+        }
+        const box=document.createElement("div");
+        box.id="customReasonBox";
+        box.style.gridColumn="1 / -1";
+        box.innerHTML=`
+          <div style="margin-top:4px;padding:12px;border:1px solid #cbd5e1;border-radius:14px;background:#fff">
+            <label for="customReasonInput" style="display:block;font-size:12px;font-weight:900;color:#475569;margin-bottom:7px">✍️ Motif personnalisé</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <input id="customReasonInput" type="text" maxlength="120" placeholder="Ex. : se lève sans autorisation…" style="flex:1;min-width:210px;padding:11px 12px;border:1px solid #cbd5e1;border-radius:11px;font:inherit">
+              <button type="button" id="customReasonConfirmBtn" class="btn primary">Valider</button>
+            </div>
+          </div>`;
+        grid.appendChild(box);
+        const input=document.getElementById("customReasonInput");
+        const confirm=document.getElementById("customReasonConfirmBtn");
+        const submit=()=>{
+          const custom=(input?.value||"").trim();
+          if(!custom){ input?.focus(); return; }
+          box.remove();
+          confirmReasonSelection("custom",custom);
+        };
+        confirm.onclick=submit;
+        input.onkeydown=(ev)=>{ if(ev.key==="Enter"){ev.preventDefault();submit();} };
+        input.focus();
+        return;
+      }
+      const prev=Number(student.points||0);
+      const next=Math.max(0,Math.min(MAX_POINTS,prev+(type==="minus"?-1:1)));
+      if(next===prev){ document.getElementById("reasonPickerModal").classList.remove("show"); return; }
+
+      const buttons=[...document.querySelectorAll("#reasonPickerGrid button")];
+      buttons.forEach(b=>b.disabled=true);
+      try{
+        await updateStudentPointsInSupabase(student,next);
+
+        if(type==="minus"){
+          student.lostThisLesson=true;
+          student.pointsLostThisLesson+=1;
+          student.totalPointsLost+=1;
+          let thresholdStarLost=false;
+          if(prev>=10&&next<10&&student.stars>0&&!student.lostStarThisLesson){
+            const nextStars=Math.max(0,student.stars-1);
+            await updateStudentStarsInSupabase(student,nextStars);
+            student.lostStarThisLesson=true;
+            thresholdStarLost=true;
+          }
+          setAction(student,"minus");
+        }else{
+          setAction(student,"plus");
+        }
+
+        // Persist in the existing teacher_remarks table so the pupil/parents
+        // can see the reason on another device too.
+        const user=(await supabaseClient.auth.getUser()).data.user;
+        const encoded=encodeZQEvent(type,code,label,next);
+        const {data:eventRow,error:eventError}=await supabaseClient
+          .from("teacher_remarks")
+          .insert({student_id:student.id,teacher_id:user?.id,remark:encoded})
+          .select("id,remark,created_at")
+          .single();
+        if(eventError) throw eventError;
+
+        if(type==="minus" && thresholdStarLost){
+          const starEncoded=encodeZQEvent("star_minus","score_below_10_v2","Score passé sous 10/20",student.stars);
+          const {data:starRow,error:starErr}=await supabaseClient
+            .from("teacher_remarks")
+            .insert({student_id:student.id,teacher_id:user?.id,remark:starEncoded})
+            .select("id,remark,created_at")
+            .single();
+          if(starErr) throw starErr;
+          if(!Array.isArray(student.teacherRemarks)) student.teacherRemarks=[];
+          student.teacherRemarks.push({id:starRow.id,date:starRow.created_at?new Date(starRow.created_at).toLocaleDateString("fr-FR"):"",text:starRow.remark,createdAt:starRow.created_at||null});
+          ensureEngagementEvents(student).push({id:starRow.id,date:starRow.created_at||new Date().toISOString(),type:"star_minus",code:"score_below_10_v2",label:"Score passé sous 10/20",scoreAfter:student.stars});
+        }
+
+        if(!Array.isArray(student.teacherRemarks)) student.teacherRemarks=[];
+        student.teacherRemarks.push({
+          id:eventRow.id,
+          date:eventRow.created_at?new Date(eventRow.created_at).toLocaleDateString("fr-FR"):"",
+          text:eventRow.remark,
+          createdAt:eventRow.created_at||null
+        });
+
+        recordEngagementEvent(student,type,code,label);
+        pendingReasonAction=null;
+        document.getElementById("reasonPickerModal").classList.remove("show");
+        render();
+        save();
+      }catch(err){
+        console.error("REASON POINT ERROR",err);
+        alert("❌ Impossible d’enregistrer le point et son motif.\n\n"+(err?.message||String(err)));
+        buttons.forEach(b=>b.disabled=false);
+      }
+    }
+
+    function ensureEngagementEvents(student){if(!Array.isArray(student.engagementEvents))student.engagementEvents=[];return student.engagementEvents;}
+    function recordEngagementEvent(student,type,code,label){
+      ensureEngagementEvents(student).push({id:uid(),date:new Date().toISOString(),type,code,label,scoreAfter:student.points});
+      if(student.engagementEvents.length>100) student.engagementEvents=student.engagementEvents.slice(-100);
+      student.lastReasonLabel=`${type==="minus"?"−":"+"} ${label}`;
+    }
+    function reasonButtonsHTML(type){
+      const arr=type==="minus"?NEGATIVE_REASONS:POSITIVE_REASONS;
+      return `<div class="reason-panel ${type}-reasons" style="display:none"><div class="reason-title">${type==="minus"?"Pourquoi retirer le point ?":"Pourquoi ajouter le point ?"}</div><div class="reason-grid">${arr.map(([ico,label,code])=>`<button class="reason-btn ${type==="minus"?"negative":"positive"}" data-reason-type="${type}" data-reason-code="${code}" data-reason-label="${label}">${ico} ${label}</button>`).join("")}</div></div>`;
+    }
+    function eventReasonSummary(student){
+      const ev=ensureEngagementEvents(student).slice(-20);
+      const neg=ev.filter(x=>x.type==="minus"),pos=ev.filter(x=>x.type==="plus");
+      const top=a=>{const c={};a.forEach(x=>c[x.label]=(c[x.label]||0)+1);return Object.entries(c).sort((a,b)=>b[1]-a[1])[0]?.[0]||null};
+      return {negative:top(neg),positive:top(pos),negativeCount:neg.length,positiveCount:pos.length};
+    }
+
+    let pendingStarAdjustStudent=null;
+
+    function openStarAdjustModal(student){
+      pendingStarAdjustStudent=student;
+      document.getElementById("starAdjustSubtitle").textContent=`${student.name} • valeur actuelle affichée : ${student.stars} ⭐`;
+      const box=document.getElementById("starAdjustChoices");
+      box.innerHTML=Array.from({length:MAX_INDIVIDUAL_STARS+1},(_,n)=>`
+        <button class="btn ${n===student.stars?"primary":"outline"} star-adjust-choice" data-stars="${n}" style="padding:12px 8px;font-weight:900">
+          ${n} ⭐
+        </button>`).join("");
+      box.querySelectorAll(".star-adjust-choice").forEach(btn=>{
+        btn.onclick=async()=>{
+          const n=Number(btn.dataset.stars);
+          box.querySelectorAll("button").forEach(b=>b.disabled=true);
+          try{
+            await updateStudentStarsInSupabase(student,n);
+            document.getElementById("starAdjustModal").classList.remove("show");
+            pendingStarAdjustStudent=null;
+            save();
+            render();
+          }catch(err){
+            console.error("STAR ADJUST ERROR",err);
+            alert("❌ Impossible d’enregistrer le nombre d’étoiles.\n\n"+(err?.message||String(err)));
+            box.querySelectorAll("button").forEach(b=>b.disabled=false);
+          }
+        };
+      });
+      document.getElementById("starAdjustModal").classList.add("show");
+    }
+
+    let pendingStarLossStudent=null;
+
+    function openStarLossModal(student){
+      if(!student || student.stars<=0) return;
+      pendingStarLossStudent=student;
+      document.getElementById("starLossSubtitle").textContent=`${student.name} • ${student.stars} étoile(s) actuellement`;
+      document.getElementById("starLossReason").value="";
+      document.getElementById("starLossModal").classList.add("show");
+      setTimeout(()=>document.getElementById("starLossReason")?.focus(),50);
+    }
+
+    async function confirmManualStarLoss(){
+      const student=pendingStarLossStudent;
+      const reason=(document.getElementById("starLossReason")?.value||"").trim();
+      if(!student) return;
+      if(!reason){
+        alert("Indique un motif avant de retirer l’étoile.");
+        document.getElementById("starLossReason")?.focus();
+        return;
+      }
+      if(student.stars<=0){
+        alert("Cet élève n’a plus d’étoile à retirer.");
+        return;
+      }
+
+      const btn=document.getElementById("confirmStarLossBtn");
+      btn.disabled=true;
+      const previousStars=student.stars;
+      const newStars=Math.max(0,previousStars-1);
+
+      try{
+        // IMPORTANT: persist the actual star count in students.
+        // This is what both teacher and student views reload from.
+        await updateStudentStarsInSupabase(student,newStars);
+        student.lostStarThisLesson=true;
+
+        const user=(await supabaseClient.auth.getUser()).data.user;
+        const encoded=encodeZQEvent("star_minus","manual_star_v2",reason,student.stars);
+        const {data:eventRow,error:eventError}=await supabaseClient
+          .from("teacher_remarks")
+          .insert({student_id:student.id,teacher_id:user?.id,remark:encoded})
+          .select("id,remark,created_at")
+          .single();
+
+        if(eventError){
+          // The star itself is already correctly saved. Don't undo it.
+          console.error("STAR TRACKING EVENT ERROR",eventError);
+        }else{
+          if(!Array.isArray(student.teacherRemarks)) student.teacherRemarks=[];
+          student.teacherRemarks.push({
+            id:eventRow.id,
+            date:eventRow.created_at?new Date(eventRow.created_at).toLocaleDateString("fr-FR"):"",
+            text:eventRow.remark,
+            createdAt:eventRow.created_at||null
+          });
+        }
+
+        ensureEngagementEvents(student).push({
+          id:eventRow?.id||uid(),
+          date:eventRow?.created_at||new Date().toISOString(),
+          type:"star_minus",
+          code:"manual_star_v2",
+          label:reason,
+          scoreAfter:student.stars
+        });
+        student.lastReasonLabel=`−1 ⭐ ${reason}`;
+
+        document.getElementById("starLossModal").classList.remove("show");
+        pendingStarLossStudent=null;
+        save();
+        render();
+
+        if(eventError){
+          alert("⭐ L’étoile a bien été retirée et enregistrée.\n\n⚠️ Le motif n’a pas pu être synchronisé avec l’espace élève.");
+        }
+      }catch(err){
+        student.stars=previousStars;
+        console.error("STAR LOSS ERROR",err);
+        alert("❌ Impossible d’enregistrer le retrait de l’étoile dans Supabase.\n\n"+(err?.message||String(err)));
+      }finally{
+        btn.disabled=false;
+      }
     }
 
     function renderStudents(){
@@ -1470,65 +2023,51 @@ Noah"
             <button class="btn icon outline edit-name">✏️</button>
           </div>
           <div class="stars-line">${Array.from({length:MAX_INDIVIDUAL_STARS}).map((_,i)=>`<span style="opacity:${i<student.stars?1:.2}">⭐</span>`).join("")}<span class="diamond-inline">💎 x${student.diamonds}</span></div>
-          <div class="progress"><div class="bar-box"><div class="bar-row"><div class="bar"><div class="fill" style="width:${fillPct}%"></div></div><div style="width:38px;text-align:right;font-size:13px;font-weight:700;color:var(--muted)">${student.progress}/3</div></div></div><div class="lvl">Niv. ${student.level}</div><div class="sub" style="text-align:center;margin-top:3px">Moy. période : ${periodStats(student).average===null?"—":periodStats(student).average+"/20"}</div></div>
+          <div style="display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:5px">
+            <button class="btn outline manual-star-minus" ${student.isAbsent||student.stars<=0?"disabled":""} style="font-size:11px;padding:5px 9px">⭐ Retirer une étoile</button>
+            <button class="btn outline star-adjust-btn" style="font-size:11px;padding:5px 9px">⚙️ Ajuster</button>
+          </div>
+          <div class="progress"><div class="bar-box"><div class="bar-row"><div class="bar"><div class="fill" style="width:${fillPct}%"></div></div><div style="width:38px;text-align:right;font-size:13px;font-weight:700;color:var(--muted)">${student.progress}/3</div></div></div><div class="lvl">Niv. ${student.level}</div></div>
           <div class="homework"><div><strong>📝 ${student.homeworks}</strong></div><div class="row" style="gap:6px"><button class="btn icon outline hw-minus" ${student.isAbsent||student.homeworks<=0?"disabled":""}>-</button><button class="btn icon outline hw-plus" ${student.isAbsent?"disabled":""}>+</button></div></div>
           <div class="alert">${alert?`<span>${alert.emoji} ${alert.label}</span>`:`<span style="opacity:0">placeholder</span>`}</div>
           <div class="score-row"><button class="btn minus score-minus" ${student.isAbsent?"disabled":""}>-</button><div class="score">${student.points}</div><button class="btn plus score-plus" ${student.isAbsent?"disabled":""}>+</button></div>
+          <div style="text-align:center;margin-top:7px;font-size:13px;font-weight:900;color:${engagementIndexTheme(periodStats(student).index).color}">Indice d’implication : ${periodStats(student).index===null?"—":periodStats(student).index+"/20"}</div><div style="text-align:center;margin-top:3px;font-size:11px;font-weight:800;color:#64748b">${(()=>{const t=engagementTrend((student.periodScores||[]).map(x=>typeof x==="number"?x:x.score));return `${t.arrow} ${t.label} • 🔥 ${engagementStreak(student)}`})()}</div>
         `;
 
         card.onclick=(e)=>{ if(e.target.closest("button,input,textarea,select")) return; toggleSelection(student.id); };
-        card.querySelector(".toggle-absent").onclick=(e)=>{ e.stopPropagation(); student.isAbsent=!student.isAbsent; student.lostThisLesson=false; student.lostStarThisLesson=false; student.pointsLostThisLesson=0; student.homeworkAddedThisLesson=false; render(); save(); };
+        card.querySelector(".toggle-absent").onclick=(e)=>{
+          e.stopPropagation();
+          const outsideGroup=(state.viewMode==="g1" && student.group==="g2") || (state.viewMode==="g2" && student.group==="g1");
+          if(outsideGroup){
+            // Un clic sur un élève automatiquement absent force sa présence ;
+            // un nouveau clic rétablit l'absence automatique.
+            student.manualPresenceOverride=!student.manualPresenceOverride;
+            student.isAbsent=!student.manualPresenceOverride;
+            student.isAutoAbsent=!student.manualPresenceOverride;
+          }else{
+            student.isAbsent=!student.isAbsent;
+            student.isAutoAbsent=false;
+            student.manualPresenceOverride=false;
+          }
+          student.lostThisLesson=false;
+          student.lostStarThisLesson=false;
+          student.pointsLostThisLesson=0;
+          student.homeworkAddedThisLesson=false;
+          render(); save();
+        };
         card.querySelector(".open-profile").onclick=(e)=>{ e.stopPropagation(); openProfile(student.id); };
         card.querySelector(".avatar-btn").onclick=(e)=>{
           e.stopPropagation();
           openAvatarModal(student.id);
         };
         card.querySelector(".edit-name").onclick=(e)=>{ e.stopPropagation(); const n=prompt("Modifier le prénom :",student.name); if(n&&n.trim()){ student.name=n.trim(); render(); save(); } };
-        card.querySelector(".score-minus").onclick=async(e)=>{
-          e.stopPropagation();
-          const btn=e.currentTarget;
-          const prev=student.points;
-          const next=Math.max(0,Math.min(MAX_POINTS,prev-1));
-          if(next===prev) return;
+        card.querySelector(".score-minus").onclick=(e)=>{e.stopPropagation();openReasonPicker(student,"minus");};
+        card.querySelector(".score-plus").onclick=(e)=>{e.stopPropagation();openReasonPicker(student,"plus");};
+        const manualStarBtn=card.querySelector(".manual-star-minus");
+        if(manualStarBtn) manualStarBtn.onclick=(e)=>{e.stopPropagation();openStarLossModal(student);};
+        const starAdjustBtn=card.querySelector(".star-adjust-btn");
+        if(starAdjustBtn) starAdjustBtn.onclick=(e)=>{e.stopPropagation();openStarAdjustModal(student);};
 
-          btn.disabled=true;
-          try{
-            await updateStudentPointsInSupabase(student,next);
-            student.lostThisLesson=true;
-            student.pointsLostThisLesson+=1;
-            student.totalPointsLost+=1;
-            if(prev>=10&&next<10&&student.stars>0&&!student.lostStarThisLesson){
-              student.stars-=1;
-              student.lostStarThisLesson=true;
-            }
-            setAction(student,"minus");
-            render();
-            save();
-          }catch(err){
-            console.error("POINTS UPDATE ERROR",err);
-            alert("❌ Impossible d’enregistrer le retrait du point dans Supabase.\n\n"+(err?.message||String(err)));
-            btn.disabled=false;
-          }
-        };
-        card.querySelector(".score-plus").onclick=async(e)=>{
-          e.stopPropagation();
-          const btn=e.currentTarget;
-          const prev=student.points;
-          const next=Math.max(0,Math.min(MAX_POINTS,prev+1));
-          if(next===prev) return;
-
-          btn.disabled=true;
-          try{
-            await updateStudentPointsInSupabase(student,next);
-            setAction(student,"plus");
-            render();
-            save();
-          }catch(err){
-            console.error("POINTS UPDATE ERROR",err);
-            alert("❌ Impossible d’enregistrer le point dans Supabase.\n\n"+(err?.message||String(err)));
-            btn.disabled=false;
-          }
-        };
         card.querySelector(".hw-plus").onclick=async(e)=>{
           e.stopPropagation();
           const btn=e.currentTarget;
@@ -1591,7 +2130,7 @@ Noah"
     }
 
     function remarksHTML(student,editable=false){
-      const remarks=ensureRemarks(student);
+      const remarks=ensureRemarks(student).filter(r=>!parseZQEventRemark(r.text));
       if(!remarks.length) return '<div class="muted">Aucune remarque pour le moment.</div>';
       return [...remarks].reverse().map(r=>`
         <div style="padding:10px 0;border-bottom:1px solid #e2e8f0">
@@ -1718,7 +2257,7 @@ Noah"
         <div class="box" style="margin-top:12px">
           <div style="font-size:18px;font-weight:700;margin-bottom:8px">${currentClass().currentPeriodName}</div>
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;font-size:14px">
-            <div><span class="muted">Moyenne provisoire</span><br><strong>${periodStats(student).average===null?"—":periodStats(student).average+"/20"}</strong></div>
+            <div><span class="muted">Indice d’implication</span><br><strong>${periodStats(student).average===null?"—":periodStats(student).average+"/20"}</strong></div>
             <div><span class="muted">Cours comptés</span><br><strong>${periodStats(student).count}</strong></div>
             <div><span class="muted">Meilleure note</span><br><strong>${periodStats(student).best===null?"—":periodStats(student).best+"/20"}</strong></div>
             <div><span class="muted">Plus basse note</span><br><strong>${periodStats(student).worst===null?"—":periodStats(student).worst+"/20"}</strong></div>
@@ -1728,6 +2267,8 @@ Noah"
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
           <div class="box"><div style="font-size:18px;font-weight:700;margin-bottom:8px">Progression</div><div style="line-height:1.8;font-size:14px"><div>Score actuel : <strong>${student.points}/20</strong></div><div>Jauge actuelle : <strong>${student.progress}/3</strong></div><div>Série actuelle : <strong>${student.currentStreak}</strong></div><div>Étoiles : <strong>${student.stars}</strong></div><div>Diamants : <strong>${student.diamonds}</strong></div><div>Devoirs rendus : <strong>${student.homeworks}</strong></div></div></div>
+          <div class="box"><div style="font-size:18px;font-weight:800;margin-bottom:8px">🧭 Motifs d’implication récents</div>
+          ${(()=>{const persisted=zqEventsFromRemarks((student.teacherRemarks||[]).map(r=>({remark:r.text,created_at:r.createdAt||r.date})));const ev=persisted.length?persisted:ensureEngagementEvents(student);const neg=ev.filter(x=>x.type==="minus"),pos=ev.filter(x=>x.type==="plus");const top=a=>{const c={};a.forEach(x=>c[x.label]=(c[x.label]||0)+1);return Object.entries(c).sort((a,b)=>b[1]-a[1])[0]?.[0]||null};return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px"><div style="padding:10px;border-radius:12px;background:#fff7ed"><b>⚠️ Vigilance</b><br>${top(neg)||"Aucun motif enregistré"}</div><div style="padding:10px;border-radius:12px;background:#f0fdf4"><b>✨ Point fort</b><br>${top(pos)||"Aucun motif enregistré"}</div></div>`})()}</div>
           <div class="box"><div style="font-size:18px;font-weight:700;margin-bottom:8px">Remarques visibles par l’élève / les parents</div>
           <textarea id="notesArea" placeholder="Ex : Travail sérieux aujourd’hui. / Plusieurs bavardages : davantage de concentration est attendue."></textarea>
           <div style="margin-top:10px"><button class="btn primary" id="saveNotesBtn">Ajouter la remarque</button></div>
@@ -1843,8 +2384,17 @@ Noah"
             <div>
               <div class="muted">${cls.name} • ${cls.currentPeriodName}</div>
               <div style="font-size:30px;font-weight:900">${student.name}</div>
-              <div class="student-big-grade">${ps.average===null?"—":ps.average+" / 20"}</div>
-              <div class="muted">Moyenne actuelle de la période d’implication en classe</div>
+              <div style="display:flex;gap:14px;align-items:stretch;flex-wrap:wrap;margin-top:8px">
+                <div style="flex:1;min-width:150px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:12px">
+                  <div class="muted" style="font-size:12px">🎯 SCORE ACTUEL</div>
+                  <div style="font-size:34px;font-weight:950">${student.points} / 20</div>
+                </div>
+                <div style="flex:1.2;min-width:180px;background:${engagementIndexTheme(ps.index).bg};border:2px solid ${engagementIndexTheme(ps.index).border};border-radius:16px;padding:12px">
+                  <div style="font-size:12px;font-weight:800;color:${engagementIndexTheme(ps.index).color}">📊 INDICE D’IMPLICATION</div>
+                  <div style="font-size:36px;font-weight:950;color:${engagementIndexTheme(ps.index).color}">${ps.index===null?"—":ps.index+" / 20"}</div>
+                </div>
+              </div>
+              <div class="muted" style="font-size:12px;margin-top:6px">L’indice est calculé sur les 5 derniers cours, avec davantage de poids pour les plus récents.</div>${engagementMiniDashboard(student,ps.index)}
               <div style="margin-top:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:16px;padding:12px;line-height:1.45">
                 <strong>ℹ️ À quoi correspond cette note ?</strong><br>
                 Cette note concerne <strong>l’implication de l’élève en classe</strong>. Elle tient compte notamment de la participation, de l’investissement dans les activités, du travail fourni, de l’écoute, de la concentration et de l’attitude permettant de travailler dans de bonnes conditions.
@@ -1908,6 +2458,14 @@ Noah"
           </div>
 
           ${collectionHTML(student,"preview-"+student.id)}
+
+          <div class="box" style="border:2px solid #e2e8f0">
+            <div style="font-size:20px;font-weight:800">🧭 Suivi d’implication</div>
+            <div class="muted" style="margin:4px 0 10px">Points ajoutés ou retirés manuellement par le professeur et leur motif.</div>
+            ${zqEventsFromRemarks((student.teacherRemarks||[]).map(r=>({id:r.id,remark:r.text,created_at:r.createdAt||r.date}))).length
+              ? zqReasonHistoryHTML((student.teacherRemarks||[]).map(r=>({id:r.id,remark:r.text,created_at:r.createdAt||r.date})),10)
+              : `<div style="padding:14px;border-radius:14px;background:#f0fdf4;border:1px solid #bbf7d0;text-align:center"><strong>✅ Rien à signaler</strong></div>`}
+          </div>
 
           <div class="box">
             <div style="font-size:20px;font-weight:800">💬 Remarques du professeur</div>
@@ -2263,21 +2821,17 @@ Noah"
     function renderClassRankingHTML(){
       const {students}=classAnalyticsData();
       const ranked=students.filter(s=>s.average!==null).sort((a,b)=>b.average-a.average);
-      if(!ranked.length) return '<div class="muted">Aucune moyenne disponible pour le moment.</div>';
-
-      return `<div style="display:grid;gap:9px">
-        ${ranked.map((s,i)=>{
-          const pct=Math.max(0,Math.min(100,(Number(s.average)/20)*100));
-          const badge=i===0?"🥇":i===1?"🥈":i===2?"🥉":"";
-          return `<div style="display:grid;grid-template-columns:minmax(130px,220px) 1fr 72px;gap:10px;align-items:center">
-            <div style="font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${badge} ${escapeHTML(s.name)}</div>
-            <div style="height:18px;border-radius:999px;background:#e2e8f0;overflow:hidden">
-              <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,#99f6e4,#10b981);border-radius:999px"></div>
-            </div>
-            <div style="font-weight:900;text-align:right">${String(s.average).replace(".",",")}/20</div>
-          </div>`;
-        }).join("")}
-      </div>`;
+      if(!ranked.length) return '<div class="muted">Aucun indice disponible pour le moment.</div>';
+      const leaders=students.map(s=>{
+        if(s.values.length<2)return null;
+        const a=weightedEngagementIndex(s.values),b=weightedEngagementIndex(s.values.slice(0,-1));
+        return {name:s.name,delta:(a===null||b===null)?null:round1(a-b)};
+      }).filter(x=>x&&x.delta!==null).sort((a,b)=>b.delta-a.delta).slice(0,3);
+      const top=leaders.length?`<div style="padding:12px 14px;border-radius:14px;background:#f8fafc;border:1px solid #e2e8f0;margin-bottom:12px"><b>🚀 Progressions récentes</b><div style="margin-top:6px">${leaders.map((x,i)=>`${i+1}. <b>${escapeHTML(x.name)}</b> ${x.delta>0?"↗":x.delta<0?"↘":"→"} ${x.delta>0?"+":""}${String(x.delta).replace(".",",")}`).join(" &nbsp; • &nbsp; ")}</div></div>`:"";
+      return `${top}<div style="display:grid;gap:9px">${ranked.map((s,i)=>{
+        const pct=Math.max(0,Math.min(100,(Number(s.average)/20)*100)),badge=i===0?"🥇":i===1?"🥈":i===2?"🥉":"",th=engagementIndexTheme(s.average);
+        return `<div style="display:grid;grid-template-columns:minmax(130px,220px) 1fr 72px;gap:10px;align-items:center"><div style="font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${badge} ${escapeHTML(s.name)}</div><div style="height:18px;border-radius:999px;background:#e2e8f0;overflow:hidden"><div style="width:${pct}%;height:100%;background:${th.color};border-radius:999px"></div></div><div style="font-weight:900;text-align:right;color:${th.color}">${String(s.average).replace(".",",")}/20</div></div>`;
+      }).join("")}</div>`;
     }
 
     function refreshClassAnalytics(){
@@ -2305,7 +2859,7 @@ Noah"
       );
 
       const lines=[
-        "ZENQUEST — MOYENNES",
+        "ZENQUEST — INDICES D’IMPLICATION",
         `Classe : ${cls.name||"—"}`,
         `Période : ${cls.currentPeriodName||"Période actuelle"}`,
         ""
@@ -2313,7 +2867,7 @@ Noah"
 
       rows.forEach(student=>{
         const ps=periodStats(student);
-        const avg=ps.average===null ? "—" : String(ps.average).replace(".",",")+"/20";
+        const avg=ps.index===null ? "—" : String(ps.index).replace(".",",")+"/20";
         lines.push(`${student.name} : ${avg}`);
       });
 
@@ -2486,7 +3040,7 @@ Noah"
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
           <div><span class="muted">Nom</span><br><strong>${title}</strong></div>
           <div><span class="muted">Élèves avec une note</span><br><strong>${rows.filter(r=>r.average!==null).length}/${rows.length}</strong></div>
-          <div><span class="muted">Moyenne provisoire classe</span><br><strong>${classAverage===null?"—":classAverage+"/20"}</strong></div>
+          <div><span class="muted">Indice d’implication classe</span><br><strong>${classAverage===null?"—":classAverage+"/20"}</strong></div>
         </div>` : `
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
           <div><span class="muted">Période</span><br><strong>${title}</strong></div>
@@ -3060,6 +3614,15 @@ Noah"
     }
 
 
+    const BOARD_QUICK_COMMANDS={
+      silence:{emoji:"🤫",title:"SILENCE",text:"Travaillez dans le calme et le silence.",minutes:5},
+      listen:{emoji:"👂",title:"ÉCOUTE",text:"On s’arrête. On écoute les consignes.",minutes:2},
+      individual:{emoji:"✍️",title:"TRAVAIL INDIVIDUEL",text:"Travaillez seul et en silence. Avancez jusqu’à la fin du chrono.",minutes:10},
+      group:{emoji:"👥",title:"TRAVAIL EN GROUPE",text:"Échangez à voix basse et restez concentrés sur la tâche.",minutes:10},
+      copy:{emoji:"📖",title:"À COPIER",text:"Copiez ce qui est demandé avant la fin du chrono.",minutes:5},
+      finish:{emoji:"🎒",title:"ON RANGE",text:"Rangez vos affaires et préparez-vous à quitter la salle.",minutes:2}
+    };
+
     const BOARD_DEFAULTS={
       welcome:{emoji:"👋",title:"Bonjour !",text:"Sortez vos affaires.\nÉcrivez la date.",minutes:2},
       work:{emoji:"✏️",title:"Au boulot !",text:"Travaillez dans le calme et le silence.\nNe m’appelez pas pendant ce temps : cherchez, réfléchissez et avancez en autonomie.",minutes:5}
@@ -3067,6 +3630,11 @@ Noah"
     let boardCurrent={...BOARD_DEFAULTS.welcome};
     let boardRemaining=120;
     let boardTimerHandle=null;
+    let boardTimerEndAt=null;
+    let boardTimerRunning=false;
+    const boardDeviceId=uid();
+    let boardRemoteChannel=null;
+    let boardRemoteClassId=null;
 
     function renderBoardPresetOptions(){
       const cls=currentClass();
@@ -3085,40 +3653,186 @@ Noah"
       });
     }
 
-    function setBoardPreset(preset){
+    function setBoardPreset(preset,opts={}){
       if(!preset) return;
       boardCurrent={...preset};
       document.getElementById("boardEmoji").textContent=preset.emoji||"📌";
       document.getElementById("boardTitle").textContent=preset.title||"";
       document.getElementById("boardText").textContent=preset.text||"";
       document.getElementById("boardMinutes").value=Math.max(1,Math.min(60,Number(preset.minutes)||2));
-      resetBoardTimer();
+      if(opts.remainingSeconds!==undefined){
+        stopBoardTimer(false);
+        boardRemaining=Math.max(0,Math.round(Number(opts.remainingSeconds)||0));
+        boardTimerEndAt=null;
+        boardTimerRunning=false;
+        updateBoardTimer();
+      }else{
+        resetBoardTimer(false);
+      }
     }
-    function openBoard(){
-      stopBoardTimer();
+
+    function openBoard(reset=true){
       renderBoardPresetOptions();
-      setBoardPreset(BOARD_DEFAULTS.welcome);
+      if(reset) setBoardPreset(BOARD_DEFAULTS.welcome);
       document.getElementById("boardManage").style.display="none";
       document.getElementById("boardModal").classList.add("show");
     }
+
     function updateBoardTimer(){
+      if(boardTimerRunning && boardTimerEndAt){
+        boardRemaining=Math.max(0,Math.ceil((boardTimerEndAt-Date.now())/1000));
+      }
       const m=Math.floor(boardRemaining/60), s=boardRemaining%60;
-      document.getElementById("boardTimer").textContent=`${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+      const el=document.getElementById("boardTimer");
+      if(!el) return;
+      el.textContent=boardRemaining<=0 && boardTimerRunning ? "TERMINÉ !" : `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+      if(boardTimerRunning && boardRemaining<=0){
+        stopBoardTimer(false);
+        el.textContent="TERMINÉ !";
+      }
     }
-    function stopBoardTimer(){ if(boardTimerHandle){clearInterval(boardTimerHandle);boardTimerHandle=null;} }
-    function resetBoardTimer(){
-      stopBoardTimer();
+
+    function ensureBoardTimerTick(){
+      if(boardTimerHandle) clearInterval(boardTimerHandle);
+      boardTimerHandle=setInterval(updateBoardTimer,250);
+    }
+
+    function stopBoardTimer(broadcast=true){
+      if(boardTimerRunning && boardTimerEndAt){
+        boardRemaining=Math.max(0,Math.ceil((boardTimerEndAt-Date.now())/1000));
+      }
+      boardTimerRunning=false;
+      boardTimerEndAt=null;
+      if(boardTimerHandle){clearInterval(boardTimerHandle);boardTimerHandle=null;}
+      updateBoardTimer();
+      if(broadcast) sendBoardCommand({action:"pause",remaining:boardRemaining});
+    }
+
+    function resetBoardTimer(broadcast=true){
+      stopBoardTimer(false);
       const mins=Math.max(1,Math.min(60,Number(document.getElementById("boardMinutes").value)||2));
-      boardRemaining=Math.round(mins*60); updateBoardTimer();
+      boardRemaining=Math.round(mins*60);
+      updateBoardTimer();
+      if(broadcast) sendBoardCommand({action:"reset",remaining:boardRemaining});
     }
-    function startBoardTimer(){
-      if(boardTimerHandle) return;
-      if(boardRemaining<=0) resetBoardTimer();
-      boardTimerHandle=setInterval(()=>{
-        boardRemaining=Math.max(0,boardRemaining-1); updateBoardTimer();
-        if(boardRemaining<=0){ stopBoardTimer(); document.getElementById("boardTimer").textContent="TERMINÉ !"; }
-      },1000);
+
+    function startBoardTimer(broadcast=true,endAt=null){
+      if(boardRemaining<=0 && !endAt) resetBoardTimer(false);
+      boardTimerEndAt=Number(endAt)||Date.now()+boardRemaining*1000;
+      boardTimerRunning=true;
+      ensureBoardTimerTick();
+      updateBoardTimer();
+      if(broadcast) sendBoardCommand({action:"start",endAt:boardTimerEndAt});
     }
+
+    function applyBoardShow(payload){
+      const preset={
+        emoji:payload.emoji||"📌",
+        title:payload.title||"",
+        text:payload.text||"",
+        minutes:Math.max(1,Math.min(60,Number(payload.minutes)||5))
+      };
+      openBoard(false);
+      setBoardPreset(preset);
+      if(payload.endAt){
+        boardTimerEndAt=Number(payload.endAt);
+        boardTimerRunning=true;
+        boardRemaining=Math.max(0,Math.ceil((boardTimerEndAt-Date.now())/1000));
+        ensureBoardTimerTick();
+        updateBoardTimer();
+      }else if(payload.autoStart){
+        boardRemaining=Math.round(preset.minutes*60);
+        startBoardTimer(false);
+      }
+    }
+
+    function applyBoardRemoteCommand(payload){
+      if(!payload || payload.senderId===boardDeviceId) return;
+      if(payload.classId && payload.classId!==state.currentClassId) return;
+
+      if(payload.action==="show"){
+        applyBoardShow(payload);
+      }else if(payload.action==="start"){
+        if(!document.getElementById("boardModal").classList.contains("show")) openBoard(false);
+        startBoardTimer(false,payload.endAt);
+      }else if(payload.action==="pause"){
+        stopBoardTimer(false);
+        boardRemaining=Math.max(0,Math.round(Number(payload.remaining)||0));
+        updateBoardTimer();
+      }else if(payload.action==="reset"){
+        stopBoardTimer(false);
+        boardRemaining=Math.max(0,Math.round(Number(payload.remaining)||0));
+        updateBoardTimer();
+      }else if(payload.action==="close"){
+        stopBoardTimer(false);
+        document.getElementById("boardModal").classList.remove("show");
+      }
+    }
+
+    async function sendBoardCommand(payload){
+      const full={...payload,senderId:boardDeviceId,classId:state.currentClassId,sentAt:Date.now()};
+      try{
+        if(boardRemoteChannel){
+          await boardRemoteChannel.send({type:"broadcast",event:"board_command",payload:full});
+        }
+      }catch(err){
+        console.error("BOARD BROADCAST ERROR",err);
+      }
+    }
+
+    function stopBoardRemoteChannel(){
+      if(boardRemoteChannel){
+        try{supabaseClient.removeChannel(boardRemoteChannel);}catch{}
+        boardRemoteChannel=null;
+        boardRemoteClassId=null;
+      }
+    }
+
+    function startBoardRemoteChannel(){
+      const cls=currentClass();
+      if(!cls?.id) return;
+      if(boardRemoteChannel && boardRemoteClassId===cls.id) return;
+      stopBoardRemoteChannel();
+      boardRemoteClassId=cls.id;
+      boardRemoteChannel=supabaseClient
+        .channel(`zenquest-board-${cls.id}`,{config:{broadcast:{self:false}}})
+        .on("broadcast",{event:"board_command"},({payload})=>applyBoardRemoteCommand(payload))
+        .subscribe(status=>{
+          if(status==="CHANNEL_ERROR"||status==="TIMED_OUT") console.error("Board remote channel:",status);
+        });
+    }
+
+    function sendQuickBoardCommand(key){
+      const base=BOARD_QUICK_COMMANDS[key];
+      if(!base) return;
+      const minutes=Math.max(1,Math.min(60,Number(document.getElementById("remoteBoardMinutes").value)||base.minutes||5));
+      const preset={...base,minutes};
+      setBoardPreset(preset);
+      openBoard(false);
+      boardRemaining=Math.round(minutes*60);
+      const endAt=Date.now()+boardRemaining*1000;
+      startBoardTimer(false,endAt);
+      sendBoardCommand({action:"show",...preset,endAt,autoStart:true});
+    }
+
+    function sendCustomBoardCommand(){
+      const emoji=(document.getElementById("remoteBoardEmoji").value||"📌").trim()||"📌";
+      const title=(document.getElementById("remoteBoardTitle").value||"").trim();
+      const text=(document.getElementById("remoteBoardText").value||"").trim();
+      const minutes=Math.max(1,Math.min(60,Number(document.getElementById("remoteBoardMinutes").value)||5));
+      if(!title && !text){
+        alert("Écris au moins un titre ou un message à afficher.");
+        return;
+      }
+      const preset={emoji,title:title||"Consigne",text,minutes};
+      setBoardPreset(preset);
+      openBoard(false);
+      boardRemaining=Math.round(minutes*60);
+      const endAt=Date.now()+boardRemaining*1000;
+      startBoardTimer(false,endAt);
+      sendBoardCommand({action:"show",...preset,endAt,autoStart:true});
+    }
+
     function saveBoardPreset(){
       const cls=currentClass();
       const title=document.getElementById("boardCustomTitle").value.trim();
@@ -3354,7 +4068,8 @@ Noah"
         .map(s=>Number(s.score))
         .filter(Number.isFinite);
 
-      const avgDisplay=periodAverage===null ? "—" : round1(periodAverage).toString().replace(".",",");
+      const engagementIndex=weightedEngagementIndex(scores);
+      const avgDisplay=engagementIndex===null ? "—" : engagementIndex.toString().replace(".",",");
       const best=scores.length?Math.max(...scores):null;
       const worst=scores.length?Math.min(...scores):null;
       const trend=studentTrend(scores);
@@ -3383,21 +4098,24 @@ Noah"
         ? recentLessonRows.map(row=>`<span class="toolbar-chip">📅 ${lessonDateLabel(row.created_at)} : ${Number(row.score)}/20</span>`).join("")
         : '<span class="muted">Aucun score de fin de cours enregistré pour cette période.</span>';
 
-      const remarksHtml=remarks.length
-        ? remarks.map(r=>`
+      const normalRemarks=visibleTeacherRemarks(remarks);
+      const remarksHtml=normalRemarks.length
+        ? normalRemarks.map(r=>`
             <div style="padding:10px 0;border-bottom:1px solid #e2e8f0">
               <div class="muted" style="font-size:12px">${new Date(r.created_at).toLocaleDateString("fr-FR")}</div>
               <div style="margin-top:4px;white-space:pre-wrap;line-height:1.5">${escapeHTML(r.remark||"")}</div>
             </div>`).join("")
         : '<div class="muted">Aucune remarque du professeur pour le moment.</div>';
+      const reasonHistoryHtml=zqReasonHistoryHTML(remarks,12);
 
       document.getElementById("authenticatedStudentView").innerHTML=`
         <div class="student-dashboard">
 
           <div class="mode-switch" style="margin-bottom:16px;width:100%;display:flex;flex-wrap:wrap">
-            <button type="button" id="studentCurrentTabBtn" class="active" style="flex:1;min-width:190px">🎮 Période actuelle</button>
-            <button type="button" id="studentHistoryTabBtn" style="flex:1;min-width:190px">📚 Mes anciennes périodes</button>
-            <button type="button" id="studentParentsTabBtn" style="flex:1;min-width:190px">👨‍👩‍👧 Espace parents</button>
+            <button type="button" id="studentCurrentTabBtn" class="active" style="flex:1;min-width:170px">🎮 Période actuelle</button>
+            <button type="button" id="studentTrackingTabBtn" style="flex:1;min-width:170px">🧭 Suivi d’implication</button>
+            <button type="button" id="studentHistoryTabBtn" style="flex:1;min-width:170px">📚 Mes anciennes périodes</button>
+            <button type="button" id="studentParentsTabBtn" style="flex:1;min-width:170px">👨‍👩‍👧 Espace parents</button>
           </div>
 
           <div id="studentParentsPanel" style="display:none">
@@ -3563,6 +4281,23 @@ Noah"
 </div>
 </div>
 
+          <div id="studentTrackingPanel" style="display:none">
+            <div class="box" style="border:2px solid #e2e8f0">
+              <div style="font-size:24px;font-weight:900">🧭 Suivi d’implication</div>
+              <div class="muted" style="margin:6px 0 14px;line-height:1.55">
+                Ici apparaissent uniquement les points ajoutés ou retirés manuellement par le professeur, avec leur motif.
+                Les bonus automatiques de fin de cours ne sont pas affichés.
+              </div>
+              ${zqEventsFromRemarks(remarks).length
+                ? reasonHistoryHtml
+                : `<div style="padding:20px;border-radius:16px;background:#f0fdf4;border:1px solid #bbf7d0;text-align:center">
+                    <div style="font-size:30px">✅</div>
+                    <div style="font-size:20px;font-weight:900;margin-top:5px">Rien à signaler</div>
+                    <div class="muted" style="margin-top:5px">Aucun point manuel n’a été ajouté ou retiré avec un motif pour le moment.</div>
+                  </div>`}
+            </div>
+          </div>
+
           <div id="studentCurrentPeriodPanel">
           ${(lessonScores||[]).length===0 ? `<div style="margin-bottom:14px;padding:12px 16px;border-radius:16px;background:#eef2ff;border:1px solid #c7d2fe;font-weight:900">
             🆕 Nouvelle période
@@ -3572,15 +4307,24 @@ Noah"
             <div>
               <div class="muted">${escapeHTML(cls?.name||"")} • ${escapeHTML(currentPeriodName)}</div>
               <div style="font-size:30px;font-weight:900">${escapeHTML(student.first_name||"Élève")}</div>
-              <div class="student-big-grade">${avgDisplay}${periodAverage===null?"":" / 20"}</div>
-              <div class="muted">Moyenne actuelle de la période d’implication en classe</div>
+              <div style="display:flex;gap:14px;align-items:stretch;flex-wrap:wrap;margin-top:8px">
+                <div style="flex:1;min-width:150px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:12px">
+                  <div class="muted" style="font-size:12px">🎯 SCORE ACTUEL</div>
+                  <div style="font-size:34px;font-weight:950">${Number(student.points??15)} / 20</div>
+                </div>
+                <div style="flex:1.2;min-width:180px;background:${engagementIndexTheme(engagementIndex).bg};border:2px solid ${engagementIndexTheme(engagementIndex).border};border-radius:16px;padding:12px">
+                  <div style="font-size:12px;font-weight:800;color:${engagementIndexTheme(engagementIndex).color}">📊 INDICE D’IMPLICATION</div>
+                  <div style="font-size:36px;font-weight:950;color:${engagementIndexTheme(engagementIndex).color}">${avgDisplay}${engagementIndex===null?"":" / 20"}</div>
+                </div>
+              </div>
+              <div class="muted" style="font-size:12px;margin-top:6px">L’indice est calculé sur les 5 derniers cours, avec davantage de poids pour les plus récents.</div>${engagementMiniDashboard({periodScores:scores},engagementIndex)}
 
               <div style="margin-top:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:16px;padding:12px;line-height:1.45">
                 <strong>ℹ️ À quoi correspond cette note ?</strong><br>
                 Cette note concerne <strong>ton implication en classe</strong> : travail, participation, écoute, concentration et attitude.
                 <br><br>
-                <strong>Elle pourra apparaître sur ton bulletin</strong>, mais elle ne correspond
-                <strong>ni à ta moyenne générale, ni à ta moyenne en mathématiques.</strong>
+                <strong>C’est l’indice d’implication — et non le score actuel — qui sera pris en compte dans la moyenne.</strong>
+                Le score actuel montre simplement ta situation à cet instant.
               </div>
 
               <div class="row wrap" style="margin-top:12px">
@@ -3627,7 +4371,7 @@ Noah"
             <div class="box">
               <div style="font-size:20px;font-weight:800">🎮 Mon profil ZenQuest</div>
               <div style="font-size:25px;font-weight:900;margin-top:10px">Niveau ${level}</div>
-              <div style="font-size:25px;margin:8px 0">${individualStars(stars)} <span class="diamond-inline">💎 x${diamonds}</span></div>
+              <div style="font-size:25px;margin:8px 0">${individualStars(stars)} <span class="diamond-inline">💎 x${diamonds}</span></div><div class="muted" style="font-size:11px">Étoiles synchronisées avec ZenQuest.</div>
               <div class="student-mini-progress"><span style="width:${progressPct}%"></span></div>
               <div class="muted" style="margin-top:5px">${progressStep}/3 vers le niveau suivant</div>
 
@@ -3675,22 +4419,29 @@ Noah"
       `;
 
       const currentTabBtn=document.getElementById("studentCurrentTabBtn");
+      const trackingTabBtn=document.getElementById("studentTrackingTabBtn");
       const historyTabBtn=document.getElementById("studentHistoryTabBtn");
       const parentsTabBtn=document.getElementById("studentParentsTabBtn");
       const currentPanel=document.getElementById("studentCurrentPeriodPanel");
+      const trackingPanel=document.getElementById("studentTrackingPanel");
       const historyPanel=document.getElementById("studentHistoryPanel");
       const parentsPanel=document.getElementById("studentParentsPanel");
       const showStudentTab=(tab)=>{
+        const current=tab==="current";
+        const tracking=tab==="tracking";
         const history=tab==="history";
         const parents=tab==="parents";
-        currentPanel.style.display=(!history&&!parents)?"block":"none";
+        currentPanel.style.display=current?"block":"none";
+        trackingPanel.style.display=tracking?"block":"none";
         historyPanel.style.display=history?"block":"none";
         parentsPanel.style.display=parents?"block":"none";
-        currentTabBtn.classList.toggle("active",!history&&!parents);
+        currentTabBtn.classList.toggle("active",current);
+        trackingTabBtn.classList.toggle("active",tracking);
         historyTabBtn.classList.toggle("active",history);
         parentsTabBtn.classList.toggle("active",parents);
       };
       if(currentTabBtn) currentTabBtn.onclick=()=>showStudentTab("current");
+      if(trackingTabBtn) trackingTabBtn.onclick=()=>showStudentTab("tracking");
       if(historyTabBtn) historyTabBtn.onclick=()=>showStudentTab("history");
       if(parentsTabBtn) parentsTabBtn.onclick=()=>showStudentTab("parents");
       const parentCurrentLabels={
@@ -3846,10 +4597,12 @@ Noah"
           teacherRemarks=remarkRows||[];
         }
 
-        const studentsWithRemarks=(students||[]).map(s=>({
-          ...s,
-          _teacherRemarks:teacherRemarks.filter(r=>r.student_id===s.id)
-        }));
+        const studentsWithRemarks=[];
+        for(const s of (students||[])){
+          const ownRemarks=teacherRemarks.filter(r=>r.student_id===s.id);
+          const repaired={...s,_teacherRemarks:ownRemarks};
+          studentsWithRemarks.push(repaired);
+        }
 
         let allLessonScores=[];
         if(studentIds.length){
@@ -4094,6 +4847,93 @@ Noah"
     }
 
 
+    let teacherRealtimeChannel=null;
+    let realtimeRefreshTimer=null;
+    let realtimeRefreshRunning=false;
+    let realtimeRefreshPending=false;
+    let lastRealtimeEventAt=0;
+
+    function setRealtimeStatus(mode,text){
+      const wrap=document.getElementById("realtimeSyncStatus");
+      const dot=document.getElementById("realtimeSyncDot");
+      const label=document.getElementById("realtimeSyncText");
+      if(!wrap||!dot||!label) return;
+      wrap.classList.toggle("live",mode==="live");
+      const cfg={
+        live:["#16a34a","#dcfce7","#86efac"],
+        connecting:["#f59e0b","#fffbeb","#fde68a"],
+        error:["#dc2626","#fef2f2","#fecaca"]
+      }[mode]||["#64748b","#f8fafc","#e2e8f0"];
+      dot.style.background=cfg[0]; wrap.style.background=cfg[1]; wrap.style.borderColor=cfg[2];
+      label.textContent=text;
+    }
+
+    function mergeRealtimeTeacherData(newClasses){
+      const oldCurrent=state.currentClassId;
+      const oldView=state.viewMode;
+      const oldSelection=[...(state.selectedStudentIds||[])];
+      state.classes=newClasses;
+      if(state.classes.some(c=>c.id===oldCurrent)) state.currentClassId=oldCurrent;
+      else if(state.classes.length) state.currentClassId=state.classes[0].id;
+      state.viewMode=oldView;
+      state.selectedStudentIds=oldSelection.filter(id=>currentClass()?.students?.some(s=>s.id===id));
+    }
+
+    async function refreshTeacherFromRealtime(){
+      if(realtimeRefreshRunning){ realtimeRefreshPending=true; return; }
+      realtimeRefreshRunning=true;
+      try{
+        const preservedClasses=state.classes;
+        const preservedCurrent=state.currentClassId;
+        await loadTeacherSupabaseData();
+        const freshlyLoaded=state.classes;
+        // loadTeacherSupabaseData already mapped everything from DB; keep current class when possible.
+        if(freshlyLoaded.some(c=>c.id===preservedCurrent)) state.currentClassId=preservedCurrent;
+        setRealtimeStatus("live","Synchronisé en direct");
+        render();
+      }catch(err){
+        console.error("REALTIME REFRESH ERROR",err);
+        setRealtimeStatus("error","Synchronisation interrompue");
+      }finally{
+        realtimeRefreshRunning=false;
+        if(realtimeRefreshPending){
+          realtimeRefreshPending=false;
+          setTimeout(refreshTeacherFromRealtime,120);
+        }
+      }
+    }
+
+    function scheduleRealtimeRefresh(){
+      lastRealtimeEventAt=Date.now();
+      clearTimeout(realtimeRefreshTimer);
+      realtimeRefreshTimer=setTimeout(refreshTeacherFromRealtime,140);
+    }
+
+    function stopTeacherRealtime(){
+      clearTimeout(realtimeRefreshTimer);
+      if(teacherRealtimeChannel){
+        try{supabaseClient.removeChannel(teacherRealtimeChannel);}catch{}
+        teacherRealtimeChannel=null;
+      }
+    }
+
+    function startTeacherRealtime(){
+      stopTeacherRealtime();
+      setRealtimeStatus("connecting","Connexion au direct…");
+      teacherRealtimeChannel=supabaseClient
+        .channel("zenquest-teacher-live-"+Date.now())
+        .on("postgres_changes",{event:"*",schema:"public",table:"students"},scheduleRealtimeRefresh)
+        .on("postgres_changes",{event:"*",schema:"public",table:"lesson_scores"},scheduleRealtimeRefresh)
+        .on("postgres_changes",{event:"*",schema:"public",table:"teacher_remarks"},scheduleRealtimeRefresh)
+        .on("postgres_changes",{event:"*",schema:"public",table:"classes"},scheduleRealtimeRefresh)
+        .on("postgres_changes",{event:"*",schema:"public",table:"class_messages"},scheduleRealtimeRefresh)
+        .subscribe(status=>{
+          if(status==="SUBSCRIBED") setRealtimeStatus("live","Synchronisé en direct");
+          else if(status==="CHANNEL_ERROR"||status==="TIMED_OUT") setRealtimeStatus("error","Direct indisponible");
+          else if(status==="CLOSED") setRealtimeStatus("connecting","Reconnexion…");
+        });
+    }
+
     async function routeAuthenticatedUser(session){
       if(!session?.user) return showLogin();
 
@@ -4116,6 +4956,9 @@ Noah"
         try{
           await loadTeacherSupabaseData();
           render();
+          startTeacherRealtime();
+          startTeacherFallbackPolling();
+          startBoardRemoteChannel();
         }catch(err){
           console.error(err);
           document.getElementById("supabaseTeacherStatus").innerHTML=
@@ -4126,6 +4969,8 @@ Noah"
       }
 
       if(profile.role==="student"){
+        stopTeacherRealtime();
+        stopBoardRemoteChannel();
         document.getElementById("mainApp").style.display="none";
         document.getElementById("authScreen").style.display="none";
         document.getElementById("studentApp").style.display="block";
@@ -4154,6 +4999,16 @@ Noah"
         if(session) await routeAuthenticatedUser(session);
         else showLogin();
       });
+    }
+
+    let teacherFallbackPoll=null;
+    function startTeacherFallbackPolling(){
+      if(teacherFallbackPoll) clearInterval(teacherFallbackPoll);
+      teacherFallbackPoll=setInterval(()=>{
+        if(document.getElementById("mainApp")?.style.display!=="none" && !realtimeRefreshRunning){
+          refreshTeacherFromRealtime();
+        }
+      },5000);
     }
 
     function render(){
@@ -4228,7 +5083,7 @@ Noah"
         btn.textContent=oldText;
       }
     };
-    document.getElementById("classSelect").onchange=(e)=>{ state.currentClassId=e.target.value; state.appMode="prof"; save(); render(); };
+    document.getElementById("classSelect").onchange=(e)=>{ state.currentClassId=e.target.value; state.appMode="prof"; save(); render(); startBoardRemoteChannel(); };
     document.getElementById("endLessonBtn").onclick=endLesson;
     document.getElementById("loginBtn").onclick=login;
 
@@ -4245,21 +5100,38 @@ Noah"
     document.getElementById("classMessagesBtn").onclick=openClassMessages;
     document.getElementById("closeClassMessagesBtn").onclick=()=>document.getElementById("classMessagesModal").classList.remove("show");
     document.getElementById("addClassMessageBtn").onclick=addClassMessage;
-    document.getElementById("boardBtn").onclick=openBoard;
-    document.getElementById("closeBoardBtn").onclick=()=>{stopBoardTimer();document.getElementById("boardModal").classList.remove("show");};
-    document.querySelectorAll(".boardPresetBtn").forEach(btn=>btn.onclick=()=>setBoardPreset(BOARD_DEFAULTS[btn.dataset.preset]));
-    document.getElementById("boardTimerStartBtn").onclick=startBoardTimer;
-    document.getElementById("boardTimerPauseBtn").onclick=stopBoardTimer;
-    document.getElementById("boardTimerResetBtn").onclick=resetBoardTimer;
-    document.getElementById("boardMinutes").onchange=resetBoardTimer;
+    document.getElementById("boardBtn").onclick=()=>openBoard(true);
+    document.getElementById("closeBoardBtn").onclick=()=>{stopBoardTimer(false);document.getElementById("boardModal").classList.remove("show");sendBoardCommand({action:"close"});};
+    document.querySelectorAll(".boardPresetBtn").forEach(btn=>btn.onclick=()=>{
+      const p=BOARD_DEFAULTS[btn.dataset.preset];
+      setBoardPreset(p);
+      sendBoardCommand({action:"show",...p,remaining:boardRemaining});
+    });
+    document.getElementById("boardTimerStartBtn").onclick=()=>startBoardTimer(true);
+    document.getElementById("boardTimerPauseBtn").onclick=()=>stopBoardTimer(true);
+    document.getElementById("boardTimerResetBtn").onclick=()=>resetBoardTimer(true);
+    document.getElementById("boardMinutes").onchange=()=>resetBoardTimer(true);
+    document.querySelectorAll(".boardQuickBtn").forEach(btn=>btn.onclick=()=>sendQuickBoardCommand(btn.dataset.command));
+    document.getElementById("remoteBoardSendBtn").onclick=sendCustomBoardCommand;
+    document.getElementById("remoteBoardCloseBtn").onclick=()=>{
+      stopBoardTimer(false);
+      document.getElementById("boardModal").classList.remove("show");
+      sendBoardCommand({action:"close"});
+    };
     document.getElementById("manageBoardBtn").onclick=()=>{
       const el=document.getElementById("boardManage"); el.style.display=el.style.display==="none"?"block":"none"; renderBoardPresetOptions();
     };
     document.getElementById("saveBoardPresetBtn").onclick=saveBoardPreset;
     document.getElementById("customBoardSelect").onchange=e=>{
-      const p=currentClass().boardPresets.find(x=>x.id===e.target.value); if(p)setBoardPreset(p);
+      const p=currentClass().boardPresets.find(x=>x.id===e.target.value);
+      if(p){setBoardPreset(p);sendBoardCommand({action:"show",...p,remaining:boardRemaining});}
     };
     document.getElementById("closeStudentRulesBtn").onclick=()=>document.getElementById("studentRulesModal").classList.remove("show");
+    document.getElementById("closeReasonPickerBtn").onclick=()=>{pendingReasonAction=null;document.getElementById("reasonPickerModal").classList.remove("show");};
+    document.getElementById("closeStarAdjustBtn").onclick=()=>{pendingStarAdjustStudent=null;document.getElementById("starAdjustModal").classList.remove("show");};
+    document.getElementById("closeStarLossBtn").onclick=()=>{pendingStarLossStudent=null;document.getElementById("starLossModal").classList.remove("show");};
+    document.getElementById("cancelStarLossBtn").onclick=()=>{pendingStarLossStudent=null;document.getElementById("starLossModal").classList.remove("show");};
+    document.getElementById("confirmStarLossBtn").onclick=confirmManualStarLoss;
     document.getElementById("rulesLanguageSelect").onchange=(e)=>applyRulesLanguage(e.target.value);
     document.querySelectorAll(".studentRuleTab").forEach(btn=>btn.onclick=()=>showStudentRuleTab(btn.dataset.ruleTab));
     document.getElementById("closeAvatarModalBtn").onclick=()=>{
