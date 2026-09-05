@@ -337,6 +337,19 @@
 
     #closeBoardBtn{transition:opacity .15s ease,transform .15s ease}
     #closeBoardBtn:hover{opacity:1!important;transform:scale(1.05)}
+
+    @media(max-width:700px){
+      #welcomeTickerContent{font-size:18px!important;padding:8px 11px!important}
+      #welcomeTicker{margin-top:12px!important}
+    }
+
+    #welcomeFixedScoresGrid > div{box-shadow:0 2px 7px rgba(0,0,0,.08)}
+    @media(max-width:900px){
+      #welcomeFixedScoresGrid{gap:5px 6px!important}
+      #welcomeFixedScoresGrid > div{padding:5px 7px!important}
+      #welcomeFixedScoresGrid span{font-size:14px!important}
+      #welcomeFixedScoresGrid strong{font-size:17px!important}
+    }
 </style>
 </head>
 <body>
@@ -401,7 +414,7 @@
     </div>
 
     <div id="zqVersionBadge" style="position:fixed;right:12px;bottom:12px;z-index:999998;padding:7px 10px;border-radius:999px;background:#0f172a;color:white;font-size:11px;font-weight:900;box-shadow:0 6px 18px rgba(15,23,42,.22);opacity:.88">
-      TEST • ZenQuest 5.0.15
+      TEST • ZenQuest 5.0.18
     </div>
 
     <div id="supabaseTeacherStatus" class="panel" style="margin-bottom:12px;border:1px solid #a7f3d0;background:#ecfdf5;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
@@ -968,11 +981,16 @@ Noah"
         </div>
         <button class="btn outline" id="welcomeConfigClose">✕</button>
       </div>
-      <label style="display:block;margin-top:14px;font-weight:850">Message affiché
-        <textarea id="welcomeMessageInput" rows="4" style="width:100%;margin-top:5px;resize:vertical">Sortez vos affaires dans le calme.
-Écrivez la date.
-Le cours va commencer.</textarea>
-      </label>
+      <div style="display:block;margin-top:14px;font-weight:850">Messages défilants
+        <div style="margin-top:5px;padding:9px 11px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;font-size:12px;line-height:1.55;color:#475569">
+          🎒 Sortez vos affaires dans le calme. &nbsp;•&nbsp;
+          ✏️ Écrivez la date. &nbsp;•&nbsp;
+          🤫 Restez dans le calme pendant l’appel. &nbsp;•&nbsp;
+          ⚠️ Les points sont déjà actifs. &nbsp;•&nbsp;
+          ✨ Messages positifs et rappels des règles.
+        </div>
+        <textarea id="welcomeMessageInput" style="display:none">Accueil dynamique</textarea>
+      </div>
       <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-top:12px">
         <label style="font-weight:850">Durée
           <div style="display:flex;align-items:center;gap:5px;margin-top:5px">
@@ -1001,8 +1019,14 @@ Le cours va commencer.</textarea>
       <div id="boardDisplay" style="height:100%;border:0;border-radius:28px;padding:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:#f8fafc">
         <div id="boardEmoji" style="font-size:96px">👋</div>
         <div id="boardTitle" style="font-size:72px;font-weight:950;margin-top:12px">Bonjour !</div>
-        <div id="boardText" style="font-size:38px;line-height:1.45;margin-top:20px;white-space:pre-wrap;font-weight:800;max-width:980px">Sortez vos affaires.
-Écrivez la date.</div>
+        <div id="boardText" style="display:none"></div>
+        <div id="welcomeFixedScores" style="display:none;margin-top:16px;width:min(1120px,94%);text-align:center">
+          <div style="font-size:18px;font-weight:900;opacity:.78;margin-bottom:9px">📊 VOS SCORES ACTUELS</div>
+          <div id="welcomeFixedScoresGrid" style="display:flex;flex-wrap:wrap;justify-content:center;gap:7px 9px"></div>
+        </div>
+        <div id="welcomeTicker" style="display:none;margin-top:22px;min-height:62px;max-width:1050px;width:92%;align-items:center;justify-content:center;text-align:center">
+          <div id="welcomeTickerContent" style="font-size:25px;font-weight:900;padding:11px 20px;border-radius:18px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);transition:opacity .28s ease,transform .28s ease"></div>
+        </div>
         <div id="boardTimer" style="font-size:118px;font-weight:950;letter-spacing:3px;margin-top:30px">02:00</div>
       </div>
 </div>
@@ -1023,7 +1047,7 @@ Le cours va commencer.</textarea>
         <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
           <strong>⏱️ Durée du message</strong>
           <label class="toolbar-chip" style="font-weight:900">
-            <input id="remoteBoardMinutes" type="number" min="0" max="60" value="5" style="width:64px"> min <input id="remoteBoardSeconds" type="number" min="0" max="59" value="0" style="width:64px;margin-left:6px"> sec
+            <input id="remoteBoardMinutes" type="number" min="0" max="60" value="0" style="width:64px"> min <input id="remoteBoardSeconds" type="number" min="0" max="59" value="10" style="width:64px;margin-left:6px"> sec
           </label>
         </div>
 
@@ -2682,13 +2706,13 @@ Le cours va commencer.</textarea>
       const scoreRows=Array.isArray(summary.scoreRows)?summary.scoreRows:[];
       const scoreGrid=scoreRows.length?`
         <div style="margin-top:12px">
-          <div style="font-size:16px;font-weight:950;margin-bottom:7px">📊 Scores de fin de cours</div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,max-content));justify-content:center;gap:8px 10px">
+          <div style="font-size:19px;font-weight:950;margin-bottom:8px;text-align:center">📊 Scores de fin de cours</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,max-content));justify-content:center;gap:9px 11px">
             ${scoreRows.map(r=>{
               const th=engagementIndexTheme(Number(r.score));
-              return `<div style="display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:8px 10px;border-radius:11px;background:${th.bg};border:1px solid ${th.border};min-width:0">
-                <span style="font-size:17px;font-weight:900;white-space:nowrap">${escapeHTML(r.name)}</span>
-                <strong style="font-size:20px;color:${th.color};white-space:nowrap">${r.score}/20</strong>
+              return `<div style="display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:9px 12px;border-radius:11px;background:${th.bg};border:1px solid ${th.border};min-width:0">
+                <span style="font-size:21px;font-weight:950;white-space:nowrap">${escapeHTML(r.name)}</span>
+                <strong style="font-size:24px;color:${th.color};white-space:nowrap">${r.score}/20</strong>
               </div>`;
             }).join("")}
           </div>
@@ -4037,7 +4061,7 @@ Le cours va commencer.</textarea>
 
     function renderBoardPresetOptions(){ /* configuration moved to Télécommande */ }
 
-    function remoteBoardDurationSeconds(fallbackMinutes=5){
+    function remoteBoardDurationSeconds(fallbackMinutes=(10/60)){
       const mins=Math.max(0,Math.min(60,Number(document.getElementById("remoteBoardMinutes")?.value)||0));
       const secs=Math.max(0,Math.min(59,Number(document.getElementById("remoteBoardSeconds")?.value)||0));
       const total=Math.round(mins*60+secs);
@@ -5571,6 +5595,81 @@ Le cours va commencer.</textarea>
       return {emoji:"👋",title:"Bonjour !",text,minutes:totalSeconds/60,totalSeconds};
     }
 
+    let welcomeTickerHandle=null;
+    let welcomeTickerIndex=0;
+    let welcomeTickerItems=[];
+
+    function stopWelcomeTicker(){
+      if(welcomeTickerHandle){clearInterval(welcomeTickerHandle);welcomeTickerHandle=null;}
+      const box=document.getElementById("welcomeTicker");
+      if(box) box.style.display="none";
+      const scores=document.getElementById("welcomeFixedScores");
+      if(scores) scores.style.display="none";
+    }
+
+    function renderWelcomeFixedScores(){
+      const wrap=document.getElementById("welcomeFixedScores");
+      const grid=document.getElementById("welcomeFixedScoresGrid");
+      if(!wrap || !grid) return;
+
+      const cls=currentClass();
+      const students=(cls?.students||[])
+        .filter(s=>!s.isAbsent)
+        .slice()
+        .sort((a,b)=>a.name.localeCompare(b.name,"fr"));
+
+      grid.innerHTML=students.map(s=>{
+        const score=Number(s.points||0);
+        const th=engagementIndexTheme(score);
+        return `<div style="display:inline-flex;align-items:center;gap:4px;padding:6px 9px;border-radius:11px;background:${th.bg};border:1px solid ${th.border};white-space:nowrap">
+          <span style="font-size:17px;font-weight:950;color:#0f172a">${escapeHTML(s.name)}</span>
+          <strong style="font-size:20px;color:${th.color}">${score}/20</strong>
+        </div>`;
+      }).join("");
+
+      wrap.style.display=students.length?"block":"none";
+    }
+
+    function buildWelcomeTickerItems(){
+      return [
+        {kind:"instruction",html:"🎒 Sortez vos affaires dans le calme."},
+        {kind:"instruction",html:"✏️ Écrivez la date et préparez votre cahier."},
+        {kind:"calm",html:"🤫 Restez dans le calme pendant l’appel."},
+        {kind:"info",html:"⚠️ Le cours a commencé : vous pouvez déjà gagner ou perdre des points."},
+        {kind:"rule",html:"📜 Respectez les règles de la classe et les consignes données."},
+        {kind:"positive",html:"✨ Chaque cours est une nouvelle occasion de progresser."},
+        {kind:"positive",html:"🎯 Restez concentrés : les bons réflexes font monter votre score."},
+        {kind:"positive",html:"💪 Faites de votre mieux dès les premières minutes."}
+      ];
+    }
+
+    function showWelcomeTickerItem(){
+      const content=document.getElementById("welcomeTickerContent");
+      if(!content || !welcomeTickerItems.length) return;
+      content.style.opacity="0";
+      content.style.transform="translateY(5px)";
+      setTimeout(()=>{
+        const item=welcomeTickerItems[welcomeTickerIndex%welcomeTickerItems.length];
+        content.innerHTML=item.html;
+        content.style.opacity="1";
+        content.style.transform="translateY(0)";
+        welcomeTickerIndex++;
+      },220);
+    }
+
+    function startWelcomeTicker(){
+      stopWelcomeTicker();
+      renderWelcomeFixedScores();
+      welcomeTickerItems=buildWelcomeTickerItems();
+      welcomeTickerIndex=0;
+      const box=document.getElementById("welcomeTicker");
+      if(!box || !welcomeTickerItems.length) return;
+      box.style.display="flex";
+      showWelcomeTickerItem();
+      // ~8 seconds per slide: calm enough to read, enough time to cycle through scores + reminders.
+      welcomeTickerHandle=setInterval(showWelcomeTickerItem,8000);
+    }
+
     function launchWelcome(){
       const preset=getWelcomeConfig();
       boardCurrent={...preset};
@@ -5579,6 +5678,7 @@ Le cours va commencer.</textarea>
       document.getElementById("boardText").textContent=preset.text;
       boardRemaining=preset.totalSeconds;
       openBoard(false);
+      startWelcomeTicker();
       const endAt=Date.now()+boardRemaining*1000;
       startBoardTimer(false,endAt);
       sendBoardCommand({action:"show",...preset,endAt,autoStart:true});
@@ -5618,6 +5718,7 @@ Le cours va commencer.</textarea>
       // Mirror the edited welcome to the other connected display.
       sendBoardCommand({action:"show",...p,endAt,autoStart:true});
 
+      startWelcomeTicker();
       document.getElementById("welcomeConfigModal").classList.remove("show");
     };
     document.getElementById("welcomeSavePresetBtn").onclick=()=>{
