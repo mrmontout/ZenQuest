@@ -331,6 +331,12 @@
     /* v5.0.5 — le récap de fin de cours passe au-dessus de la projection PDF */
     #summaryModal{z-index:2000000!important;}
     #pdfProjectionModal{z-index:100000!important;}
+
+    #welcomeConfigGear{opacity:.42;transition:opacity .15s ease,background .15s ease,transform .15s ease}
+    #welcomeConfigGear:hover{opacity:1;background:rgba(255,255,255,.28)!important;transform:scale(1.05)}
+
+    #closeBoardBtn{transition:opacity .15s ease,transform .15s ease}
+    #closeBoardBtn:hover{opacity:1!important;transform:scale(1.05)}
 </style>
 </head>
 <body>
@@ -388,14 +394,14 @@
           <button class="btn outline" id="classMessagesBtn">📢 Message classe</button>
           <button class="btn outline" id="boardRemoteBtn">📱 Télécommande</button>
           <button class="btn outline" id="pdfProjectionBtn">📄 Projection PDF</button>
-          <button class="btn outline" id="boardBtn">🖥️ Écran de classe</button>
+          <button class="btn outline" id="boardBtn">👋 Accueil</button>
           <button class="btn outline" id="logoutBtn">🔒 Déconnexion</button>
         </div>
       </div>
     </div>
 
     <div id="zqVersionBadge" style="position:fixed;right:12px;bottom:12px;z-index:999998;padding:7px 10px;border-radius:999px;background:#0f172a;color:white;font-size:11px;font-weight:900;box-shadow:0 6px 18px rgba(15,23,42,.22);opacity:.88">
-      TEST • ZenQuest 5.0.7
+      TEST • ZenQuest 5.0.15
     </div>
 
     <div id="supabaseTeacherStatus" class="panel" style="margin-bottom:12px;border:1px solid #a7f3d0;background:#ecfdf5;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
@@ -952,10 +958,45 @@ Noah"
     </div>
   </div>
 
-  <div class="modal" id="boardModal">
+  
+  <div class="modal" id="welcomeConfigModal" style="z-index:3000000" onclick="if(event.target===this)this.classList.remove('show')">
+    <div class="modal-card" style="width:min(620px,92vw)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div>
+          <div style="font-size:21px;font-weight:950">⚙️ Configurer l’accueil</div>
+          <div class="muted" style="margin-top:3px">Ces réglages ne sont visibles que lorsque cette fenêtre est ouverte.</div>
+        </div>
+        <button class="btn outline" id="welcomeConfigClose">✕</button>
+      </div>
+      <label style="display:block;margin-top:14px;font-weight:850">Message affiché
+        <textarea id="welcomeMessageInput" rows="4" style="width:100%;margin-top:5px;resize:vertical">Sortez vos affaires dans le calme.
+Écrivez la date.
+Le cours va commencer.</textarea>
+      </label>
+      <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-top:12px">
+        <label style="font-weight:850">Durée
+          <div style="display:flex;align-items:center;gap:5px;margin-top:5px">
+            <input id="welcomeMinutesInput" type="number" min="0" max="10" value="2" style="width:58px"> min
+            <input id="welcomeSecondsInput" type="number" min="0" max="59" value="0" style="width:58px"> sec
+          </div>
+        </label>
+        <span style="flex:1"></span>
+        <button class="btn outline" id="welcomeSavePresetBtn">＋ Enregistrer cet accueil</button>
+        <button class="btn green" id="welcomeApplyBtn">✓ Appliquer</button>
+      </div>
+      <div id="welcomePresets" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px"></div>
+      <div style="font-size:11px;color:#64748b;margin-top:8px">Les accueils enregistrés restent disponibles sur cet appareil.</div>
+    </div>
+  </div>
+
+<div class="modal" id="boardModal">
     <div class="modal-card" style="width:min(1200px,98vw);height:min(92vh,900px);max-height:94vh;overflow:hidden;padding:18px;position:relative">
-      <button class="btn outline" id="closeBoardBtn" title="Retour ZenQuest"
-        style="position:absolute;right:14px;top:14px;z-index:3;opacity:.28;font-size:12px;padding:6px 9px">✕</button>
+      <button id="welcomeConfigGear" title="Configurer l’accueil"
+        style="position:absolute;right:64px;top:14px;z-index:80;width:38px;height:38px;border:0;border-radius:50%;background:rgba(255,255,255,.16);color:white;font-size:20px;cursor:pointer;backdrop-filter:blur(4px);box-shadow:0 3px 12px rgba(0,0,0,.16)">⚙️</button>
+
+
+      <button class="btn outline" id="closeBoardBtn" title="Fermer l’accueil et revenir à ZenQuest"
+        style="position:absolute;right:14px;top:14px;z-index:90;opacity:.72;width:38px;height:38px;border-radius:50%;font-size:18px;padding:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.78);box-shadow:0 3px 12px rgba(0,0,0,.14)">✕</button>
 
       <div id="boardDisplay" style="height:100%;border:0;border-radius:28px;padding:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:#f8fafc">
         <div id="boardEmoji" style="font-size:96px">👋</div>
@@ -964,7 +1005,7 @@ Noah"
 Écrivez la date.</div>
         <div id="boardTimer" style="font-size:118px;font-weight:950;letter-spacing:3px;margin-top:30px">02:00</div>
       </div>
-    </div>
+</div>
   </div>
 
   
@@ -2642,12 +2683,12 @@ Noah"
       const scoreGrid=scoreRows.length?`
         <div style="margin-top:12px">
           <div style="font-size:16px;font-weight:950;margin-bottom:7px">📊 Scores de fin de cours</div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,max-content));justify-content:center;gap:7px 9px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,max-content));justify-content:center;gap:8px 10px">
             ${scoreRows.map(r=>{
               const th=engagementIndexTheme(Number(r.score));
-              return `<div style="display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:7px 9px;border-radius:10px;background:${th.bg};border:1px solid ${th.border};min-width:0">
-                <span style="font-size:15px;font-weight:900;white-space:nowrap">${escapeHTML(r.name)}</span>
-                <strong style="font-size:17px;color:${th.color};white-space:nowrap">${r.score}/20</strong>
+              return `<div style="display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:8px 10px;border-radius:11px;background:${th.bg};border:1px solid ${th.border};min-width:0">
+                <span style="font-size:17px;font-weight:900;white-space:nowrap">${escapeHTML(r.name)}</span>
+                <strong style="font-size:20px;color:${th.color};white-space:nowrap">${r.score}/20</strong>
               </div>`;
             }).join("")}
           </div>
@@ -2657,12 +2698,12 @@ Noah"
         <div style="padding:9px 12px;border-radius:12px;background:#eff6ff;border:1px solid #bfdbfe;text-align:center;font-weight:900;margin-bottom:12px">
           📱 Vous retrouverez votre score et son évolution dans votre espace élève.
         </div>
-        <div class="summary-grid">
-          <div class="box"><div class="muted">Élèves parfaits</div><div class="big" style="color:#047857">${summary.perfectNames.length}</div></div>
-          <div class="box"><div class="muted">+1 fin d'heure</div><div class="big" style="color:#0284c7">${summary.bonusPointNames.length}</div></div>
-          <div class="box"><div class="muted">Niveaux gagnés</div><div class="big" style="color:#b45309">${summary.levelUps.length}</div></div>
-          <div class="box"><div class="muted">Étoiles gagnées</div><div class="big" style="color:#ca8a04">${summary.starNames.length}</div></div>
-          <div class="box"><div class="muted">Étoile collective</div><div class="big" style="color:#7c3aed">${summary.classStarGained?"+1":"0"}</div></div>
+        <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:10px">
+          <div style="padding:5px 9px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;font-size:12px"><b>✅ Sans perte :</b> ${summary.perfectNames.length}</div>
+          <div style="padding:5px 9px;border-radius:10px;background:#eff6ff;border:1px solid #bfdbfe;font-size:12px"><b>➕ Bonus :</b> ${summary.bonusPointNames.length}</div>
+          <div style="padding:5px 9px;border-radius:10px;background:#fff7ed;border:1px solid #fed7aa;font-size:12px"><b>⬆️ Niveaux :</b> ${summary.levelUps.length}</div>
+          <div style="padding:5px 9px;border-radius:10px;background:#fffbeb;border:1px solid #fde68a;font-size:12px"><b>⭐ Étoiles :</b> ${summary.starNames.length}</div>
+          <div style="padding:5px 9px;border-radius:10px;background:#faf5ff;border:1px solid #e9d5ff;font-size:12px"><b>🌟 Collective :</b> ${summary.classStarGained?"+1":"0"}</div>
         </div>
         ${scoreGrid}
       `;
@@ -2685,6 +2726,77 @@ Noah"
       if(error) throw error;
     }
 
+    async function refreshActiveClassBeforeEndLesson(cls){
+      if(!cls?.id) return;
+
+      const {data:rows,error:studentError}=await supabaseClient
+        .from("students")
+        .select("id,points,progress,level,stars,diamonds,current_streak")
+        .eq("class_id",cls.id);
+      if(studentError) throw new Error("Actualisation de la classe : "+studentError.message);
+
+      const ids=(rows||[]).map(r=>r.id);
+      if(!ids.length) return;
+
+      let remarks=[],scores=[];
+      const currentPeriodId=cls.currentPeriodId||null;
+
+      const tasks=[
+        supabaseClient
+          .from("teacher_remarks")
+          .select("student_id,remark,created_at")
+          .in("student_id",ids)
+          .order("created_at",{ascending:false})
+          .limit(Math.max(100,ids.length*8))
+      ];
+      if(currentPeriodId){
+        tasks.push(
+          supabaseClient
+            .from("lesson_scores")
+            .select("student_id,score,created_at")
+            .eq("period_id",currentPeriodId)
+            .in("student_id",ids)
+            .order("created_at",{ascending:false})
+        );
+      }
+
+      const results=await Promise.all(tasks);
+      if(results[0].error) throw new Error("Actualisation des retraits : "+results[0].error.message);
+      remarks=results[0].data||[];
+      if(results[1]){
+        if(results[1].error) throw new Error("Actualisation des cours : "+results[1].error.message);
+        scores=results[1].data||[];
+      }
+
+      const byId=new Map((rows||[]).map(r=>[r.id,r]));
+      cls.students.forEach(s=>{
+        const row=byId.get(s.id);
+        if(row){
+          s.points=Number(row.points??s.points);
+          s.progress=Number(row.progress??s.progress);
+          s.level=Number(row.level??s.level);
+          s.stars=Number(row.stars??s.stars);
+          s.diamonds=Number(row.diamonds??s.diamonds);
+          s.currentStreak=Number(row.current_streak??s.currentStreak);
+        }
+
+        const ownScores=scores.filter(x=>x.student_id===s.id);
+        const ownRemarks=remarks.filter(x=>x.student_id===s.id);
+        const latestScoreAt=ownScores.reduce((max,x)=>{
+          const t=x.created_at?new Date(x.created_at).getTime():0;
+          return Math.max(max,t||0);
+        },0);
+        const minusAfterLastCourse=ownRemarks.filter(x=>{
+          const ev=parseZQEventRemark(x.remark);
+          if(ev?.type!=="minus") return false;
+          const t=x.created_at?new Date(x.created_at).getTime():0;
+          return t>latestScoreAt;
+        });
+        s.lostThisLesson=minusAfterLastCourse.length>0;
+        s.pointsLostThisLesson=minusAfterLastCourse.length;
+      });
+    }
+
     async function endLesson(){
       const endBtn=document.getElementById("endLessonBtn");
       const oldEndText=endBtn?.textContent||"Fin d'heure";
@@ -2699,22 +2811,9 @@ Noah"
         let cls=currentClass();
         if(!cls) throw new Error("Aucune classe active.");
 
-        // Critical: fetch the latest remote state before calculating bonuses.
-        // A −1 may have been given from the phone a fraction of a second earlier.
-        const activeClassId=cls.id;
-        const activeViewMode=state.viewMode;
-        const localAbsences=new Map(cls.students.map(s=>[s.id,{isAbsent:s.isAbsent,isAutoAbsent:s.isAutoAbsent,manualPresenceOverride:s.manualPresenceOverride}]));
-        await loadTeacherSupabaseData();
-        state.currentClassId=activeClassId;
-        state.viewMode=activeViewMode;
-        cls=currentClass();
-        if(!cls) throw new Error("Impossible de recharger la classe active.");
-
-        // Preserve attendance choices made locally on this device.
-        cls.students.forEach(s=>{
-          const a=localAbsences.get(s.id);
-          if(a){s.isAbsent=!!a.isAbsent;s.isAutoAbsent=!!a.isAutoAbsent;s.manualPresenceOverride=!!a.manualPresenceOverride;}
-        });
+        // Fetch only the active class, not every class in ZenQuest.
+        // This keeps phone → tableau sanctions correct without a long full reload.
+        await refreshActiveClassBeforeEndLesson(cls);
         applyViewAbsences();
 
         if(!cls?.id) throw new Error("La classe active n'a pas d'identifiant Supabase.");
@@ -2795,33 +2894,43 @@ Noah"
           });
         }
 
-        // Important : on écrit d'abord dans Supabase.
-        for(const u of updates){
-          if(u.wasAbsent) continue;
+        // Enregistrement optimisé :
+        // auparavant 25 élèves = environ 50 requêtes exécutées l'une après l'autre.
+        // Les élèves sont maintenant mis à jour en parallèle et l'historique est inséré en une seule fois.
+        const presentUpdates=updates.filter(u=>!u.wasAbsent);
 
-          const {error:updateError}=await supabaseClient
-            .from("students")
-            .update({
-              points:u.newPoints,
-              progress:u.newProgress,
-              level:u.newLevel,
-              stars:u.newStars,
-              diamonds:u.newDiamonds,
-              current_streak:u.newStreak
-            })
-            .eq("id",u.student.id);
+        const updateResults=await Promise.all(
+          presentUpdates.map(async u=>{
+            const {error}=await supabaseClient
+              .from("students")
+              .update({
+                points:u.newPoints,
+                progress:u.newProgress,
+                level:u.newLevel,
+                stars:u.newStars,
+                diamonds:u.newDiamonds,
+                current_streak:u.newStreak
+              })
+              .eq("id",u.student.id);
+            return {u,error};
+          })
+        );
 
-          if(updateError) throw new Error(`Mise à jour de ${u.student.name} : ${updateError.message}`);
+        const failedUpdate=updateResults.find(x=>x.error);
+        if(failedUpdate){
+          throw new Error(`Mise à jour de ${failedUpdate.u.student.name} : ${failedUpdate.error.message}`);
+        }
 
+        const scorePayload=presentUpdates.map(u=>({
+          student_id:u.student.id,
+          period_id:periodId,
+          score:u.newPoints
+        }));
+        if(scorePayload.length){
           const {error:scoreError}=await supabaseClient
             .from("lesson_scores")
-            .insert({
-              student_id:u.student.id,
-              period_id:periodId,
-              score:u.newPoints
-            });
-
-          if(scoreError) throw new Error(`Historique/graphique de ${u.student.name} : ${scoreError.message}`);
+            .insert(scorePayload);
+          if(scoreError) throw new Error("Historique/graphique : "+scoreError.message);
         }
 
         // Puis on reflète le résultat dans l'interface.
@@ -2916,16 +3025,12 @@ Noah"
         setTimeout(()=>{
           try{ showSummary(lessonSummary); }
           catch(summaryErr){ console.error("SUMMARY ERROR", summaryErr); }
-        },350);
+        },120);
 
-        // Re-read the newly created lesson_scores: they are the boundary of the finished lesson.
-        // The very next −/+ therefore starts a clean new lesson, even on the phone.
-        const keepClassId=state.currentClassId;
-        const keepViewMode=state.viewMode;
-        await loadTeacherSupabaseData();
-        state.currentClassId=keepClassId;
-        state.viewMode=keepViewMode;
-        render();
+        // The new lesson_scores are already the server-side boundary of this lesson.
+        // Realtime/fallback refresh will reconcile the interface in the background;
+        // no second full database reload is needed before giving control back to the teacher.
+        setTimeout(()=>scheduleRealtimeRefresh(),250);
 
       }catch(err){
         console.error("FIN D'HEURE ERROR",err);
@@ -3918,7 +4023,7 @@ Noah"
     };
 
     const BOARD_DEFAULTS={
-      welcome:{emoji:"👋",title:"Bonjour !",text:"Sortez vos affaires.\nÉcrivez la date.",minutes:2},
+      welcome:{emoji:"👋",title:"Bonjour !",text:"Sortez vos affaires dans le calme.\nÉcrivez la date.\nLe cours va commencer.",minutes:2},
       work:{emoji:"✏️",title:"Au boulot !",text:"Travaillez dans le calme et le silence.\nNe m’appelez pas pendant ce temps : cherchez, réfléchissez et avancez en autonomie.",minutes:5}
     };
     let boardCurrent={...BOARD_DEFAULTS.welcome};
@@ -5453,7 +5558,112 @@ Noah"
     document.getElementById("pdfCloseBtn").onclick=closePdfProjection;
     document.getElementById("remotePdfPrevBtn").onclick=()=>sendBoardCommand({action:"pdf_prev"});
     document.getElementById("remotePdfNextBtn").onclick=()=>sendBoardCommand({action:"pdf_next"});
-    document.getElementById("boardBtn").onclick=()=>openBoard(true);
+    function getWelcomeConfig(){
+      let text=(document.getElementById("welcomeMessageInput")?.value||"").trim() ||
+        "Sortez vos affaires dans le calme. Écrivez la date. Le cours va commencer.";
+      // Keep the projected default readable even though the editor stays compact.
+      if(text==="Sortez vos affaires dans le calme. Écrivez la date. Le cours va commencer."){
+        text="Sortez vos affaires dans le calme.\nÉcrivez la date.\nLe cours va commencer.";
+      }
+      const mins=Math.max(0,Math.min(10,Number(document.getElementById("welcomeMinutesInput")?.value)||0));
+      const secs=Math.max(0,Math.min(59,Number(document.getElementById("welcomeSecondsInput")?.value)||0));
+      const totalSeconds=Math.max(1,Math.min(600,Math.round(mins*60+secs)||120));
+      return {emoji:"👋",title:"Bonjour !",text,minutes:totalSeconds/60,totalSeconds};
+    }
+
+    function launchWelcome(){
+      const preset=getWelcomeConfig();
+      boardCurrent={...preset};
+      document.getElementById("boardEmoji").textContent=preset.emoji;
+      document.getElementById("boardTitle").textContent=preset.title;
+      document.getElementById("boardText").textContent=preset.text;
+      boardRemaining=preset.totalSeconds;
+      openBoard(false);
+      const endAt=Date.now()+boardRemaining*1000;
+      startBoardTimer(false,endAt);
+      sendBoardCommand({action:"show",...preset,endAt,autoStart:true});
+    }
+
+    document.getElementById("boardBtn").onclick=launchWelcome;
+    let welcomePresets=[];
+    try{welcomePresets=JSON.parse(localStorage.getItem("zenquest_welcome_presets")||"[]")||[]}catch{welcomePresets=[]}
+
+    function renderWelcomePresets(){
+      const box=document.getElementById("welcomePresets");
+      if(!box)return;
+      box.innerHTML=welcomePresets.map((p,i)=>`<button class="btn outline welcome-preset-btn" data-i="${i}" style="font-size:10px;padding:4px 7px">${escapeHTML(p.name||("Accueil "+(i+1)))}</button>`).join("");
+      box.querySelectorAll(".welcome-preset-btn").forEach(btn=>btn.onclick=()=>{
+        const p=welcomePresets[Number(btn.dataset.i)];
+        if(!p)return;
+        document.getElementById("welcomeMessageInput").value=p.text||"";
+        document.getElementById("welcomeMinutesInput").value=Math.floor((p.totalSeconds||120)/60);
+        document.getElementById("welcomeSecondsInput").value=(p.totalSeconds||120)%60;
+      });
+    }
+    document.getElementById("welcomeApplyBtn").onclick=()=>{
+      const p=getWelcomeConfig();
+
+      boardCurrent={...p};
+      document.getElementById("boardEmoji").textContent=p.emoji;
+      document.getElementById("boardTitle").textContent=p.title;
+      document.getElementById("boardText").textContent=p.text;
+
+      // Apply the new duration immediately and restart the welcome countdown.
+      stopBoardTimer(false);
+      boardRemaining=p.totalSeconds;
+      const endAt=Date.now()+boardRemaining*1000;
+      startBoardTimer(false,endAt);
+      updateBoardTimer();
+
+      // Mirror the edited welcome to the other connected display.
+      sendBoardCommand({action:"show",...p,endAt,autoStart:true});
+
+      document.getElementById("welcomeConfigModal").classList.remove("show");
+    };
+    document.getElementById("welcomeSavePresetBtn").onclick=()=>{
+      try{
+        const p=getWelcomeConfig();
+        const name=prompt("Nom de cet accueil :",`Accueil ${welcomePresets.length+1}`);
+        if(!name || !name.trim()) return;
+
+        welcomePresets.push({
+          name:name.trim(),
+          text:p.text,
+          totalSeconds:p.totalSeconds
+        });
+
+        localStorage.setItem("zenquest_welcome_presets",JSON.stringify(welcomePresets));
+        renderWelcomePresets();
+
+        const btn=document.getElementById("welcomeSavePresetBtn");
+        const oldText=btn.textContent;
+        btn.textContent="✅ Enregistré";
+        setTimeout(()=>btn.textContent=oldText,1200);
+      }catch(err){
+        console.error("WELCOME PRESET SAVE ERROR",err);
+        alert("❌ Impossible d’enregistrer cet accueil.");
+      }
+    };
+
+    // Configuration gear must be wired immediately at page initialization.
+    const welcomeGear=document.getElementById("welcomeConfigGear");
+    const welcomeConfigModal=document.getElementById("welcomeConfigModal");
+    const welcomeConfigClose=document.getElementById("welcomeConfigClose");
+    if(welcomeGear && welcomeConfigModal){
+      welcomeGear.addEventListener("click",(e)=>{
+        e.preventDefault();
+        e.stopPropagation();
+        welcomeConfigModal.classList.add("show");
+      });
+    }
+    if(welcomeConfigClose && welcomeConfigModal){
+      welcomeConfigClose.addEventListener("click",(e)=>{
+        e.preventDefault();
+        welcomeConfigModal.classList.remove("show");
+      });
+    }
+    renderWelcomePresets();
+
     document.getElementById("boardRemoteBtn").onclick=()=>{
       document.getElementById("boardRemoteModal").classList.add("show");
     };
