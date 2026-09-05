@@ -2028,12 +2028,18 @@ Noah"
       if(!cls) return [];
       const byCode=new Map();
 
+      const periodStart=cls.currentPeriodCreatedAt
+        ? new Date(cls.currentPeriodCreatedAt).getTime()
+        : -Infinity;
+
       (cls.students||[]).forEach(s=>{
         const rows=(s.teacherRemarks||[]).map(r=>({remark:r.text,created_at:r.createdAt||r.date}));
         homeworkEventsFromRemarks(rows).forEach(e=>{
+          const t=e.date?new Date(e.date).getTime():0;
+          if(Number.isFinite(periodStart) && Number.isFinite(t) && t<periodStart) return;
+
           const code=e.code||e.id;
           if(!code) return;
-          const t=e.date?new Date(e.date).getTime():0;
           const prev=byCode.get(code);
           if(!prev || t>(prev.time||0)) byCode.set(code,{code,time:t||0,date:e.date||null});
         });
@@ -2050,7 +2056,11 @@ Noah"
       // is the SAME for every pupil: number of homework sessions created for the class.
       if(sessions.length){
         const rows=(student.teacherRemarks||[]).map(r=>({remark:r.text,created_at:r.createdAt||r.date}));
-        const events=homeworkEventsFromRemarks(rows);
+        const periodStart=cls?.currentPeriodCreatedAt?new Date(cls.currentPeriodCreatedAt).getTime():-Infinity;
+        const events=homeworkEventsFromRemarks(rows).filter(e=>{
+          const t=e.date?new Date(e.date).getTime():0;
+          return !Number.isFinite(periodStart) || !Number.isFinite(t) || t>=periodStart;
+        });
 
         const latestByCode=new Map();
         events.forEach(e=>{
@@ -3744,11 +3754,25 @@ Noah"
 
         if(!periodId){
           if(endBtn) endBtn.textContent="⏳ Recherche de la période…";
-          const {data:periods,error:periodError}=await supabaseClient
+          let {data:periods,error:periodError}=await supabaseClient
             .from("periods")
-            .select("id,name")
+            .select("id,name,is_current,created_at")
             .eq("class_id",cls.id)
+            .eq("is_current",true)
+            .order("created_at",{ascending:false})
             .limit(1);
+
+          // Compatibilité si une ancienne base n'a pas correctement positionné is_current.
+          if(!periodError && !periods?.length){
+            const fallback=await supabaseClient
+              .from("periods")
+              .select("id,name,is_current,created_at")
+              .eq("class_id",cls.id)
+              .order("created_at",{ascending:false})
+              .limit(1);
+            periods=fallback.data;
+            periodError=fallback.error;
+          }
 
           if(periodError) throw new Error("Recherche de la période : "+periodError.message);
           if(!periods?.length) throw new Error("Aucune période n'existe dans Supabase pour cette classe.");
@@ -3759,8 +3783,25 @@ Noah"
           cls.currentPeriodName=periodName;
         }
 
-        const presentStudents=cls.students.filter(s=>!s.isAbsent);
-        if(!presentStudents.length) throw new Error("Aucun élève présent à enregistrer.");
+        let presentStudents=cls.students.filter(s=>!s.isAbsent);
+
+        // Sécurité après changement de période / rechargement :
+        // en mode "Toute la classe", une classe entière ne doit pas devenir absente
+        // à cause d'un ancien état local.
+        if(!presentStudents.length && state.viewMode==="all" && cls.students.length){
+          cls.students.forEach(s=>{
+            s.isAbsent=false;
+            s.isAutoAbsent=false;
+            s.manualPresenceOverride=false;
+          });
+          presentStudents=cls.students.slice();
+          save();
+          render();
+        }
+
+        if(!presentStudents.length){
+          throw new Error("Aucun élève présent à enregistrer. Vérifie l’appel ou le groupe affiché.");
+        }
 
         if(endBtn) endBtn.textContent="⏳ Enregistrement…";
 
@@ -4489,7 +4530,24 @@ Noah"
 
         // Recharger depuis Supabase : aucune reconstruction locale fragile.
         await loadTeacherSupabaseData();
+
+        // Nouvelle période = nouvel état de séance.
+        // On évite de conserver un filtre de groupe ou des absences de la période précédente.
         state.periodView="current";
+        state.viewMode="all";
+        const freshClass=currentClass();
+        if(freshClass){
+          freshClass.students.forEach(s=>{
+            s.isAbsent=false;
+            s.isAutoAbsent=false;
+            s.manualPresenceOverride=false;
+            s.lostThisLesson=false;
+            s.lostStarThisLesson=false;
+            s.pointsLostThisLesson=0;
+            s.lastAction=null;
+          });
+        }
+
         save();
         render();
         renderPeriodManager();
@@ -6027,6 +6085,7 @@ Noah"
         },
         currentPeriodId:row.currentPeriodId||null,
         currentPeriodName:row.currentPeriodName||"Période en cours",
+        currentPeriodCreatedAt:row.currentPeriodCreatedAt||null,
         periodArchive:[],
         history:[],
         classMessages:classMessages.map(mapSupabaseClassMessage),
@@ -6121,7 +6180,8 @@ Noah"
         const mappedClass=mapSupabaseClass({
           ...c,
           currentPeriodId:currentPeriod?.id||null,
-          currentPeriodName:currentPeriod?.name||"Période en cours"
+          currentPeriodName:currentPeriod?.name||"Période en cours",
+          currentPeriodCreatedAt:currentPeriod?.created_at||null
         },studentsWithRemarks,classMessages||[]);
 
         mappedClass.periodArchive=(periods||[]).filter(p=>!p.is_current).map(p=>{
@@ -7012,7 +7072,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.3.0</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.3.2</span>.
   </footer>
 
 </body>
