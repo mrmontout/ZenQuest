@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.5.7</title>
+  <title>ZenQuest v5.6.5</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -502,6 +502,7 @@
         </div>
         <div class="teacher-nav-row teacher-nav-tools">
           <button class="btn outline" id="meritStudentsBtn">🏆 Élèves méritants</button>
+          <button class="btn outline" id="schoolMaterialsBtn">🎒 Matériel scolaire</button>
           <button class="btn outline" id="studentCodesBtn">🔑 Codes élèves</button>
           <button class="btn outline" id="studentConnectionsBtn">👁️ Connexions élèves</button>
           <button class="btn outline" id="classMessagesBtn">📢 Message classe</button>
@@ -683,6 +684,44 @@ Noah"
         <div class="row wrap" style="margin-top:12px">
           <button class="btn primary" id="copyAveragesBtn">📋 Copier tout</button>
           <button class="btn outline" id="downloadAveragesBtn">⬇️ Télécharger .txt</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="schoolMaterialsModal">
+    <div class="modal-card" style="width:min(980px,96vw);max-height:92vh;overflow:auto">
+      <div class="modal-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div>
+          <h2 style="margin:0">🎒 Matériel scolaire</h2>
+          <div class="muted" style="margin-top:4px">Vérifie le matériel d’un élève. L’état reste enregistré jusqu’à la prochaine modification.</div>
+        </div>
+        <button class="btn outline" id="closeSchoolMaterialsBtn">Fermer</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:minmax(210px,280px) 1fr;gap:14px;margin-top:14px">
+        <div class="box">
+          <div style="font-weight:950;margin-bottom:9px">1. Choisir un élève</div>
+          <div id="materialsStudentList" style="display:grid;gap:6px;max-height:58vh;overflow:auto"></div>
+        </div>
+
+        <div class="box">
+          <div id="materialsEditorEmpty" class="muted" style="padding:25px;text-align:center">👈 Choisis un élève pour vérifier son matériel.</div>
+          <div id="materialsEditor" style="display:none">
+            <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+              <div>
+                <div id="materialsStudentName" style="font-size:23px;font-weight:1000"></div>
+                <div class="muted">Coche ce que l’élève possède actuellement.</div>
+              </div>
+              <button type="button" class="btn outline small" id="materialsCheckAllBtn">✅ Tout cocher</button>
+            </div>
+            <div id="materialsChecklist" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:14px"></div>
+            <div id="materialsTeacherSummary" style="margin-top:14px;padding:12px 14px;border-radius:14px;background:#f8fafc;border:1px solid #e2e8f0"></div>
+            <div style="display:flex;justify-content:flex-end;margin-top:14px">
+              <button class="btn green" id="saveSchoolMaterialsBtn">💾 Enregistrer</button>
+            </div>
+            <div id="materialsStatus" style="display:none;margin-top:10px;padding:10px 12px;border-radius:12px;font-weight:850"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -2187,6 +2226,166 @@ Noah"
       if(parts.length<5) return null;
       return {type:parts[1],code:parts[2],label:parts.slice(3,-1).join("|"),scoreAfter:Number(parts[parts.length-1])};
     }
+    const SCHOOL_MATERIALS=[
+      ["pen","🖊️","Stylos"],
+      ["pencil","✏️","Crayon"],
+      ["eraser","🧽","Gomme"],
+      ["glue","🧴","Colle"],
+      ["protractor","📐","Rapporteur"],
+      ["set_square","📐","Équerre"],
+      ["ruler","📏","Règle"],
+      ["compass","🧭","Compas"],
+      ["calculator","🧮","Calculatrice"],
+      ["notebook","📘","Cahier"],
+      ["agenda","📔","Agenda"]
+    ];
+
+    function materialStateFromRemarks(rows){
+      const state={};
+      const ordered=[...(rows||[])].sort((a,b)=>{
+        const da=new Date(a.created_at||a.createdAt||a.date||0).getTime();
+        const db=new Date(b.created_at||b.createdAt||b.date||0).getTime();
+        return db-da;
+      });
+      for(const row of ordered){
+        const e=parseZQEventRemark(row.remark ?? row.text);
+        if(e?.type!=="school_material" || state[e.code]!==undefined) continue;
+        state[e.code]=Number(e.scoreAfter)===1;
+      }
+      return state;
+    }
+
+    function schoolMaterialsStudentHTML(rows){
+      const state=materialStateFromRemarks(rows);
+      const known=SCHOOL_MATERIALS.filter(([code])=>state[code]!==undefined);
+      const missing=SCHOOL_MATERIALS.filter(([code])=>state[code]===false);
+      if(!known.length){
+        return `<div style="padding:18px;border-radius:17px;background:#f8fafc;border:1px solid #e2e8f0;text-align:center">
+          <div style="font-size:34px">🎒</div>
+          <div style="font-weight:950;margin-top:5px">Matériel pas encore vérifié</div>
+          <div class="muted" style="margin-top:4px">Le professeur indiquera ici le matériel nécessaire pour le cours de mathématiques.</div>
+        </div>`;
+      }
+      const complete=missing.length===0;
+      return `<div style="display:grid;gap:12px">
+        <div style="padding:15px 16px;border-radius:17px;background:${complete?"#f0fdf4":"#fff7ed"};border:2px solid ${complete?"#86efac":"#fdba74"}">
+          <div style="font-size:20px;font-weight:1000">${complete?"✅ Matériel complet":"⚠️ Matériel à compléter"}</div>
+          <div style="margin-top:5px">${complete
+            ?"Tout le matériel nécessaire est actuellement disponible."
+            :`Il y a <strong>${missing.length} élément${missing.length>1?"s":""} manquant${missing.length>1?"s":""} ou incomplet${missing.length>1?"s":""}</strong>. Merci de compléter le matériel pour les prochains cours de mathématiques.`}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+          ${SCHOOL_MATERIALS.map(([code,icon,label])=>{
+            const ok=state[code];
+            return `<div style="padding:11px 12px;border-radius:13px;background:${ok===true?"#f0fdf4":ok===false?"#fef2f2":"#f8fafc"};border:1px solid ${ok===true?"#bbf7d0":ok===false?"#fecaca":"#e2e8f0"};font-weight:900">
+              ${ok===true?"✅":ok===false?"❌":"➖"} ${icon} ${label}
+              ${code==="pen"?`<div class="muted" style="font-size:10px;margin-top:3px">Plusieurs couleurs doivent être disponibles.</div>`:""}
+            </div>`;
+          }).join("")}
+        </div>
+        ${missing.length?`<div style="padding:13px 15px;border-radius:15px;background:#fef2f2;border:1px solid #fecaca">
+          <strong>🛒 À prévoir ou à compléter :</strong> ${missing.map(([,icon,label])=>`${icon} ${label}`).join(" • ")}
+          ${missing.some(([code])=>code==="pen")?`<div style="margin-top:7px;font-size:12px">🖊️ Pour les stylos, cela peut simplement signifier qu’une couleur nécessaire manque, par exemple le rouge.</div>`:""}
+          <div style="margin-top:7px;font-size:13px">Merci de penser à compléter le matériel de l’élève afin qu’il puisse travailler dans de bonnes conditions. 🙂</div>
+        </div>`:""}
+      </div>`;
+    }
+
+    let materialsSelectedStudentId=null;
+
+    function renderMaterialsStudentList(){
+      const list=document.getElementById("materialsStudentList"), cls=currentClass();
+      if(!list||!cls) return;
+      list.innerHTML=cls.students.slice().sort((a,b)=>a.name.localeCompare(b.name,"fr")).map(s=>{
+        const state=materialStateFromRemarks(s.teacherRemarks||[]);
+        const missing=SCHOOL_MATERIALS.filter(([code])=>state[code]===false).length;
+        const known=SCHOOL_MATERIALS.some(([code])=>state[code]!==undefined);
+        return `<button type="button" class="materials-student-btn" data-id="${s.id}" style="text-align:left;padding:9px 10px;border-radius:11px;border:${materialsSelectedStudentId===s.id?"2px solid #2563eb":"1px solid #cbd5e1"};background:${materialsSelectedStudentId===s.id?"#eff6ff":"white"};cursor:pointer">
+          <strong>${escapeHTML(s.name)}</strong>
+          <div style="font-size:10px;margin-top:2px;color:${!known?"#64748b":missing?"#b45309":"#15803d"}">${!known?"Pas encore vérifié":missing?`⚠️ ${missing} manquant${missing>1?"s":""}`:"✅ Complet"}</div>
+        </button>`;
+      }).join("");
+      list.querySelectorAll(".materials-student-btn").forEach(b=>b.onclick=()=>selectMaterialsStudent(b.dataset.id));
+    }
+
+    function selectMaterialsStudent(studentId){
+      const student=currentClass()?.students.find(s=>s.id===studentId);
+      if(!student) return;
+      materialsSelectedStudentId=studentId;
+      renderMaterialsStudentList();
+      document.getElementById("materialsEditorEmpty").style.display="none";
+      document.getElementById("materialsEditor").style.display="block";
+      document.getElementById("materialsStudentName").textContent=`${student.avatar||"🧑🏽‍🎓"} ${student.name}`;
+      const state=materialStateFromRemarks(student.teacherRemarks||[]);
+      document.getElementById("materialsChecklist").innerHTML=SCHOOL_MATERIALS.map(([code,icon,label])=>`
+        <label style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:13px;background:#fff;border:1px solid #cbd5e1;cursor:pointer;font-weight:900">
+          <input type="checkbox" class="material-check" data-code="${code}" ${state[code]===true?"checked":""} style="width:20px;height:20px">
+          <span>${icon} ${label}${code==="pen"?` <span class="muted" style="font-size:10px;font-weight:700">(plusieurs couleurs attendues)</span>`:""}</span>
+        </label>`).join("");
+      document.querySelectorAll(".material-check").forEach(c=>c.onchange=updateMaterialsTeacherSummary);
+      updateMaterialsTeacherSummary();
+      const st=document.getElementById("materialsStatus"); if(st) st.style.display="none";
+    }
+
+    function updateMaterialsTeacherSummary(){
+      const checks=[...document.querySelectorAll(".material-check")];
+      const missing=checks.filter(c=>!c.checked).map(c=>{
+        const item=SCHOOL_MATERIALS.find(([code])=>code===c.dataset.code); return item?`${item[1]} ${item[2]}`:"";
+      }).filter(Boolean);
+      const box=document.getElementById("materialsTeacherSummary");
+      const penMissing=checks.some(c=>c.dataset.code==="pen" && !c.checked);
+      if(box) box.innerHTML=missing.length
+        ? `<strong>⚠️ À prévoir ou à compléter :</strong> ${missing.join(" • ")}
+           ${penMissing?`<div class="muted" style="margin-top:6px;font-size:12px">🖊️ Pour les stylos, décocher peut aussi signifier qu’une couleur nécessaire manque, par exemple le rouge.</div>`:""}`
+        : `<strong style="color:#15803d">✅ Matériel complet</strong>`;
+    }
+
+    function openSchoolMaterials(){
+      materialsSelectedStudentId=null;
+      document.getElementById("materialsEditorEmpty").style.display="block";
+      document.getElementById("materialsEditor").style.display="none";
+      renderMaterialsStudentList();
+      document.getElementById("schoolMaterialsModal").classList.add("show");
+    }
+
+    async function saveSchoolMaterials(){
+      const cls=currentClass(), student=cls?.students.find(s=>s.id===materialsSelectedStudentId);
+      if(!student) return;
+      const btn=document.getElementById("saveSchoolMaterialsBtn"), status=document.getElementById("materialsStatus");
+      btn.disabled=true; btn.textContent="⏳ Enregistrement…";
+      try{
+        let teacherUserId=cachedTeacherUserId;
+        if(!teacherUserId){
+          const {data:{user},error}=await supabaseClient.auth.getUser();
+          if(error||!user) throw new Error("Session professeur introuvable.");
+          teacherUserId=user.id; cachedTeacherUserId=user.id;
+        }
+        const current=materialStateFromRemarks(student.teacherRemarks||[]);
+        const checks=[...document.querySelectorAll(".material-check")];
+        const changed=checks.map(c=>({code:c.dataset.code,value:c.checked})).filter(x=>current[x.code]!==x.value);
+        if(!changed.length){
+          status.style.display="block";status.style.background="#eff6ff";status.style.color="#1e40af";status.textContent="ℹ️ Aucun changement à enregistrer.";
+          return;
+        }
+        const payload=changed.map(x=>{
+          const item=SCHOOL_MATERIALS.find(([code])=>code===x.code);
+          return {teacher_id:teacherUserId,student_id:student.id,remark:encodeZQEvent("school_material",x.code,item?.[2]||x.code,x.value?1:0)};
+        });
+        const {data,error}=await supabaseClient.from("teacher_remarks").insert(payload).select("id,student_id,remark,created_at");
+        if(error) throw error;
+        (data||[]).forEach(row=>{
+          student.teacherRemarks=student.teacherRemarks||[];
+          student.teacherRemarks.unshift({id:row.id,date:row.created_at?new Date(row.created_at).toLocaleDateString("fr-FR"):"",text:row.remark,createdAt:row.created_at});
+        });
+        save(); renderMaterialsStudentList(); selectMaterialsStudent(student.id);
+        status.style.display="block";status.style.background="#dcfce7";status.style.color="#166534";status.textContent="✅ Matériel mis à jour. L’espace élève/parent est actualisé.";
+      }catch(err){
+        console.error(err);status.style.display="block";status.style.background="#fee2e2";status.style.color="#991b1b";status.textContent="❌ "+(err?.message||String(err));
+      }finally{
+        btn.disabled=false;btn.textContent="💾 Enregistrer";
+      }
+    }
+
     function legacyStarTargetFromRemarks(rows,currentStars){
       const parsed=(rows||[]).map(r=>parseZQEventRemark(r.remark ?? r.text)).filter(Boolean);
       if(parsed.some(e=>e.type==="star_sync" && e.code==="legacy_repaired_v1")) return null;
@@ -2354,7 +2553,7 @@ Noah"
       }).filter(Boolean);
     }
     function zqReasonHistoryHTML(rows,limit=10){
-      const events=zqEventsFromRemarks(rows).filter(e=>e.type!=="star_sync").slice(0,limit);
+      const events=zqEventsFromRemarks(rows).filter(e=>!["star_sync","school_material"].includes(e.type)).slice(0,limit);
       if(!events.length) return '<div style="padding:14px;border-radius:14px;background:#f0fdf4;border:1px solid #bbf7d0;text-align:center"><strong>✅ Rien à signaler</strong></div>';
 
       return `<div style="display:grid;gap:8px">${events.map(e=>{
@@ -4777,6 +4976,52 @@ Noah"
       }finally{btn.disabled=false;btn.textContent="✓ Valider la reconnaissance";}
     }
 
+    function trackingVisibleEvents(rows){
+      return (rows||[]).map(r=>{
+        const e=parseZQEventRemark(r.remark ?? r.text);
+        if(!e || ["star_sync","school_material"].includes(e.type)) return null;
+        const rawDate=r.created_at||r.createdAt||r.date||null;
+        const time=rawDate?new Date(rawDate).getTime():0;
+        return {...e,time};
+      }).filter(Boolean);
+    }
+
+    function historySeenStorageKey(studentId){
+      return `zenquest_history_seen_${studentId}`;
+    }
+
+    function historyPeriodKey(period,index=0){
+      return String(period?.period_id||period?.id||period?.name||`period-${index}`);
+    }
+
+    function historyUnreadCount(history,studentId){
+      let seen=[];
+      try{ seen=JSON.parse(localStorage.getItem(historySeenStorageKey(studentId))||"[]"); }catch{}
+      const seenSet=new Set(Array.isArray(seen)?seen.map(String):[]);
+      return (history||[]).filter((p,i)=>!seenSet.has(historyPeriodKey(p,i))).length;
+    }
+
+    function markHistorySeen(history,studentId){
+      const keys=(history||[]).map((p,i)=>historyPeriodKey(p,i));
+      try{ localStorage.setItem(historySeenStorageKey(studentId),JSON.stringify(keys)); }catch{}
+    }
+
+    function trackingSeenStorageKey(studentId,periodId){
+      return `zenquest_tracking_seen_${studentId}_${periodId||"current"}`;
+    }
+
+    function trackingUnreadCount(rows,studentId,periodId){
+      let seen=0;
+      try{ seen=Number(localStorage.getItem(trackingSeenStorageKey(studentId,periodId))||0); }catch{}
+      return trackingVisibleEvents(rows).filter(e=>e.time>seen).length;
+    }
+
+    function markTrackingSeen(rows,studentId,periodId){
+      const events=trackingVisibleEvents(rows);
+      const latest=Math.max(Date.now(),...events.map(e=>e.time||0));
+      try{ localStorage.setItem(trackingSeenStorageKey(studentId,periodId),String(latest)); }catch{}
+    }
+
     function studentPeriodHistoryHTML(history=[],studentId="student"){
       if(!history.length) return `<div class="box"><div style="font-size:20px;font-weight:900">📚 Mes anciennes aventures</div><div class="muted" style="margin-top:8px">Aucune période clôturée pour le moment.</div></div>`;
 
@@ -6129,14 +6374,33 @@ Noah"
             </div>`).join("")
         : '<div class="muted">Aucune remarque du professeur pour le moment.</div>';
       const reasonHistoryHtml=zqReasonHistoryHTML(currentPeriodRemarks,12);
+      const trackingUnread=trackingUnreadCount(currentPeriodRemarks,student.id,currentPeriod?.id||cls.currentPeriodId||"current");
+      const historyUnread=historyUnreadCount(periodHistory,student.id);
 
       document.getElementById("authenticatedStudentView").innerHTML=`
         <div class="student-dashboard">
 
           <div class="mode-switch" style="margin-bottom:16px;width:100%;display:flex;flex-wrap:wrap">
             <button type="button" id="studentCurrentTabBtn" class="active" style="flex:1;min-width:170px">🎮 Période actuelle</button>
-            <button type="button" id="studentTrackingTabBtn" style="flex:1;min-width:170px">🧭 Suivi d’implication</button>
-            <button type="button" id="studentHistoryTabBtn" style="flex:1;min-width:170px">📚 Mes anciennes périodes</button>
+            <button type="button" id="studentTrackingTabBtn" style="flex:1;min-width:170px;position:relative">
+              🧭 Suivi d’implication
+              ${trackingUnread>0?`<span id="studentTrackingNotifBadge" title="${trackingUnread} nouveauté${trackingUnread>1?"s":""}" style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;margin-left:5px;border-radius:999px;background:#dc2626;color:white;font-size:12px;font-weight:1000;box-shadow:0 2px 7px rgba(220,38,38,.28)">${trackingUnread>99?"99+":trackingUnread}</span>`:""}
+            </button>
+            <button type="button" id="studentHistoryTabBtn" style="flex:1;min-width:170px;position:relative">
+              📚 Mes anciennes périodes
+              ${historyUnread>0?`<span id="studentHistoryNotifBadge" title="${historyUnread} nouvelle${historyUnread>1?"s":""} période${historyUnread>1?"s":""} archivée${historyUnread>1?"s":""}" style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;margin-left:5px;border-radius:999px;background:#dc2626;color:white;font-size:12px;font-weight:1000;box-shadow:0 2px 7px rgba(220,38,38,.28)">${historyUnread>99?"99+":historyUnread}</span>`:""}
+            </button>
+            <button type="button" id="studentMaterialsTabBtn" style="flex:1;min-width:170px;position:relative">
+              🎒 Matériel scolaire
+              ${(()=>{
+                const ms=materialStateFromRemarks(remarks);
+                const known=SCHOOL_MATERIALS.some(([code])=>ms[code]!==undefined);
+                const missing=SCHOOL_MATERIALS.filter(([code])=>ms[code]===false);
+                return known && missing.length
+                  ? `<span title="${missing.length} élément${missing.length>1?"s":""} manquant${missing.length>1?"s":""}" style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;margin-left:5px;border-radius:999px;background:#dc2626;color:white;font-size:12px;font-weight:1000;box-shadow:0 2px 7px rgba(220,38,38,.28)">${missing.length}</span>`
+                  : "";
+              })()}
+            </button>
             <button type="button" id="studentParentsTabBtn" style="flex:1;min-width:170px">👨‍👩‍👧 Espace parents</button>
           </div>
 
@@ -6320,6 +6584,16 @@ Noah"
           </div>
 
           <div id="studentCurrentPeriodPanel">
+            ${(()=>{
+              const ms=materialStateFromRemarks(remarks);
+              const known=SCHOOL_MATERIALS.some(([code])=>ms[code]!==undefined);
+              const missing=SCHOOL_MATERIALS.filter(([code])=>ms[code]===false);
+              return known && missing.length ? `<button type="button" id="studentMaterialsAlert" style="width:100%;text-align:left;margin-bottom:12px;padding:12px 14px;border-radius:15px;background:#fff7ed;border:2px solid #fdba74;cursor:pointer;font:inherit">
+                <strong>⚠️ ${missing.length} élément${missing.length>1?"s":""} manquant${missing.length>1?"s":""}</strong>
+                <div style="margin-top:4px;font-size:13px;font-weight:850">🎒 À mettre dans le sac rapidement.</div>
+                <div style="margin-top:5px;font-size:12px">${missing.map(([,icon,label])=>`${icon} ${label}`).join(" • ")} → Voir le matériel</div>
+              </button>` : "";
+            })()}
           ${(lessonScores||[]).length===0 ? `<div style="margin-bottom:14px;padding:12px 16px;border-radius:16px;background:#eef2ff;border:1px solid #c7d2fe;font-weight:900">
             🆕 Nouvelle période
           </div>` : ``}
@@ -6473,6 +6747,16 @@ Noah"
           <div style="height:32px"></div>
           </div>
 
+          <div id="studentMaterialsPanel" style="display:none">
+            <div class="box" style="border:2px solid #bfdbfe;background:linear-gradient(135deg,#eff6ff,#ffffff)">
+              <div style="font-size:25px;font-weight:1000">🎒 Mon matériel scolaire</div>
+              <div class="muted" style="margin-top:5px">Tout le matériel doit être présent dans le sac pour le cours de mathématiques.</div>
+            </div>
+            <div class="box">
+              ${schoolMaterialsStudentHTML(remarks)}
+            </div>
+          </div>
+
           <div id="studentHistoryPanel" style="display:none">
             ${studentPeriodHistoryHTML(periodHistory,student.id)}
           </div>
@@ -6483,29 +6767,47 @@ Noah"
       const currentTabBtn=document.getElementById("studentCurrentTabBtn");
       const trackingTabBtn=document.getElementById("studentTrackingTabBtn");
       const historyTabBtn=document.getElementById("studentHistoryTabBtn");
+      const materialsTabBtn=document.getElementById("studentMaterialsTabBtn");
       const parentsTabBtn=document.getElementById("studentParentsTabBtn");
       const currentPanel=document.getElementById("studentCurrentPeriodPanel");
       const trackingPanel=document.getElementById("studentTrackingPanel");
       const historyPanel=document.getElementById("studentHistoryPanel");
+      const materialsPanel=document.getElementById("studentMaterialsPanel");
       const parentsPanel=document.getElementById("studentParentsPanel");
       const showStudentTab=(tab)=>{
         const current=tab==="current";
         const tracking=tab==="tracking";
         const history=tab==="history";
+        const materials=tab==="materials";
         const parents=tab==="parents";
         currentPanel.style.display=current?"block":"none";
         trackingPanel.style.display=tracking?"block":"none";
         historyPanel.style.display=history?"block":"none";
+        materialsPanel.style.display=materials?"block":"none";
         parentsPanel.style.display=parents?"block":"none";
         currentTabBtn.classList.toggle("active",current);
         trackingTabBtn.classList.toggle("active",tracking);
         historyTabBtn.classList.toggle("active",history);
+        materialsTabBtn.classList.toggle("active",materials);
         parentsTabBtn.classList.toggle("active",parents);
       };
       if(currentTabBtn) currentTabBtn.onclick=()=>showStudentTab("current");
-      if(trackingTabBtn) trackingTabBtn.onclick=()=>showStudentTab("tracking");
-      if(historyTabBtn) historyTabBtn.onclick=()=>showStudentTab("history");
+      if(trackingTabBtn) trackingTabBtn.onclick=()=>{
+        showStudentTab("tracking");
+        markTrackingSeen(currentPeriodRemarks,student.id,currentPeriod?.id||cls.currentPeriodId||"current");
+        const badge=document.getElementById("studentTrackingNotifBadge");
+        if(badge) badge.remove();
+      };
+      if(historyTabBtn) historyTabBtn.onclick=()=>{
+        showStudentTab("history");
+        markHistorySeen(periodHistory,student.id);
+        const badge=document.getElementById("studentHistoryNotifBadge");
+        if(badge) badge.remove();
+      };
+      if(materialsTabBtn) materialsTabBtn.onclick=()=>showStudentTab("materials");
       if(parentsTabBtn) parentsTabBtn.onclick=()=>showStudentTab("parents");
+      const studentMaterialsAlert=document.getElementById("studentMaterialsAlert");
+      if(studentMaterialsAlert) studentMaterialsAlert.onclick=()=>showStudentTab("materials");
       const parentCurrentLabels={
         ht:"Wè peryòd aktyèl la", gcr:"Wè péryòd aktyèl-a",
         mq:"Wè périod aktyèl-la", gp:"Vwè péryòd aktyèl-la",
@@ -7594,6 +7896,13 @@ Noah"
     document.getElementById("downloadAveragesBtn").onclick=downloadAverages;
     document.getElementById("closeMeritDetailBtn").onclick=()=>document.getElementById("meritDetailModal").classList.remove("show");
     document.getElementById("meritDetailModal").onclick=(e)=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove("show");};
+    document.getElementById("schoolMaterialsBtn").onclick=openSchoolMaterials;
+    document.getElementById("closeSchoolMaterialsBtn").onclick=()=>document.getElementById("schoolMaterialsModal").classList.remove("show");
+    document.getElementById("materialsCheckAllBtn").onclick=()=>{
+      document.querySelectorAll(".material-check").forEach(c=>c.checked=true);
+      updateMaterialsTeacherSummary();
+    };
+    document.getElementById("saveSchoolMaterialsBtn").onclick=saveSchoolMaterials;
     document.getElementById("meritStudentsBtn").onclick=openMeritStudents;
     document.getElementById("closeMeritStudentsBtn").onclick=()=>document.getElementById("meritStudentsModal").classList.remove("show");
     document.getElementById("cancelMeritStudentsBtn").onclick=()=>document.getElementById("meritStudentsModal").classList.remove("show");
@@ -7636,7 +7945,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.5.7</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.6.5</span>.
   </footer>
 
 </body>
