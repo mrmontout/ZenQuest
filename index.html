@@ -1700,17 +1700,20 @@ Noah"
     function engagementNextObjective(v){
       v=Number(v); if(!Number.isFinite(v))return "Construire ton premier indice.";
       if(v<10)return `Encore ${round1(10-v).toString().replace(".",",")} point(s) pour quitter la zone rouge 🔴`;
-      if(v<13)return `Encore ${round1(13-v).toString().replace(".",",")} point(s) pour atteindre la zone satisfaisante 🟡`;
-      if(v<16)return `Encore ${round1(16-v).toString().replace(".",",")} point(s) pour atteindre la zone verte 🟢`;
+      if(v<13)return `Encore ${round1(13-v).toString().replace(".",",")} point(s) pour atteindre la zone de vigilance 🟡`;
+      if(v<16)return `Encore ${round1(16-v).toString().replace(".",",")} point(s) pour atteindre une implication satisfaisante 🟢`;
+      if(v<18)return `Encore ${round1(18-v).toString().replace(".",",")} point(s) pour atteindre une très bonne implication 🌟`;
       if(v<20)return `Encore ${round1(20-v).toString().replace(".",",")} point(s) pour atteindre 20 👑`;
       return "20/20 👑 Maintiens cette régularité !";
     }
     function engagementFeedback(v,t){
       v=Number(v); if(!Number.isFinite(v))return "Les prochains cours permettront de construire un premier indice.";
-      if(v>=16)return t.delta<=-.4?"Très bonne implication, avec un léger recul récent à surveiller.":"Très bonne dynamique : implication régulière et solide.";
-      if(v>=13)return t.delta>=.4?"Implication satisfaisante et en progression.":t.delta<=-.4?"Implication satisfaisante, mais en baisse récente.":"Implication satisfaisante et régulière.";
-      if(v>=10)return t.delta>=.4?"Indice encore fragile, mais amélioration encourageante.":t.delta<=-.4?"Vigilance : l’implication diminue sur les derniers cours.":"L’implication doit encore progresser.";
-      return t.delta>=.4?"Indice insuffisant, mais une amélioration apparaît. Continue les efforts.":"Implication actuellement insuffisante : une amélioration est attendue.";
+      if(v>=20)return "Implication exemplaire. Maintiens cette régularité.";
+      if(v>=18)return t.delta<=-.4?"Très bonne implication, malgré un léger recul récent.":"Très bonne implication : travail et attitude solides.";
+      if(v>=16)return t.delta<=-.4?"Implication satisfaisante, mais en baisse récente.":"Implication satisfaisante et régulière.";
+      if(v>=13)return t.delta>=.4?"Implication encore fragile, mais en progression.":t.delta<=-.4?"Vigilance : l’implication est en baisse.":"Implication à renforcer : davantage de régularité est attendue.";
+      if(v>=10)return t.delta>=.4?"Indice fragile, mais amélioration encourageante.":t.delta<=-.4?"Vigilance importante : l’implication diminue.":"Implication insuffisante : des efforts sont attendus.";
+      return t.delta>=.4?"Indice insuffisant, mais une amélioration apparaît. Continue les efforts.":"Implication actuellement très insuffisante : une amélioration nette est attendue.";
     }
     function engagementMiniDashboard(student,v){
       const all=(student?.periodScores||[]).map(x=>Number(typeof x==="number"?x:x.score)).filter(Number.isFinite), vals=all.slice(-5), t=engagementTrend(all), th=engagementIndexTheme(v);
@@ -7072,7 +7075,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.3.2</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.3.3</span>.
   </footer>
 
 </body>
