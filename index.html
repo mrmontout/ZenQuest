@@ -406,6 +406,7 @@
           <button class="btn outline" id="studentCodesBtn">🔑 Codes élèves</button>
           <button class="btn outline" id="classMessagesBtn">📢 Message classe</button>
           <button class="btn outline" id="homeworkBatchBtn">📝 Travail maison</button>
+          <button class="btn outline" id="successCardsBtn">🏆 Cartes Réussite</button>
           <button class="btn outline" id="boardRemoteBtn">📱 Télécommande</button>
           <button class="btn outline" id="pdfProjectionBtn">📄 Projection PDF</button>
           <button class="btn outline" id="boardBtn">👋 Accueil</button>
@@ -681,6 +682,97 @@ Noah"
 
   <div id="endLessonToast" style="display:none;position:fixed;left:50%;top:22px;transform:translateX(-50%);z-index:999999;background:#0f172a;color:white;padding:14px 20px;border-radius:18px;box-shadow:0 14px 40px rgba(15,23,42,.28);font-weight:800;text-align:center;max-width:min(92vw,620px)"></div>
 
+
+
+
+
+
+  <div class="modal" id="levelDetailModal" style="z-index:3100000">
+    <div class="modal-card" style="width:min(500px,92vw);text-align:center">
+      <div style="display:flex;justify-content:flex-end">
+        <button class="btn outline" id="closeLevelDetailBtn">✕</button>
+      </div>
+      <div id="levelDetailEmoji" style="font-size:74px;margin-top:2px"></div>
+      <div id="levelDetailTitle" style="font-size:28px;font-weight:1000;margin-top:4px"></div>
+      <div id="levelDetailStars" style="font-size:25px;margin-top:8px"></div>
+      <div id="levelDetailMessage" style="margin-top:14px;padding:14px 16px;border-radius:16px;background:#f8fafc;border:1px solid #e2e8f0;font-size:16px;font-weight:850;line-height:1.45"></div>
+      <div style="margin-top:14px;padding:12px 14px;border-radius:14px;background:#f0fdf4;border:1px solid #bbf7d0;text-align:left">
+        <div style="font-weight:950">🎯 Prochain objectif</div>
+        <div id="levelDetailNext" style="margin-top:5px;font-weight:800"></div>
+      </div>
+      <div id="levelDetailUnlock" style="margin-top:12px;padding:12px 14px;border-radius:14px;background:#fff7ed;border:1px solid #fed7aa;font-weight:900"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="homeworkBadgeDetailModal" style="z-index:3100000">
+    <div class="modal-card" style="width:min(460px,92vw);text-align:center">
+      <div style="display:flex;justify-content:flex-end">
+        <button class="btn outline" id="closeHomeworkBadgeDetailBtn">✕</button>
+      </div>
+      <div id="homeworkBadgeDetailVisual" style="margin:4px auto 12px"></div>
+      <div style="font-size:23px;font-weight:1000">🏅 Badge Travail maison</div>
+      <div id="homeworkBadgeDetailNumber" style="font-size:16px;font-weight:900;margin-top:7px"></div>
+      <div id="homeworkBadgeDetailMotivation" style="margin-top:16px;padding:14px 16px;border-radius:16px;background:#f0fdf4;border:1px solid #bbf7d0;font-size:16px;font-weight:850;line-height:1.45"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="successCardDetailModal" style="z-index:3100000">
+    <div class="modal-card" style="width:min(480px,92vw);text-align:center">
+      <div style="display:flex;justify-content:flex-end">
+        <button class="btn outline" id="closeSuccessCardDetailBtn">✕</button>
+      </div>
+      <div id="successCardDetailVisual" style="margin:4px auto 12px"></div>
+      <div id="successCardDetailTitle" style="font-size:24px;font-weight:1000"></div>
+      <div id="successCardDetailReason" style="font-size:16px;font-weight:900;margin-top:8px"></div>
+      <div id="successCardDetailNumber" class="muted" style="margin-top:5px"></div>
+      <div id="successCardDetailMotivation" style="margin-top:16px;padding:14px 16px;border-radius:16px;background:#f8fafc;border:1px solid #e2e8f0;font-size:16px;font-weight:850;line-height:1.45"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="successCardsModal">
+    <div class="modal-card" style="width:min(920px,95vw)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div>
+          <div style="font-size:25px;font-weight:950">🏆 Cartes Réussite</div>
+          <div class="muted" style="margin-top:4px">Sélectionne les élèves, choisis le motif, puis attribue la carte.</div>
+        </div>
+        <button class="btn outline" id="closeSuccessCardsBtn">✕</button>
+      </div>
+
+      <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:14px">
+        <button class="btn outline small" id="successSelectAllBtn">Tout sélectionner</button>
+        <button class="btn outline small" id="successClearBtn">Effacer</button>
+        <span style="flex:1"></span>
+        <div class="toolbar-chip" id="successSelectedCount">0 sélectionné</div>
+      </div>
+
+      <div id="successCardsGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px;margin-top:14px"></div>
+
+      <div style="margin-top:16px;font-weight:950">Pourquoi ?</div>
+      <div id="successReasonGrid" style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px">
+        <button type="button" class="btn outline small success-reason" data-reason="📚 Travail sérieux">📚 Travail sérieux</button>
+        <button type="button" class="btn outline small success-reason" data-reason="🙋 Participation">🙋 Participation</button>
+        <button type="button" class="btn outline small success-reason" data-reason="💪 Efforts">💪 Efforts</button>
+        <button type="button" class="btn outline small success-reason" data-reason="📈 Progrès">📈 Progrès</button>
+        <button type="button" class="btn outline small success-reason" data-reason="🤝 Entraide">🤝 Entraide</button>
+        <button type="button" class="btn outline small success-reason" data-reason="🎯 Très bonne attitude">🎯 Très bonne attitude</button>
+        <button type="button" class="btn outline small success-reason" data-reason="✨ Autre">✨ Autre…</button>
+      </div>
+      <input id="successCustomReason" class="input" placeholder="Écris le motif…" style="display:none;margin-top:9px;width:100%">
+
+      <div style="margin-top:16px;font-weight:950">Type de carte</div>
+      <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:8px">
+        <button type="button" class="btn green" id="successNormalBtn">🏆 Carte Réussite</button>
+        <button type="button" class="btn outline" id="successLegendaryBtn" style="border-color:#d97706">✨ Carte Réussite légendaire</button>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px">
+        <button class="btn outline" id="cancelSuccessCardsBtn">Annuler</button>
+        <button class="btn green" id="confirmSuccessCardsBtn">🏆 Attribuer</button>
+      </div>
+      <div id="successCardsStatus" style="display:none;margin-top:10px;padding:10px 12px;border-radius:12px;font-weight:850"></div>
+    </div>
+  </div>
 
   <div class="modal" id="homeworkBatchModal">
     <div class="modal-card" style="width:min(900px,95vw)">
@@ -2010,11 +2102,29 @@ Noah"
       });
     }
 
+    const HOMEWORK_BADGE_MOTIVATIONS=[
+      "📚 Bien joué ! Un devoir fait, c’est une habitude qui se construit.",
+      "✏️ Tu avances aussi en dehors de la classe. Continue comme ça !",
+      "🌱 Petit à petit, ta régularité fait la différence.",
+      "🔥 Une bonne série commence toujours par un devoir fait.",
+      "🎯 Bravo ! Tu as pris le temps de faire le travail demandé.",
+      "🚀 Continue : chaque devoir réalisé t’aide à progresser.",
+      "⭐ Le travail régulier finit toujours par payer.",
+      "💪 Bien joué ! Tu montres que tu peux être sérieux et constant.",
+      "🧠 Faire ses devoirs, c’est aussi préparer le cours suivant.",
+      "🌟 Un badge de plus : continue à remplir ta collection."
+    ];
+
     function homeworkBadgeCollectionHTML(stats,large=false,studentKey="student"){
       const badges=homeworkCollectibleBadges(stats,studentKey);
       if(!badges.length) return '<span class="muted">Ton premier devoir débloquera ton premier badge ✨</span>';
       return `<div style="display:flex;gap:${large?9:5}px;flex-wrap:wrap;align-items:center">${badges.map(b=>`
-        <span title="Badge ${b.index}" style="display:inline-flex;align-items:center;justify-content:center;width:${large?44:29}px;height:${large?44:29}px;border-radius:50%;background:#fff;border:1px solid #e2e8f0;font-size:${large?25:18}px;box-shadow:0 2px 5px rgba(15,23,42,.08)">${b.emoji}</span>
+        <button type="button" class="homework-badge-chip"
+          data-homework-student="${escapeHTML(studentKey)}"
+          data-homework-index="${b.index}"
+          data-homework-emoji="${escapeHTML(b.emoji)}"
+          title="Badge ${b.index}"
+          style="appearance:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:${large?44:29}px;height:${large?44:29}px;border-radius:50%;background:#fff;border:1px solid #e2e8f0;font-size:${large?25:18}px;box-shadow:0 2px 5px rgba(15,23,42,.08);padding:0">${b.emoji}</button>
       `).join("")}</div>`;
     }
 
@@ -2037,20 +2147,44 @@ Noah"
     function zqReasonHistoryHTML(rows,limit=10){
       const events=zqEventsFromRemarks(rows).filter(e=>e.type!=="star_sync").slice(0,limit);
       if(!events.length) return '<div style="padding:14px;border-radius:14px;background:#f0fdf4;border:1px solid #bbf7d0;text-align:center"><strong>✅ Rien à signaler</strong></div>';
+
       return `<div style="display:grid;gap:8px">${events.map(e=>{
         const starLoss=e.type==="star_minus";
         const positive=e.type==="plus";
-        const bg=starLoss?"#fef2f2":positive?"#f0fdf4":"#fff7ed";
-        const border=starLoss?"#fca5a5":positive?"#86efac":"#fdba74";
-        const sign=starLoss?"−1 ⭐ ÉTOILE":positive?"+1":"−1";
-        const signBg=starLoss?"#991b1b":positive?"#16a34a":"#dc2626";
+        const success=e.type==="success_card";
+        const legendary=e.type==="success_card_legendary";
+        const homework=e.type==="homework_done" || e.type==="homework_missed";
+
+        let bg="#fff7ed", border="#fdba74", sign="−1", signBg="#dc2626", right="";
+        if(starLoss){
+          bg="#fef2f2"; border="#fca5a5"; sign="−1 ⭐ ÉTOILE"; signBg="#991b1b";
+          right=`Il reste ${Number.isFinite(e.scoreAfter)?e.scoreAfter:"—"} ⭐`;
+        }else if(positive){
+          bg="#f0fdf4"; border="#86efac"; sign="+1"; signBg="#16a34a";
+          right=`Score : ${Number.isFinite(e.scoreAfter)?e.scoreAfter+"/20":"—"}`;
+        }else if(success || legendary){
+          bg=legendary?"#fffbeb":"#f0fdf4";
+          border=legendary?"#f59e0b":"#86efac";
+          sign=legendary?"👑 Carte Réussite légendaire":"🏆 Carte Réussite";
+          signBg=legendary?"#b45309":"#15803d";
+          right="";
+        }else if(homework){
+          bg=e.type==="homework_done"?"#f0fdf4":"#f8fafc";
+          border=e.type==="homework_done"?"#86efac":"#cbd5e1";
+          sign=e.type==="homework_done"?"🌱 Travail maison":"📝 Travail maison";
+          signBg=e.type==="homework_done"?"#16a34a":"#64748b";
+          right=e.type==="homework_done"?"Fait":"Non fait";
+        }else{
+          right=`Score : ${Number.isFinite(e.scoreAfter)?e.scoreAfter+"/20":"—"}`;
+        }
+
         const date=e.date?new Date(e.date).toLocaleDateString("fr-FR"):"";
         return `<div style="padding:10px 12px;border-radius:13px;background:${bg};border:1px solid ${border};display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
           <div style="display:flex;align-items:center;gap:10px;min-width:0">
-            <span style="display:inline-flex;align-items:center;justify-content:center;min-width:${starLoss?"112px":"42px"};height:34px;padding:0 10px;border-radius:999px;background:${signBg};color:white;font-size:15px;font-weight:950;box-shadow:0 1px 3px #0002">${sign}</span>
+            <span style="display:inline-flex;align-items:center;justify-content:center;min-width:${(starLoss||success||legendary||homework)?"112px":"42px"};min-height:34px;padding:5px 10px;border-radius:999px;background:${signBg};color:white;font-size:14px;font-weight:950;box-shadow:0 1px 3px #0002">${sign}</span>
             <div><strong>${escapeHTML(e.label)}</strong>${date?`<div class="muted" style="font-size:11px;margin-top:2px">${date}</div>`:""}</div>
           </div>
-          <div style="font-weight:850;color:#475569">${starLoss?`Il reste ${Number.isFinite(e.scoreAfter)?e.scoreAfter:"—"} ⭐`:`Score : ${Number.isFinite(e.scoreAfter)?e.scoreAfter+"/20":"—"}`}</div>
+          ${right?`<div style="font-weight:850;color:#475569">${right}</div>`:""}
         </div>`;
       }).join("")}</div>`;
     }
@@ -2404,6 +2538,389 @@ Noah"
 
         grid.appendChild(card);
       });
+    }
+
+
+    const SUCCESS_CARD_EMOJIS=[
+      "🐆","🦜","🐢","🐒","🐊","🐍","🦥","🦋","🦎","🐸",
+      "🐬","🐠","🦀","🐚","🌺","🌴","🌿","🍍","🥭","🌊",
+      "🌟","🔥","⚡","🌈","🌙","☀️","💫","🚀","🏆","🎯"
+    ];
+
+    function successCardEventsFromRemarks(rows){
+      return (rows||[]).map(r=>{
+        const e=parseZQEventRemark(r.remark ?? r.text);
+        if(!e || !["success_card","success_card_legendary"].includes(e.type)) return null;
+        return {...e,id:r.id,date:r.created_at||r.createdAt||r.date||null};
+      }).filter(Boolean);
+    }
+
+    function successCardEmoji(studentId,code){
+      const seed=`${studentId}|${code}`;
+      return SUCCESS_CARD_EMOJIS[homeworkEmojiHash(seed)%SUCCESS_CARD_EMOJIS.length];
+    }
+
+    function successCardCollectionHTML(student,large=false){
+      const rows=(student.teacherRemarks||[]).map(r=>({id:r.id,remark:r.text,created_at:r.createdAt||r.date}));
+      const cards=successCardEventsFromRemarks(rows).slice().reverse();
+      if(!cards.length) return '<div class="muted">Aucune Carte Réussite pour le moment.</div>';
+
+      let normalIndex=0, legendaryIndex=0;
+
+      return `
+        <div style="font-size:${large?18:15}px;font-weight:950;margin-bottom:8px">
+          🏆 Ma collection de Cartes Réussite : ${cards.length}
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:${large?9:6}px;align-items:center">
+          ${cards.map((c,i)=>{
+            const legendary=c.type==="success_card_legendary";
+            if(legendary) legendaryIndex++; else normalIndex++;
+            const emoji=successCardEmoji(student.id,c.code||c.id||i);
+            const number=legendary
+              ? `L${String(legendaryIndex).padStart(2,"0")}`
+              : `${String(normalIndex).padStart(2,"0")}`;
+            const reason=escapeHTML(c.label||"Réussite");
+            return `<button type="button" class="success-card-chip"
+              data-success-student="${escapeHTML(student.id)}"
+              data-success-type="${legendary?"legendary":"normal"}"
+              data-success-reason="${escapeHTML(reason)}"
+              data-success-number="${escapeHTML(number)}"
+              data-success-emoji="${escapeHTML(emoji)}"
+              data-success-date="${escapeHTML(c.date||"")}"
+              title="${reason}" style="
+              appearance:none;
+              cursor:pointer;
+              position:relative;
+              width:${large?46:36}px;
+              height:${large?46:36}px;
+              flex:0 0 ${large?46:36}px;
+              border-radius:50%;
+              background:${legendary
+                ?"radial-gradient(circle at 50% 42%,#fff 0 48%,#fef3c7 49% 66%,#f59e0b 67% 100%)"
+                :"radial-gradient(circle at 50% 42%,#fff 0 52%,#dcfce7 53% 72%,#86efac 73% 100%)"};
+              border:${legendary?"2px solid #d97706":"1.5px solid #22c55e"};
+              box-shadow:${legendary?"0 0 0 3px rgba(245,158,11,.12),0 3px 10px rgba(217,119,6,.28)":"0 0 0 2px rgba(34,197,94,.08),0 2px 7px rgba(15,23,42,.10)"};
+              display:flex;
+              align-items:center;
+              justify-content:center;
+              font-size:${large?25:20}px;
+            ">
+              <span style="position:absolute;top:-5px;left:3px;font-size:${large?12:9}px;transform:rotate(-18deg)">🔥</span>
+              <span style="position:absolute;top:-5px;right:3px;font-size:${large?12:9}px;transform:rotate(18deg)">🔥</span>
+              <span style="position:relative;z-index:2">${emoji}</span>
+              <span style="
+                position:absolute;
+                bottom:-5px;
+                left:50%;
+                transform:translateX(-50%);
+                font-size:${large?8:7}px;
+                line-height:1;
+                font-weight:950;
+                padding:2px 4px;
+                border-radius:999px;
+                background:${legendary?"#fef3c7":"#f8fafc"};
+                color:${legendary?"#92400e":"#475569"};
+                border:1px solid ${legendary?"#f59e0b":"#e2e8f0"};
+                white-space:nowrap;
+              ">${number}</span>
+            </button>`;
+          }).join("")}
+        </div>
+        <div style="margin-top:11px;font-size:${large?12:10}px;color:#64748b;font-weight:800">
+          ✨ Les Cartes Réussite, c’est un peu comme des bons points : elles récompensent les réussites remarquées en classe.
+        </div>
+      `;
+    }
+
+
+    const SUCCESS_CARD_MOTIVATIONS=[
+      "🇬🇫 Continue comme ça : chaque réussite compte et montre tout ce dont tu es capable.",
+      "🇬🇫 Beau travail ! Garde cette énergie pour la suite.",
+      "🇬🇫 Tu peux être fier de toi : cette réussite est méritée.",
+      "🇬🇫 Chaque effort compte. Continue à construire ta progression.",
+      "🇬🇫 Bravo ! Ton sérieux finit toujours par se voir.",
+      "🇬🇫 Continue sur cette lancée, tu avances dans la bonne direction.",
+      "🇬🇫 Cette carte récompense un vrai bon moment en classe. À toi d’en créer d’autres.",
+      "🇬🇫 Ta réussite d’aujourd’hui peut devenir ton habitude de demain.",
+      "🇬🇫 Bien joué ! Reste concentré et continue à donner le meilleur.",
+      "🇬🇫 Une belle réussite de plus dans ta collection. Continue !"
+    ];
+
+    function stableChoice(arr,seed){
+      if(!arr?.length) return "";
+      return arr[homeworkEmojiHash(seed)%arr.length];
+    }
+
+    function openSuccessCardDetail(btn){
+      const legendary=btn.dataset.successType==="legendary";
+      const emoji=btn.dataset.successEmoji||"🏆";
+      const reason=btn.dataset.successReason||"Réussite";
+      const number=btn.dataset.successNumber||"";
+      const dateRaw=btn.dataset.successDate||"";
+      const date=dateRaw?new Date(dateRaw).toLocaleDateString("fr-FR"):"";
+
+      const visual=document.getElementById("successCardDetailVisual");
+      visual.innerHTML=`<div style="
+        width:96px;height:96px;border-radius:50%;margin:auto;position:relative;
+        background:${legendary
+          ?"radial-gradient(circle at 50% 42%,#fff 0 46%,#fef3c7 47% 66%,#f59e0b 67% 100%)"
+          :"radial-gradient(circle at 50% 42%,#fff 0 50%,#dcfce7 51% 72%,#22c55e 73% 100%)"};
+        border:${legendary?"3px solid #d97706":"2px solid #16a34a"};
+        box-shadow:${legendary?"0 0 0 5px rgba(245,158,11,.12),0 8px 24px rgba(217,119,6,.22)":"0 0 0 4px rgba(34,197,94,.08),0 8px 22px rgba(22,163,74,.14)"};
+        display:flex;align-items:center;justify-content:center;font-size:46px">
+        <span style="position:absolute;top:-10px;left:12px;font-size:22px;transform:rotate(-18deg)">🔥</span>
+        <span style="position:absolute;top:-10px;right:12px;font-size:22px;transform:rotate(18deg)">🔥</span>
+        ${emoji}
+      </div>`;
+
+      document.getElementById("successCardDetailTitle").textContent=legendary?"👑 Carte Réussite légendaire":"🏆 Carte Réussite";
+      document.getElementById("successCardDetailReason").textContent=reason;
+      document.getElementById("successCardDetailNumber").textContent=`${number}${date?" • "+date:""}`;
+      document.getElementById("successCardDetailMotivation").textContent=stableChoice(
+        SUCCESS_CARD_MOTIVATIONS,
+        `${btn.dataset.successStudent}|${number}|${reason}|${dateRaw}`
+      );
+      document.getElementById("successCardDetailModal").classList.add("show");
+    }
+
+    const LEVEL_INFO={
+      1:{emoji:"🌱",name:"Débutant",message:"L’aventure commence ici. Chaque bon cours construit ta progression.",unlock:"🌱 Profil ZenQuest activé"},
+      2:{emoji:"🧭",name:"Explorateur",message:"Tu commences à trouver ton rythme. Continue à avancer avec sérieux.",unlock:"👑 Couronne débloquée"},
+      3:{emoji:"🥾",name:"Aventurier",message:"Tu progresses vraiment. Garde de bonnes habitudes en classe.",unlock:"🧭 Statut Aventurier"},
+      4:{emoji:"🌿",name:"Éclaireur",message:"Ta régularité commence à se voir. Continue à donner le meilleur.",unlock:"✨ Effet scintillant débloqué"},
+      5:{emoji:"🐆",name:"Pisteur",message:"Tu fais partie des élèves qui se démarquent par leur implication.",unlock:"🐆 Statut Pisteur"},
+      6:{emoji:"🔥",name:"Expert",message:"Tu maîtrises de mieux en mieux les bons réflexes de classe.",unlock:"🔥 Aura Expert"},
+      7:{emoji:"💎",name:"Maître",message:"Tu es très proche du sommet. Continue à rester régulier.",unlock:"💎 Statut Maître"},
+      8:{emoji:"👑",name:"Légende",message:"Peu d’élèves atteignent ce niveau. Continue à faire vivre cette progression.",unlock:"✨ Halo lumineux débloqué"}
+    };
+
+    function levelInfo(level){
+      const n=Math.max(1,Number(level)||1);
+      if(LEVEL_INFO[n]) return LEVEL_INFO[n];
+      const bonus=n-8;
+      return {
+        emoji:"💎",
+        name:`Légende +${bonus}`,
+        message:"Tu as dépassé les premiers paliers de ZenQuest. La progression continue : monte encore de niveau et collectionne les diamants.",
+        unlock:`💎 ${getDiamondsForLevel(n)} diamant${getDiamondsForLevel(n)>1?"s":""} atteint${getDiamondsForLevel(n)>1?"s":""}`
+      };
+    }
+
+    function openLevelDetail(level,stars,progress,diamonds){
+      const n=Math.max(1,Number(level)||1);
+      const info=levelInfo(n);
+      document.getElementById("levelDetailEmoji").textContent=info.emoji;
+      document.getElementById("levelDetailTitle").textContent=`NIVEAU ${n} — ${info.name.toUpperCase()}`;
+      document.getElementById("levelDetailStars").textContent=`${"⭐".repeat(Math.max(0,Math.min(6,Number(stars)||0)))}${Number(stars)||0? "": "☆"}`;
+      document.getElementById("levelDetailMessage").textContent=info.message;
+
+      const next=levelInfo(n+1);
+      const remain=Math.max(0,3-(Number(progress)||0));
+      const currentDiamonds=Math.max(0,Number(diamonds)||getDiamondsForLevel(n));
+      const nextDiamondLevel=n<8?8:n+(n%2===0?2:1);
+
+      document.getElementById("levelDetailNext").innerHTML=
+        `Encore <strong>${remain} cours réussi${remain>1?"s":""}</strong> pour viser le niveau <strong>${n+1} — ${next.name}</strong>.<br>`+
+        `<span style="display:inline-block;margin-top:6px">💎 Diamants actuels : <strong>${currentDiamonds}</strong> • Prochain diamant au <strong>niveau ${nextDiamondLevel}</strong>.</span>`;
+
+      document.getElementById("levelDetailUnlock").textContent=`🔓 Débloqué : ${info.unlock}`;
+      document.getElementById("levelDetailModal").classList.add("show");
+    }
+
+    function wireLevelButtons(root=document){
+      root.querySelectorAll(".level-detail-btn").forEach(btn=>{
+        btn.onclick=(e)=>{
+          e.preventDefault();
+          e.stopPropagation();
+          openLevelDetail(btn.dataset.level,btn.dataset.stars,btn.dataset.progress,btn.dataset.diamonds);
+        };
+      });
+    }
+
+    function openHomeworkBadgeDetail(btn){
+      const emoji=btn.dataset.homeworkEmoji||"🏅";
+      const index=btn.dataset.homeworkIndex||"1";
+      const studentKey=btn.dataset.homeworkStudent||"student";
+
+      document.getElementById("homeworkBadgeDetailVisual").innerHTML=`<div style="
+        width:90px;height:90px;border-radius:50%;margin:auto;
+        background:radial-gradient(circle at 50% 42%,#fff 0 52%,#dcfce7 53% 74%,#86efac 75% 100%);
+        border:2px solid #22c55e;
+        box-shadow:0 0 0 4px rgba(34,197,94,.08),0 8px 22px rgba(22,163,74,.14);
+        display:flex;align-items:center;justify-content:center;font-size:44px">${emoji}</div>`;
+
+      document.getElementById("homeworkBadgeDetailNumber").textContent=`Badge n° ${index}`;
+      document.getElementById("homeworkBadgeDetailMotivation").textContent=stableChoice(
+        HOMEWORK_BADGE_MOTIVATIONS,
+        `${studentKey}|homework|${index}|${emoji}`
+      );
+      document.getElementById("homeworkBadgeDetailModal").classList.add("show");
+    }
+
+    function wireHomeworkBadgeChips(root=document){
+      root.querySelectorAll(".homework-badge-chip").forEach(btn=>{
+        btn.onclick=(e)=>{
+          e.preventDefault();
+          e.stopPropagation();
+          openHomeworkBadgeDetail(btn);
+        };
+      });
+    }
+
+    function wireSuccessCardChips(root=document){
+      root.querySelectorAll(".success-card-chip").forEach(btn=>{
+        btn.onclick=(e)=>{
+          e.preventDefault();
+          e.stopPropagation();
+          openSuccessCardDetail(btn);
+        };
+      });
+    }
+
+    let successCardSelection=new Set();
+    let successCardReason="";
+    let successCardLegendary=false;
+
+    function renderSuccessCardsGrid(){
+      const grid=document.getElementById("successCardsGrid");
+      const cls=currentClass();
+      if(!grid || !cls) return;
+      const students=cls.students.slice().sort((a,b)=>a.name.localeCompare(b.name,"fr"));
+      grid.innerHTML=students.map(s=>{
+        const selected=successCardSelection.has(s.id);
+        return `<button type="button" class="success-card-student" data-id="${s.id}" style="
+          border:${selected?"2px solid #16a34a":"1px solid #cbd5e1"};
+          background:${selected?"#dcfce7":"#fff"};border-radius:13px;padding:10px 9px;cursor:pointer;text-align:left">
+          <div style="font-size:16px;font-weight:950">${selected?"✅ ":""}${escapeHTML(s.name)}</div>
+        </button>`;
+      }).join("");
+      grid.querySelectorAll(".success-card-student").forEach(btn=>{
+        btn.onclick=()=>{
+          const id=btn.dataset.id;
+          if(successCardSelection.has(id)) successCardSelection.delete(id);
+          else successCardSelection.add(id);
+          renderSuccessCardsGrid();
+        };
+      });
+      const count=document.getElementById("successSelectedCount");
+      if(count){
+        const n=successCardSelection.size;
+        count.textContent=`${n} sélectionné${n>1?"s":""}`;
+      }
+    }
+
+    function refreshSuccessTypeButtons(){
+      const normal=document.getElementById("successNormalBtn");
+      const legendary=document.getElementById("successLegendaryBtn");
+      if(!normal||!legendary) return;
+      normal.style.opacity=successCardLegendary?".55":"1";
+      legendary.style.background=successCardLegendary?"#fef3c7":"";
+      legendary.style.fontWeight=successCardLegendary?"950":"";
+    }
+
+    function openSuccessCards(){
+      successCardSelection=new Set();
+      successCardReason="";
+      successCardLegendary=false;
+      const confirmBtn=document.getElementById("confirmSuccessCardsBtn");
+      if(confirmBtn){confirmBtn.dataset.legendaryConfirmed="";confirmBtn.textContent="🏆 Attribuer";}
+      document.getElementById("successCustomReason").style.display="none";
+      document.getElementById("successCustomReason").value="";
+      document.querySelectorAll(".success-reason").forEach(b=>b.style.background="");
+      const status=document.getElementById("successCardsStatus");
+      if(status) status.style.display="none";
+      refreshSuccessTypeButtons();
+      renderSuccessCardsGrid();
+      document.getElementById("successCardsModal").classList.add("show");
+    }
+
+    async function confirmSuccessCards(){
+      const cls=currentClass();
+      const status=document.getElementById("successCardsStatus");
+      const btn=document.getElementById("confirmSuccessCardsBtn");
+      if(!cls || !successCardSelection.size){
+        status.style.display="block"; status.style.background="#fef3c7"; status.style.color="#92400e";
+        status.textContent="Sélectionne au moins un élève.";
+        return;
+      }
+
+      let reason=successCardReason;
+      if(reason==="✨ Autre") reason=document.getElementById("successCustomReason").value.trim();
+      if(!reason){
+        status.style.display="block"; status.style.background="#fef3c7"; status.style.color="#92400e";
+        status.textContent="Choisis le motif de la Carte Réussite.";
+        return;
+      }
+
+      if(successCardLegendary && btn.dataset.legendaryConfirmed!=="1"){
+        btn.dataset.legendaryConfirmed="1";
+        btn.textContent="👑 Confirmer la carte LÉGENDAIRE";
+        status.style.display="block";
+        status.style.background="#fef3c7";
+        status.style.color="#92400e";
+        status.textContent="✨ Carte légendaire sélectionnée. Clique une deuxième fois pour confirmer l’attribution.";
+        return;
+      }
+
+      btn.dataset.legendaryConfirmed="";
+      btn.disabled=true;
+      btn.textContent="⏳ Attribution…";
+      status.style.display="block"; status.style.background="#eff6ff"; status.style.color="#1d4ed8";
+      status.textContent="Enregistrement des Cartes Réussite…";
+
+      try{
+        let teacherUserId=cachedTeacherUserId;
+        if(!teacherUserId){
+          const {data:{user},error:userError}=await supabaseClient.auth.getUser();
+          if(userError||!user) throw new Error("Session professeur introuvable.");
+          teacherUserId=user.id; cachedTeacherUserId=user.id;
+        }
+
+        const selected=cls.students.filter(s=>successCardSelection.has(s.id));
+        const now=Date.now();
+        const type=successCardLegendary?"success_card_legendary":"success_card";
+        const payload=selected.map((student,i)=>({
+          teacher_id:teacherUserId,
+          student_id:student.id,
+          remark:encodeZQEvent(type,`success_${now}_${i}`,reason,1)
+        }));
+
+        const {error}=await supabaseClient.from("teacher_remarks").insert(payload);
+        if(error) throw error;
+
+        const iso=new Date().toISOString();
+        payload.forEach(row=>{
+          const student=selected.find(s=>s.id===row.student_id);
+          if(!student) return;
+          student.teacherRemarks=student.teacherRemarks||[];
+          student.teacherRemarks.unshift({id:uid(),date:new Date(iso).toLocaleDateString("fr-FR"),text:row.remark,createdAt:iso});
+        });
+
+        save(); render();
+
+        selected.forEach(student=>{
+          const toastLabel=`${successCardLegendary?"✨ LÉGENDAIRE • ":""}${reason}`;
+          showPdfPointToast(student.name,successCardLegendary?"success_legendary":"success",toastLabel);
+          sendBoardCommand({
+            action:"point_toast",
+            eventId:uid(),
+            studentName:student.name,
+            type:successCardLegendary?"success_legendary":"success",
+            label:toastLabel
+          });
+        });
+
+        status.style.background=successCardLegendary?"#fef3c7":"#dcfce7";
+        status.style.color=successCardLegendary?"#92400e":"#166534";
+        status.textContent=`${successCardLegendary?"✨":"🏆"} ${selected.length} Carte${selected.length>1?"s":""} Réussite attribuée${selected.length>1?"s":""}.`;
+        setTimeout(()=>document.getElementById("successCardsModal").classList.remove("show"),900);
+      }catch(err){
+        console.error("SUCCESS CARD ERROR",err);
+        status.style.background="#fee2e2"; status.style.color="#991b1b";
+        status.textContent="❌ Impossible d’attribuer la Carte Réussite : "+(err?.message||String(err));
+      }finally{
+        btn.disabled=false; btn.textContent="🏆 Attribuer";
+      }
     }
 
     let homeworkBatchSelection=new Set();
@@ -2958,6 +3475,10 @@ Noah"
             </div>
           </div>
           <div class="box" style="margin-top:12px">
+            ${successCardCollectionHTML(student,true)}
+          </div>
+
+          <div class="box" style="margin-top:12px">
             <div style="font-size:20px;font-weight:900">📝 Mon travail maison</div>
             ${(()=>{const hs=homeworkStats(student);return `
               <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:10px">
@@ -2973,7 +3494,10 @@ Noah"
           <div class="student-columns">
             <div class="box">
               <div style="font-size:20px;font-weight:800">⭐ Ma progression ZenQuest</div>
-              <div style="font-size:25px;font-weight:900;margin-top:8px">Niveau ${student.level}</div>
+              <button type="button" class="level-detail-btn" data-level="${student.level}" data-stars="${student.stars}" data-progress="${student.progress}" data-diamonds="${student.diamonds}"
+                style="appearance:none;border:0;background:transparent;padding:0;cursor:pointer;font-size:25px;font-weight:900;margin-top:8px">
+                Niveau ${student.level} 🔎
+              </button>
               <div style="font-size:25px;margin:8px 0">${individualStars(student.stars)} <span class="diamond-inline">💎 x${student.diamonds}</span></div>
               <div class="student-mini-progress"><span style="width:${Math.min(100,(student.progress/3)*100)}%"></span></div>
               <div class="muted" style="margin-top:5px">${student.progress}/3 vers le niveau suivant</div>
@@ -4354,6 +4878,8 @@ Noah"
 
       const isMinus=type==="minus";
       const isHomework=type==="homework";
+      const isSuccess=type==="success";
+      const isLegendary=type==="success_legendary";
       const item=document.createElement("div");
       item.style.cssText=`
         padding:10px 14px;
@@ -4363,15 +4889,15 @@ Noah"
         font-weight:950;
         line-height:1.25;
         box-shadow:0 12px 35px rgba(0,0,0,.34);
-        border:2px solid ${isMinus?"#fecaca":"#bbf7d0"};
-        background:${isMinus?"#dc2626":"#16a34a"};
+        border:2px solid ${isLegendary?"#f59e0b":(isMinus?"#fecaca":"#bbf7d0")};
+        background:${isLegendary?"linear-gradient(135deg,#b45309,#f59e0b,#d97706)":(isMinus?"#dc2626":"#16a34a")};
         opacity:0;
         transform:translateY(-8px);
         transition:opacity .18s ease,transform .18s ease;
       `;
       item.innerHTML=`<div style="display:flex;align-items:center;gap:12px">
-        <span style="display:inline-flex;align-items:center;justify-content:center;min-width:48px;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.18);font-size:19px">${isHomework?"🌱":(isMinus?"−1":"＋1")}</span>
-        <div style="min-width:0"><div>${isHomework?"🌱":(isMinus?"🔻":"✨")} ${escapeHTML(name||"Élève")}</div>${label?`<div style="font-size:13px;font-weight:800;opacity:.94;margin-top:2px">${escapeHTML(label)}</div>`:""}</div>
+        <span style="display:inline-flex;align-items:center;justify-content:center;min-width:48px;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.18);font-size:19px">${isLegendary?"👑":(isSuccess?"🏆":(isHomework?"🌱":(isMinus?"−1":"＋1")))}</span>
+        <div style="min-width:0"><div>${isLegendary?"✨":(isSuccess?"🏆":(isHomework?"🌱":(isMinus?"🔻":"✨")))} ${escapeHTML(name||"Élève")}</div>${label?`<div style="font-size:13px;font-weight:800;opacity:.94;margin-top:2px">${escapeHTML(label)}</div>`:""}</div>
       </div>`;
 
       stack.appendChild(item);
@@ -4381,7 +4907,7 @@ Noah"
         item.style.opacity="0";
         item.style.transform="translateY(-8px)";
         setTimeout(()=>item.remove(),220);
-      },4000);
+      },isLegendary?8000:4000);
     }
 
     const BOARD_QUICK_COMMANDS={
@@ -4894,6 +5420,10 @@ Noah"
       const studentHomeworkStats={done:studentHomeworkDone,total:studentHomeworkTotal,pct:studentHomeworkPct,streak:studentHomeworkStreak};
       const studentHomeworkBadges=homeworkCollectibleBadges(studentHomeworkStats,student.id);
 
+      const successPortalStudent={
+        id:student.id,
+        teacherRemarks:(remarks||[]).map(r=>({id:r.id,text:r.remark,createdAt:r.created_at,date:r.created_at}))
+      };
       const normalRemarks=visibleTeacherRemarks(remarks);
       const remarksHtml=normalRemarks.length
         ? normalRemarks.map(r=>`
@@ -5081,8 +5611,7 @@ Noah"
             <div class="box" style="border:2px solid #e2e8f0">
               <div style="font-size:24px;font-weight:900">🧭 Suivi d’implication</div>
               <div class="muted" style="margin:6px 0 14px;line-height:1.55">
-                Ici apparaissent uniquement les points ajoutés ou retirés manuellement par le professeur, avec leur motif.
-                Les bonus automatiques de fin de cours ne sont pas affichés.
+                Ici apparaissent les points, bonus et Cartes Réussite gagnés ou perdus pendant le cours.
               </div>
               ${zqEventsFromRemarks(remarks).length
                 ? reasonHistoryHtml
@@ -5166,7 +5695,10 @@ Noah"
 
             <div class="box">
               <div style="font-size:20px;font-weight:800">🎮 Mon profil ZenQuest</div>
-              <div style="font-size:25px;font-weight:900;margin-top:10px">Niveau ${level}</div>
+              <button type="button" class="level-detail-btn" data-level="${level}" data-stars="${stars}" data-progress="${progressStep}" data-diamonds="${diamonds}"
+                style="appearance:none;border:0;background:transparent;padding:0;cursor:pointer;font-size:25px;font-weight:900;margin-top:10px">
+                Niveau ${level} 🔎
+              </button>
               <div style="font-size:25px;margin:8px 0">${individualStars(stars)} <span class="diamond-inline">💎 x${diamonds}</span></div><div class="muted" style="font-size:11px">Étoiles synchronisées avec ZenQuest.</div>
               <div class="student-mini-progress"><span style="width:${progressPct}%"></span></div>
               <div class="muted" style="margin-top:5px">${progressStep}/3 vers le niveau suivant</div>
@@ -5180,6 +5712,10 @@ Noah"
               <div style="margin-top:12px"><strong>🔥 Série actuelle : ${Number(student.current_streak||0)} cours</strong></div>
             </div>
           </div>
+          <div class="box" style="margin-top:12px;border:2px solid #bbf7d0;background:linear-gradient(135deg,#f0fdf4,#ffffff)">
+            ${successCardCollectionHTML(successPortalStudent,true)}
+          </div>
+
           <div class="box" style="border:2px solid #bbf7d0;background:#f0fdf4">
             <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
               <div style="font-size:20px;font-weight:900">📝 Mon travail maison</div>
@@ -5303,6 +5839,8 @@ Noah"
         "auth-"+student.id,
         ()=>renderAuthenticatedStudentDashboard(student,cls,currentPeriodName,periodAverage,lessonScores,remarks,classMessages,periodHistory,rewardRequests)
       );
+    
+      setTimeout(()=>{const root=document.getElementById("authenticatedStudentView");wireSuccessCardChips(root);wireHomeworkBadgeChips(root);wireLevelButtons(root);},0);
     }
 
     function lessonLossStateFromRows(remarkRows,scoreRows){
@@ -5879,6 +6417,8 @@ Noah"
         refreshClassAnalytics();
       },0);
       renderClassSelect(); renderViewButtons(); renderStudentModeControls(); renderStudents(); renderHistory();
+    
+      setTimeout(()=>{wireSuccessCardChips(document);wireHomeworkBadgeChips(document);wireLevelButtons(document);},0);
     }
 
     document.getElementById("addStudentBtn").onclick=addStudentToSupabase;
@@ -5972,6 +6512,42 @@ Noah"
     document.getElementById("classMessagesBtn").onclick=openClassMessages;
 
     document.getElementById("homeworkBatchBtn").onclick=openHomeworkBatch;
+
+    document.getElementById("successCardsBtn").onclick=openSuccessCards;
+    document.getElementById("closeSuccessCardDetailBtn").onclick=()=>document.getElementById("successCardDetailModal").classList.remove("show");
+    document.getElementById("closeHomeworkBadgeDetailBtn").onclick=()=>document.getElementById("homeworkBadgeDetailModal").classList.remove("show");
+    document.getElementById("closeLevelDetailBtn").onclick=()=>document.getElementById("levelDetailModal").classList.remove("show");
+
+
+
+    document.getElementById("closeSuccessCardsBtn").onclick=()=>document.getElementById("successCardsModal").classList.remove("show");
+    document.getElementById("cancelSuccessCardsBtn").onclick=()=>document.getElementById("successCardsModal").classList.remove("show");
+    document.getElementById("successSelectAllBtn").onclick=()=>{
+      const cls=currentClass(); successCardSelection=new Set((cls?.students||[]).map(s=>s.id)); renderSuccessCardsGrid();
+    };
+    document.getElementById("successClearBtn").onclick=()=>{successCardSelection=new Set();renderSuccessCardsGrid();};
+    document.querySelectorAll(".success-reason").forEach(btn=>{
+      btn.onclick=()=>{
+        successCardReason=btn.dataset.reason||"";
+        document.querySelectorAll(".success-reason").forEach(b=>b.style.background="");
+        btn.style.background="#dcfce7";
+        const custom=document.getElementById("successCustomReason");
+        custom.style.display=successCardReason==="✨ Autre"?"block":"none";
+        if(successCardReason!=="✨ Autre") custom.value="";
+      };
+    });
+    document.getElementById("successNormalBtn").onclick=()=>{
+      successCardLegendary=false;
+      const b=document.getElementById("confirmSuccessCardsBtn"); if(b){b.dataset.legendaryConfirmed="";b.textContent="🏆 Attribuer";}
+      refreshSuccessTypeButtons();
+    };
+    document.getElementById("successLegendaryBtn").onclick=()=>{
+      successCardLegendary=true;
+      const b=document.getElementById("confirmSuccessCardsBtn"); if(b){b.dataset.legendaryConfirmed="";b.textContent="🏆 Attribuer";}
+      refreshSuccessTypeButtons();
+    };
+    document.getElementById("confirmSuccessCardsBtn").onclick=confirmSuccessCards;
+
     document.getElementById("closeHomeworkBatchBtn").onclick=()=>document.getElementById("homeworkBatchModal").classList.remove("show");
     document.getElementById("cancelHomeworkBatchBtn").onclick=()=>document.getElementById("homeworkBatchModal").classList.remove("show");
     document.getElementById("homeworkSelectAllBtn").onclick=()=>{
@@ -6325,7 +6901,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.1.1</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.2.8</span>.
   </footer>
 
 </body>
