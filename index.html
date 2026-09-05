@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.7.4</title>
+  <title>ZenQuest v5.7.5</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -524,6 +524,7 @@
 </style>
 </head>
 <body>
+  <div id="globalBoardPointToastStack" style="position:fixed;top:18px;right:18px;z-index:4950000;width:min(470px,92vw);display:flex;flex-direction:column;gap:9px;pointer-events:none"></div>
   
   <div id="authScreen" style="min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(180deg,#ecfeff,#f0fdf4,#fff7ed)">
     <div class="panel" style="width:min(460px,100%);padding:26px">
@@ -5893,8 +5894,9 @@ Noah"
     }
     function hidePdfZenOverlay(){clearInterval(pdfOverlayTick);pdfOverlayTick=null;const e=document.getElementById("pdfZenOverlay");if(e)e.style.display="none";}
     function showPdfPointToast(name,type,label){
-      if(!isPdfProjectionOpen()) return;
-      const stack=document.getElementById("pdfPointToastStack");
+      const stack=isPdfProjectionOpen()
+        ? document.getElementById("pdfPointToastStack")
+        : (canShowBoardPresentation()?document.getElementById("globalBoardPointToastStack"):null);
       if(!stack) return;
 
       const isMinus=type==="minus";
@@ -5961,6 +5963,19 @@ Noah"
     let boardTimerEndAt=null;
     let boardTimerRunning=false;
     const boardDeviceId=uid();
+    let boardDisplayMode=false;
+    try{ boardDisplayMode=sessionStorage.getItem("zenquest_board_display")==="1"; }catch{}
+    function activateBoardDisplay(){
+      boardDisplayMode=true;
+      try{ sessionStorage.setItem("zenquest_board_display","1"); }catch{}
+    }
+    function deactivateBoardDisplay(){
+      boardDisplayMode=false;
+      try{ sessionStorage.removeItem("zenquest_board_display"); }catch{}
+    }
+    function canShowBoardPresentation(){
+      return boardDisplayMode || isPdfProjectionOpen() || document.getElementById("boardModal")?.classList.contains("show");
+    }
     let boardRemoteChannel=null;
     let boardRemoteClassId=null;
 
@@ -6329,20 +6344,22 @@ Noah"
       if(payload.classId && payload.classId!==state.currentClassId) return;
 
       if(payload.action==="show"){
+        if(!canShowBoardPresentation()) return;
         if(!showPdfZenOverlay(payload)) applyBoardShow(payload);
       }else if(payload.action==="pdf_prev"){
         if(pdfDoc&&isPdfProjectionOpen()&&pdfPageNum>1){pdfPageNum--;renderPdfPage();}
       }else if(payload.action==="pdf_next"){
         if(pdfDoc&&isPdfProjectionOpen()&&pdfPageNum<pdfDoc.numPages){pdfPageNum++;renderPdfPage();}
       }else if(payload.action==="merit_celebration"){
-        showBoardMeritCelebration(payload);
+        if(canShowBoardPresentation()) showBoardMeritCelebration(payload);
       }else if(payload.action==="material_toast"){
-        showBoardMaterialToast(payload);
+        if(canShowBoardPresentation()) showBoardMaterialToast(payload);
       }else if(payload.action==="flash_start"){
-        startFlashQuestions(false);
+        if(canShowBoardPresentation()) startFlashQuestions(false);
       }else if(payload.action==="flash_stop"){
-        stopFlashQuestions(false);
+        if(canShowBoardPresentation()) stopFlashQuestions(false);
       }else if(payload.action==="point_toast"){
+        if(!canShowBoardPresentation()) return;
         if(payload.eventId && receivedPointToastIds.has(payload.eventId)) return;
         if(payload.eventId){
           receivedPointToastIds.add(payload.eventId);
@@ -6350,13 +6367,16 @@ Noah"
         }
         showPdfPointToast(payload.studentName||"Élève",payload.type,payload.label||"");
       }else if(payload.action==="start"){
-        if(!document.getElementById("boardModal").classList.contains("show")) openBoard(false);
+        if(!canShowBoardPresentation()) return;
+        if(!document.getElementById("boardModal").classList.contains("show") && !isPdfProjectionOpen()) openBoard(false);
         startBoardTimer(false,payload.endAt);
       }else if(payload.action==="pause"){
+        if(!canShowBoardPresentation()) return;
         stopBoardTimer(false);
         boardRemaining=Math.max(0,Math.round(Number(payload.remaining)||0));
         updateBoardTimer();
       }else if(payload.action==="reset"){
+        if(!canShowBoardPresentation()) return;
         stopBoardTimer(false);
         boardRemaining=Math.max(0,Math.round(Number(payload.remaining)||0));
         updateBoardTimer();
@@ -6364,8 +6384,10 @@ Noah"
         // Same summary popup on every connected teacher device.
         showSummary(payload.summary||{perfectNames:[],bonusPointNames:[],stayedAt20:[],levelUps:[],starNames:[],classStarGained:false});
       }else if(payload.action==="close"){
+        if(!canShowBoardPresentation()) return;
         stopBoardTimer(false);stopFlashQuestions(false);hidePdfZenOverlay();
         document.getElementById("boardModal").classList.remove("show");
+        deactivateBoardDisplay();
       }
     }
 
@@ -6414,8 +6436,10 @@ Noah"
       document.getElementById("boardText").textContent=preset.text||"";
       boardRemaining=totalSeconds;
       const endAt=Date.now()+boardRemaining*1000;
-      if(!showPdfZenOverlay({...preset,endAt})) openBoard(false);
-      startBoardTimer(false,endAt);
+      if(canShowBoardPresentation()){
+        if(!showPdfZenOverlay({...preset,endAt})) openBoard(false);
+        startBoardTimer(false,endAt);
+      }
       sendBoardCommand({action:"show",...preset,totalSeconds,endAt,autoStart:true});
     }
 
@@ -6436,8 +6460,10 @@ Noah"
       document.getElementById("boardText").textContent=preset.text||"";
       boardRemaining=totalSeconds;
       const endAt=Date.now()+boardRemaining*1000;
-      if(!showPdfZenOverlay({...preset,endAt})) openBoard(false);
-      startBoardTimer(false,endAt);
+      if(canShowBoardPresentation()){
+        if(!showPdfZenOverlay({...preset,endAt})) openBoard(false);
+        startBoardTimer(false,endAt);
+      }
       sendBoardCommand({action:"show",...preset,totalSeconds,endAt,autoStart:true});
     }
 
@@ -8124,6 +8150,7 @@ Noah"
     }
 
     function launchWelcome(){
+      activateBoardDisplay();
       const preset=getWelcomeConfig();
       boardCurrent={...preset};
       document.getElementById("boardEmoji").textContent=preset.emoji;
@@ -8225,7 +8252,9 @@ Noah"
 
     document.getElementById("closeBoardBtn").onclick=()=>{
       stopBoardTimer(false);
+      stopFlashQuestions(false);
       document.getElementById("boardModal").classList.remove("show");
+      deactivateBoardDisplay();
       sendBoardCommand({action:"close"});
     };
 
@@ -8272,6 +8301,7 @@ Noah"
     document.getElementById("waitingModeBtn").onclick=()=>document.getElementById("waitingModeModal").classList.add("show");
     document.getElementById("closeWaitingModeBtn").onclick=()=>document.getElementById("waitingModeModal").classList.remove("show");
     document.getElementById("waitingModeStartBtn").onclick=()=>{
+      activateBoardDisplay();
       document.getElementById("waitingModeModal").classList.remove("show");
       startFlashQuestions(true);
     };
@@ -8328,7 +8358,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.7.4</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.7.5</span>.
   </footer>
 
 </body>
