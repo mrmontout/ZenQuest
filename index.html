@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.6.6</title>
+  <title>ZenQuest v5.7.2</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -462,6 +462,30 @@
     @keyframes materialBagBounce{0%{transform:scale(.5) rotate(-12deg)}60%{transform:scale(1.15) rotate(5deg)}100%{transform:scale(1) rotate(0)}}
     .material-board-name{font-size:clamp(24px,3vw,38px);font-weight:1000;line-height:1}
     .material-board-text{font-size:clamp(15px,1.8vw,22px);font-weight:850;margin-top:5px}
+
+
+    /* v5.7.0 — mode Questions flash / attente */
+    #flashQuestionOverlay{
+      position:absolute;inset:0;z-index:65;border-radius:28px;overflow:hidden;
+      display:none;align-items:center;justify-content:center;text-align:center;
+      background:linear-gradient(135deg,#eff6ff,#f8fafc,#f0fdf4);
+      padding:38px;color:#0f172a;
+    }
+    #flashQuestionOverlay.show{display:flex}
+    #flashQuestionCard{width:min(900px,92%);position:relative}
+    #flashQuestionKicker{font-size:18px;font-weight:950;letter-spacing:.12em;color:#64748b}
+    #flashQuestionText{font-size:clamp(58px,8vw,112px);font-weight:1000;line-height:1.05;margin-top:22px}
+    #flashQuestionPrompt{font-size:clamp(18px,2vw,28px);font-weight:850;margin-top:18px;color:#475569}
+    #flashAnswerBox{
+      margin:28px auto 0;padding:16px 25px;border-radius:22px;width:max-content;max-width:90%;
+      background:#dcfce7;border:2px solid #86efac;font-size:clamp(32px,5vw,64px);font-weight:1000;
+      opacity:0;transform:translateY(12px) scale(.96);transition:.35s ease;
+    }
+    #flashAnswerBox.show{opacity:1;transform:translateY(0) scale(1)}
+    #flashProgress{position:absolute;left:0;bottom:0;height:7px;background:#3b82f6;width:0}
+    #flashQuestionOverlay.show #flashProgress{animation:flashProgress 14s linear forwards}
+    @keyframes flashProgress{from{width:0}to{width:100%}}
+    #flashQuestionCounter{position:absolute;right:22px;top:20px;font-weight:900;color:#64748b}
 
 </style>
 </head>
@@ -1398,6 +1422,16 @@ Noah"
         style="position:absolute;right:14px;top:14px;z-index:90;opacity:.72;width:38px;height:38px;border-radius:50%;font-size:18px;padding:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.78);box-shadow:0 3px 12px rgba(0,0,0,.14)">✕</button>
 
       <div id="boardDisplay" style="height:100%;border:0;border-radius:28px;padding:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:#f8fafc">
+        <div id="flashQuestionOverlay">
+          <div id="flashQuestionCounter">ZENQUEST • MODE ATTENTE</div>
+          <div id="flashQuestionCard">
+            <div id="flashQuestionKicker">🤫 CALME • SILENCE • PATIENCE</div>
+            <div id="flashQuestionText" style="font-size:clamp(34px,5.5vw,76px)">📚 Mini-leçon</div>
+            <div id="flashQuestionPrompt" style="font-size:clamp(24px,3vw,40px);max-width:920px;margin:22px auto 0">Lis tranquillement ce qui s’affiche.</div>
+            <div id="flashAnswerBox" style="font-size:clamp(22px,3vw,38px)">Pendant ce temps, ton professeur est occupé.</div>
+          </div>
+          <div id="flashProgress"></div>
+        </div>
         <div id="boardEmoji" style="font-size:96px">👋</div>
         <div id="boardTitle" style="font-size:72px;font-weight:950;margin-top:12px">Bonjour !</div>
         <div id="boardText" style="display:none"></div>
@@ -1438,6 +1472,15 @@ Noah"
           <button class="btn outline boardQuickBtn" data-command="warning">⚠️ Attention</button>
           <button class="btn outline boardQuickBtn" data-command="patience">⏳ Soyez patients</button>
           <button class="btn outline boardQuickBtn" data-command="finish" style="grid-column:1 / -1">🎒 On range</button>
+        </div>
+      </div>
+
+      <div class="box" style="margin-top:12px;border:2px solid #c4b5fd;background:#faf5ff">
+        <div style="font-size:18px;font-weight:950">🌙 Mode attente</div>
+        <div class="muted" style="margin-top:4px">Un moment calme : 100 mini-leçons, rappels, astuces et petits défis mathématiques défilent automatiquement. Les notifications ZenQuest restent visibles par-dessus.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+          <button class="btn green" id="remoteFlashStartBtn">▶️ Lancer le mode attente</button>
+          <button class="btn danger" id="remoteFlashStopBtn">⏹️ Arrêter</button>
         </div>
       </div>
 
@@ -6044,6 +6087,168 @@ Noah"
       },2600);
     }
 
+    let flashQuestionTimer=null;
+    let flashAnswerTimer=null;
+    let flashRunning=false;
+    let flashQuestionNumber=0;
+
+    const WAITING_MATH_BANK=[
+      {icon:"🔢",title:"NOMBRES ENTIERS",text:"Dans 4 582 731, le chiffre 5 est celui des centaines de milliers.",extra:"Sa valeur est 500 000."},
+      {icon:"🔢",title:"NOMBRES ENTIERS",text:"Un milliard s’écrit 1 000 000 000.",extra:"Il contient neuf zéros."},
+      {icon:"🔢",title:"NOMBRES ENTIERS",text:"Pour comparer deux entiers, regarde d’abord leur nombre de chiffres.",extra:"Un nombre positif à 7 chiffres est plus grand qu’un nombre à 6 chiffres."},
+      {icon:"🔢",title:"NOMBRES ENTIERS",text:"Dans 72 405, le chiffre 4 représente 400.",extra:"La position d’un chiffre donne sa valeur."},
+      {icon:"🔢",title:"NOMBRES ENTIERS",text:"Encadrer un nombre, c’est trouver un nombre plus petit et un plus grand.",extra:"Par exemple : 300 < 347 < 400."},
+      {icon:"🔢",title:"NOMBRES DÉCIMAUX",text:"Dans 3,45, le chiffre 4 est celui des dixièmes.",extra:"Le chiffre 5 est celui des centièmes."},
+      {icon:"🔢",title:"NOMBRES DÉCIMAUX",text:"4,7 et 4,70 représentent le même nombre.",extra:"Un zéro ajouté à droite de la partie décimale ne change pas sa valeur."},
+      {icon:"🔢",title:"NOMBRES DÉCIMAUX",text:"Entre 2,4 et 2,5, il existe beaucoup d’autres nombres.",extra:"Par exemple : 2,41 ; 2,45 ; 2,49."},
+      {icon:"🔢",title:"NOMBRES DÉCIMAUX",text:"Pour comparer 5,08 et 5,8, écris 5,08 et 5,80.",extra:"Donc 5,08 < 5,8."},
+      {icon:"🔢",title:"NOMBRES DÉCIMAUX",text:"10 dixièmes forment une unité.",extra:"Et 100 centièmes forment aussi une unité."},
+      {icon:"🔢",title:"POURCENTAGES",text:"50 % signifie 50 sur 100.",extra:"50 % d’une quantité correspond à sa moitié."},
+      {icon:"🔢",title:"POURCENTAGES",text:"25 % correspond à un quart.",extra:"25 % de 20 = 5."},
+      {icon:"🔢",title:"POURCENTAGES",text:"10 % correspond à un dixième.",extra:"10 % de 70 = 7."},
+      {icon:"➕",title:"CALCUL",text:"Dans une addition, l’ordre des termes ne change pas le résultat.",extra:"7 + 12 = 12 + 7."},
+      {icon:"➖",title:"CALCUL",text:"Pour vérifier une soustraction, utilise une addition.",extra:"Si 42 − 17 = 25, alors 25 + 17 = 42."},
+      {icon:"✖️",title:"CALCUL",text:"Tout nombre multiplié par 0 donne 0.",extra:"Tout nombre multiplié par 1 reste inchangé."},
+      {icon:"✖️",title:"CALCUL",text:"Multiplier par 10 rend un nombre dix fois plus grand.",extra:"4,7 × 10 = 47."},
+      {icon:"✖️",title:"CALCUL",text:"Multiplier par 100 rend un nombre cent fois plus grand.",extra:"3,25 × 100 = 325."},
+      {icon:"➗",title:"CALCUL",text:"Diviser par 2, c’est chercher la moitié.",extra:"La moitié de 18 est 9."},
+      {icon:"➗",title:"CALCUL",text:"Diviser par 10 rend un nombre dix fois plus petit.",extra:"47 ÷ 10 = 4,7."},
+      {icon:"🧠",title:"CALCUL MENTAL",text:"Pour calculer 19 + 8, pense à 20 + 8 − 1.",extra:"Cela donne 27."},
+      {icon:"🧠",title:"CALCUL MENTAL",text:"25 × 4 = 100.",extra:"C’est un résultat pratique à connaître."},
+      {icon:"🧠",title:"CALCUL MENTAL",text:"Pour multiplier par 5, tu peux multiplier par 10 puis diviser par 2.",extra:"18 × 5 = 90."},
+      {icon:"🧠",title:"CALCUL MENTAL",text:"Le double de 35 est 70.",extra:"🤫 Garde la réponse dans ta tête."},
+      {icon:"🧠",title:"CALCUL MENTAL",text:"La moitié de 50 est 25.",extra:"🤫 Pas besoin de la dire à voix haute."},
+      {icon:"🧠",title:"TABLES",text:"Connaître ses tables permet de calculer plus vite.",extra:"7 × 8 = 56 est un résultat à automatiser."},
+      {icon:"🧠",title:"PRIORITÉS",text:"Dans 3 + 4 × 2, effectue la multiplication avant l’addition.",extra:"3 + 8 = 11."},
+      {icon:"🍕",title:"FRACTIONS",text:"Le dénominateur indique en combien de parts égales l’unité est partagée.",extra:"Le numérateur indique combien de parts on considère."},
+      {icon:"🍕",title:"FRACTIONS",text:"Deux fractions différentes peuvent représenter le même nombre.",extra:"1/2 = 2/4 = 5/10."},
+      {icon:"🍕",title:"FRACTIONS",text:"Une fraction peut être supérieure à 1.",extra:"7/4 est plus grand que 1."},
+      {icon:"🍕",title:"FRACTIONS",text:"Quand numérateur et dénominateur sont égaux, la fraction vaut 1.",extra:"5/5 = 1."},
+      {icon:"🍕",title:"FRACTIONS",text:"Pour prendre la moitié d’une quantité, divise-la par 2.",extra:"La moitié de 18 est 9."},
+      {icon:"🍕",title:"FRACTIONS",text:"Un quart d’une quantité s’obtient en la divisant par 4.",extra:"Un quart de 20 est 5."},
+      {icon:"🍕",title:"FRACTIONS",text:"Trois quarts signifie trois parts sur quatre parts égales.",extra:"3/4 = 0,75 = 75 %."},
+      {icon:"🍕",title:"FRACTIONS",text:"Une fraction est aussi un quotient.",extra:"3/4 signifie 3 ÷ 4."},
+      {icon:"🍕",title:"FRACTIONS",text:"Pour placer une fraction sur une droite graduée, repère d’abord l’unité.",extra:"Puis partage l’unité selon le dénominateur."},
+      {icon:"🍕",title:"FRACTIONS",text:"10/10, 100/100 et 1 représentent le même nombre.",extra:"Ils représentent une unité entière."},
+      {icon:"🧩",title:"PROBLÈMES",text:"Avant de calculer, demande-toi ce que la question cherche.",extra:"Comprendre vient avant choisir l’opération."},
+      {icon:"🧩",title:"PROBLÈMES",text:"Un résultat sans unité peut être incomplet.",extra:"Pour une longueur, pense à cm, m, km…"},
+      {icon:"🧩",title:"PROBLÈMES",text:"Une estimation permet de vérifier si un résultat est raisonnable.",extra:"Un résultat très éloigné de l’ordre de grandeur doit t’alerter."},
+      {icon:"🧩",title:"PROBLÈMES",text:"Un schéma peut rendre un problème beaucoup plus simple.",extra:"Dessiner peut aider à raisonner."},
+      {icon:"📊",title:"PROPORTIONNALITÉ",text:"Dans une situation proportionnelle, si on double une quantité, l’autre double aussi.",extra:"Les deux grandeurs varient dans la même proportion."},
+      {icon:"📊",title:"PROPORTIONNALITÉ",text:"Le passage à l’unité consiste à chercher la valeur pour 1.",extra:"On peut ensuite retrouver d’autres valeurs."},
+      {icon:"📊",title:"PROPORTIONNALITÉ",text:"Un tableau n’est pas forcément proportionnel.",extra:"Il faut vérifier la relation entre ses lignes."},
+      {icon:"📊",title:"PROPORTIONNALITÉ",text:"Si 3 objets coûtent 12 €, alors un objet coûte 4 € dans cette situation.",extra:"C’est un retour à l’unité."},
+      {icon:"📊",title:"POURCENTAGES",text:"100 % représente la totalité.",extra:"0 % représente aucune partie de la quantité."},
+      {icon:"📊",title:"DONNÉES",text:"Dans un tableau, lis le titre, les lignes, les colonnes et les unités.",extra:"Ils donnent le sens des nombres."},
+      {icon:"📊",title:"DONNÉES",text:"Un diagramme représente des données visuellement.",extra:"Regarde l’échelle avant de comparer."},
+      {icon:"🎲",title:"PROBABILITÉS",text:"Une probabilité mesure la chance qu’un événement se produise.",extra:"Elle est comprise entre 0 et 1."},
+      {icon:"🎲",title:"PROBABILITÉS",text:"Un événement impossible a une probabilité 0.",extra:"Un événement certain a une probabilité 1."},
+      {icon:"🎲",title:"PROBABILITÉS",text:"Avec une pièce équilibrée, pile et face ont la même chance.",extra:"Chaque issue a une probabilité de 1/2."},
+      {icon:"🎲",title:"PROBABILITÉS",text:"Avec un dé équilibré à six faces, chaque face a la même chance.",extra:"Obtenir un 6 a une probabilité de 1/6."},
+      {icon:"📏",title:"LONGUEURS",text:"1 km = 1 000 m.",extra:"Et 1 m = 100 cm."},
+      {icon:"📏",title:"LONGUEURS",text:"1 cm = 10 mm.",extra:"Choisis une unité adaptée à ce que tu mesures."},
+      {icon:"📏",title:"PÉRIMÈTRE",text:"Le périmètre est la longueur du contour d’une figure.",extra:"Il s’exprime avec une unité de longueur."},
+      {icon:"⬛",title:"PÉRIMÈTRE",text:"Le périmètre d’un carré est 4 × côté.",extra:"Côté 5 cm → périmètre 20 cm."},
+      {icon:"▭",title:"PÉRIMÈTRE",text:"Le périmètre d’un rectangle est 2 × (longueur + largeur).",extra:"Additionne d’abord longueur et largeur."},
+      {icon:"⭕",title:"CERCLE",text:"Le périmètre d’un cercle dépend de son diamètre.",extra:"On utilise π, environ égal à 3,14."},
+      {icon:"🟦",title:"AIRES",text:"L’aire mesure la surface occupée par une figure.",extra:"Elle s’exprime en cm², m²…"},
+      {icon:"⬛",title:"AIRES",text:"L’aire d’un carré est côté × côté.",extra:"Côté 4 cm → aire 16 cm²."},
+      {icon:"▭",title:"AIRES",text:"L’aire d’un rectangle est longueur × largeur.",extra:"Utilise des unités compatibles."},
+      {icon:"🔺",title:"AIRES",text:"L’aire d’un triangle est base × hauteur ÷ 2.",extra:"La hauteur est perpendiculaire à la base choisie."},
+      {icon:"🟦",title:"AIRES",text:"Périmètre et aire ne mesurent pas la même chose.",extra:"Périmètre = contour ; aire = surface."},
+      {icon:"📦",title:"VOLUMES",text:"Le volume mesure l’espace occupé par un solide.",extra:"Une unité possible est le cm³."},
+      {icon:"📦",title:"VOLUMES",text:"1 cm³ est le volume d’un cube de 1 cm de côté.",extra:"Le petit 3 signifie « cube »."},
+      {icon:"📦",title:"VOLUMES",text:"Dans un assemblage de cubes, certains cubes peuvent être cachés.",extra:"Il faut tous les compter pour déterminer le volume."},
+      {icon:"⏱️",title:"DURÉES",text:"1 heure = 60 minutes.",extra:"1 minute = 60 secondes."},
+      {icon:"⏱️",title:"DURÉES",text:"1 h 30 min correspond à 90 minutes.",extra:"30 minutes représentent une demi-heure."},
+      {icon:"⏱️",title:"DURÉES",text:"Une ligne du temps peut aider à calculer une durée.",extra:"Décompose le trajet entre deux horaires."},
+      {icon:"📐",title:"ANGLES",text:"Un angle droit mesure exactement 90°.",extra:"L’équerre permet de le reconnaître."},
+      {icon:"📐",title:"ANGLES",text:"Un angle aigu mesure moins de 90°.",extra:"Il est plus petit qu’un angle droit."},
+      {icon:"📐",title:"ANGLES",text:"Un angle obtus mesure plus de 90° et moins de 180°.",extra:"Il est plus grand qu’un angle droit."},
+      {icon:"📐",title:"ANGLES",text:"Un angle plat mesure 180°.",extra:"Il forme une ligne droite."},
+      {icon:"📐",title:"ANGLES",text:"Le rapporteur sert à mesurer un angle.",extra:"Place son centre sur le sommet de l’angle."},
+      {icon:"📐",title:"GÉOMÉTRIE",text:"Deux droites perpendiculaires se coupent en formant un angle droit.",extra:"Le symbole ⟂ signifie « perpendiculaire »."},
+      {icon:"📐",title:"GÉOMÉTRIE",text:"Deux droites parallèles ne se coupent pas.",extra:"Elles gardent toujours le même écart."},
+      {icon:"📐",title:"GÉOMÉTRIE",text:"Un segment possède deux extrémités.",extra:"Une droite se prolonge des deux côtés."},
+      {icon:"📐",title:"GÉOMÉTRIE",text:"Le milieu d’un segment est à égale distance de ses deux extrémités.",extra:"Il partage le segment en deux parties de même longueur."},
+      {icon:"⭕",title:"CERCLE",text:"Le rayon relie le centre à un point du cercle.",extra:"Tous les rayons d’un même cercle ont la même longueur."},
+      {icon:"⭕",title:"CERCLE",text:"Le diamètre passe par le centre du cercle.",extra:"Il mesure deux fois le rayon."},
+      {icon:"⬛",title:"QUADRILATÈRES",text:"Un carré possède 4 côtés de même longueur et 4 angles droits.",extra:"C’est aussi un rectangle particulier."},
+      {icon:"▭",title:"QUADRILATÈRES",text:"Un rectangle possède 4 angles droits.",extra:"Ses côtés opposés ont la même longueur."},
+      {icon:"🔷",title:"QUADRILATÈRES",text:"Un losange possède 4 côtés de même longueur.",extra:"Il n’a pas forcément 4 angles droits."},
+      {icon:"🔺",title:"TRIANGLES",text:"Un triangle possède trois côtés et trois sommets.",extra:"Il existe plusieurs familles de triangles."},
+      {icon:"🔺",title:"TRIANGLES",text:"Un triangle rectangle possède un angle droit.",extra:"On peut le repérer avec une équerre."},
+      {icon:"🔺",title:"TRIANGLES",text:"Un triangle isocèle possède deux côtés de même longueur.",extra:"Il possède aussi deux angles de même mesure."},
+      {icon:"🪞",title:"SYMMÉTRIE",text:"Deux points symétriques sont à la même distance de l’axe.",extra:"Le segment qui les relie est perpendiculaire à l’axe."},
+      {icon:"🪞",title:"SYMMÉTRIE",text:"Un axe de symétrie partage une figure en deux parties superposables par pliage.",extra:"Certaines figures ont plusieurs axes."},
+      {icon:"🧭",title:"REPÉRAGE",text:"Pour repérer un point, on peut utiliser des coordonnées.",extra:"Lis les axes dans l’ordre demandé."},
+      {icon:"🧊",title:"SOLIDES",text:"Un cube possède 6 faces carrées.",extra:"Il possède 8 sommets et 12 arêtes."},
+      {icon:"📦",title:"SOLIDES",text:"Un pavé droit possède 6 faces rectangulaires.",extra:"Certaines faces peuvent être carrées."},
+      {icon:"🤖",title:"PENSÉE INFORMATIQUE",text:"Un algorithme est une suite d’instructions ordonnées.",extra:"Changer leur ordre peut changer le résultat."},
+      {icon:"🤖",title:"PENSÉE INFORMATIQUE",text:"Une boucle permet de répéter une instruction.",extra:"Elle évite de réécrire la même action."},
+      {icon:"🤖",title:"PENSÉE INFORMATIQUE",text:"Une condition permet de choisir une action selon une situation.",extra:"Exemple : « si le nombre est pair, alors… »."},
+      {icon:"🤖",title:"PENSÉE INFORMATIQUE",text:"Corriger les erreurs d’un programme s’appelle déboguer.",extra:"On cherche l’instruction qui ne produit pas l’effet attendu."},
+      {icon:"✨",title:"MÉTHODE",text:"Une figure propre aide à mieux raisonner.",extra:"Règle, équerre, compas et rapporteur sont des outils de mathématiques."},
+      {icon:"✨",title:"MÉTHODE",text:"Écrire les étapes d’un calcul aide à retrouver une erreur.",extra:"Le brouillon sert à chercher."},
+      {icon:"🌱",title:"PROGRESSION",text:"Comprendre une erreur permet de progresser.",extra:"Une erreur corrigée montre ce qu’il faut retravailler."},
+      {icon:"📚",title:"BONNE HABITUDE",text:"Relire une leçon quelques minutes régulièrement aide à la mémoriser.",extra:"La régularité est plus efficace que tout revoir au dernier moment."},
+      {icon:"🔢",title:"ÉGALITÉ",text:"Le signe = signifie que les deux côtés ont la même valeur.",extra:"Dans 7 + 3 = 6 + 4, les deux côtés valent 10."}
+    ];
+    let waitingDeck=[];
+
+    function nextWaitingMathItem(){
+      if(!waitingDeck.length){
+        waitingDeck=[...WAITING_MATH_BANK];
+        for(let i=waitingDeck.length-1;i>0;i--){
+          const j=Math.floor(Math.random()*(i+1));
+          [waitingDeck[i],waitingDeck[j]]=[waitingDeck[j],waitingDeck[i]];
+        }
+      }
+      return waitingDeck.pop();
+    }
+
+    function showNextFlashQuestion(){
+      if(!flashRunning) return;
+      const overlay=document.getElementById("flashQuestionOverlay");
+      const extraBox=document.getElementById("flashAnswerBox");
+      const progress=document.getElementById("flashProgress");
+      if(!overlay||!extraBox) return;
+      const item=nextWaitingMathItem();
+      flashQuestionNumber++;
+      document.getElementById("flashQuestionKicker").textContent="🤫 CALME • SILENCE • PATIENCE";
+      document.getElementById("flashQuestionText").textContent=`${item.icon} ${item.title}`;
+      document.getElementById("flashQuestionPrompt").textContent=item.text;
+      document.getElementById("flashQuestionCounter").textContent="ZENQUEST • MODE ATTENTE";
+      extraBox.textContent=item.extra||"";
+      extraBox.classList.remove("show");
+      overlay.classList.add("show");
+      if(progress){
+        progress.style.animation="none"; void progress.offsetWidth;
+        progress.style.animation="flashProgress 14s linear forwards";
+      }
+      clearTimeout(flashAnswerTimer); clearTimeout(flashQuestionTimer);
+      flashAnswerTimer=setTimeout(()=>{
+        if(!flashRunning) return;
+        extraBox.classList.add("show");
+      },6500);
+      flashQuestionTimer=setTimeout(showNextFlashQuestion,14000);
+    }
+
+    function startFlashQuestions(broadcast=true){
+      flashRunning=true; flashQuestionNumber=0; waitingDeck=[];
+      if(!document.getElementById("boardModal").classList.contains("show")) openBoard(false);
+      showNextFlashQuestion();
+      if(broadcast) sendBoardCommand({action:"flash_start"});
+    }
+
+    function stopFlashQuestions(broadcast=true){
+      flashRunning=false;
+      clearTimeout(flashAnswerTimer);clearTimeout(flashQuestionTimer);
+      flashAnswerTimer=null;flashQuestionTimer=null;
+      document.getElementById("flashQuestionOverlay")?.classList.remove("show");
+      if(broadcast) sendBoardCommand({action:"flash_stop"});
+    }
+
     const receivedPointToastIds=new Set();
 
     function applyBoardRemoteCommand(payload){
@@ -6060,6 +6265,10 @@ Noah"
         showBoardMeritCelebration(payload);
       }else if(payload.action==="material_toast"){
         showBoardMaterialToast(payload);
+      }else if(payload.action==="flash_start"){
+        startFlashQuestions(false);
+      }else if(payload.action==="flash_stop"){
+        stopFlashQuestions(false);
       }else if(payload.action==="point_toast"){
         if(payload.eventId && receivedPointToastIds.has(payload.eventId)) return;
         if(payload.eventId){
@@ -6082,7 +6291,7 @@ Noah"
         // Same summary popup on every connected teacher device.
         showSummary(payload.summary||{perfectNames:[],bonusPointNames:[],stayedAt20:[],levelUps:[],starNames:[],classStarGained:false});
       }else if(payload.action==="close"){
-        stopBoardTimer(false);hidePdfZenOverlay();
+        stopBoardTimer(false);stopFlashQuestions(false);hidePdfZenOverlay();
         document.getElementById("boardModal").classList.remove("show");
       }
     }
@@ -7948,6 +8157,8 @@ Noah"
     };
 
     document.querySelectorAll(".boardQuickBtn").forEach(btn=>btn.onclick=()=>sendQuickBoardCommand(btn.dataset.command));
+    document.getElementById("remoteFlashStartBtn").onclick=()=>startFlashQuestions(true);
+    document.getElementById("remoteFlashStopBtn").onclick=()=>stopFlashQuestions(true);
     document.getElementById("remoteBoardSendBtn").onclick=sendCustomBoardCommand;
 
     document.getElementById("remoteTimerStartBtn").onclick=()=>startBoardTimer(true);
@@ -8034,7 +8245,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.6.6</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.7.2</span>.
   </footer>
 
 </body>
