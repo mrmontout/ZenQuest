@@ -327,6 +327,10 @@
       #pdfPointToastStack{top:72px;width:94vw!important}
       #pdfPointToastStack > div{font-size:19px!important;padding:13px 16px!important}
     }
+
+    /* v5.0.5 — le récap de fin de cours passe au-dessus de la projection PDF */
+    #summaryModal{z-index:2000000!important;}
+    #pdfProjectionModal{z-index:100000!important;}
 </style>
 </head>
 <body>
@@ -391,7 +395,7 @@
     </div>
 
     <div id="zqVersionBadge" style="position:fixed;right:12px;bottom:12px;z-index:999998;padding:7px 10px;border-radius:999px;background:#0f172a;color:white;font-size:11px;font-weight:900;box-shadow:0 6px 18px rgba(15,23,42,.22);opacity:.88">
-      TEST • ZenQuest 5.0.4
+      TEST • ZenQuest 5.0.7
     </div>
 
     <div id="supabaseTeacherStatus" class="panel" style="margin-bottom:12px;border:1px solid #a7f3d0;background:#ecfdf5;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
@@ -663,7 +667,7 @@ Noah"
   <div id="endLessonToast" style="display:none;position:fixed;left:50%;top:22px;transform:translateX(-50%);z-index:999999;background:#0f172a;color:white;padding:14px 20px;border-radius:18px;box-shadow:0 14px 40px rgba(15,23,42,.28);font-weight:800;text-align:center;max-width:min(92vw,620px)"></div>
 
   <div class="modal" id="summaryModal">
-    <div class="modal-card">
+    <div class="modal-card" style="width:min(1120px,97vw);max-height:94vh;overflow:auto">
       <div style="text-align:center;font-size:52px">🎉</div>
       <div style="text-align:center;font-size:32px;font-weight:800;margin-top:6px">Fin de cours validée</div>
       <div style="text-align:center;color:var(--muted);margin-top:6px">Les points, niveaux et récompenses ont été mis à jour.</div>
@@ -944,7 +948,7 @@ Noah"
       <div id="pdfZenOverlay" style="display:none;position:absolute;inset:58px 0 0;z-index:20;background:#0f172acc;align-items:center;justify-content:center;text-align:center;padding:30px;color:white;backdrop-filter:blur(3px)">
         <div><div id="pdfOverlayEmoji" style="font-size:100px"></div><div id="pdfOverlayTitle" style="font-size:72px;font-weight:950"></div><div id="pdfOverlayText" style="font-size:34px;font-weight:800;white-space:pre-wrap;margin-top:16px"></div><div id="pdfOverlayTimer" style="font-size:105px;font-weight:950;margin-top:22px"></div></div>
       </div>
-      <div id="pdfPointToastStack" style="position:absolute;left:50%;top:78px;transform:translateX(-50%);z-index:30;width:min(700px,92vw);display:flex;flex-direction:column;gap:10px;pointer-events:none"></div>
+      <div id="pdfPointToastStack" style="position:absolute;left:50%;top:78px;transform:translateX(-50%);z-index:30;width:min(480px,84vw);display:flex;flex-direction:column;gap:7px;pointer-events:none"></div>
     </div>
   </div>
 
@@ -2630,7 +2634,29 @@ Noah"
     }
 
     function showSummary(summary){
+      // Fin de cours must always be visible above an open PDF projection.
+      const summaryLayer=document.getElementById("summaryModal") || document.getElementById("endLessonSummaryModal") || document.getElementById("lessonSummaryModal");
+      if(summaryLayer) summaryLayer.style.zIndex="2000000";
+
+      const scoreRows=Array.isArray(summary.scoreRows)?summary.scoreRows:[];
+      const scoreGrid=scoreRows.length?`
+        <div style="margin-top:12px">
+          <div style="font-size:16px;font-weight:950;margin-bottom:7px">📊 Scores de fin de cours</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,max-content));justify-content:center;gap:7px 9px">
+            ${scoreRows.map(r=>{
+              const th=engagementIndexTheme(Number(r.score));
+              return `<div style="display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:7px 9px;border-radius:10px;background:${th.bg};border:1px solid ${th.border};min-width:0">
+                <span style="font-size:15px;font-weight:900;white-space:nowrap">${escapeHTML(r.name)}</span>
+                <strong style="font-size:17px;color:${th.color};white-space:nowrap">${r.score}/20</strong>
+              </div>`;
+            }).join("")}
+          </div>
+        </div>`:"";
+
       document.getElementById("summaryContent").innerHTML=`
+        <div style="padding:9px 12px;border-radius:12px;background:#eff6ff;border:1px solid #bfdbfe;text-align:center;font-weight:900;margin-bottom:12px">
+          📱 Vous retrouverez votre score et son évolution dans votre espace élève.
+        </div>
         <div class="summary-grid">
           <div class="box"><div class="muted">Élèves parfaits</div><div class="big" style="color:#047857">${summary.perfectNames.length}</div></div>
           <div class="box"><div class="muted">+1 fin d'heure</div><div class="big" style="color:#0284c7">${summary.bonusPointNames.length}</div></div>
@@ -2638,12 +2664,7 @@ Noah"
           <div class="box"><div class="muted">Étoiles gagnées</div><div class="big" style="color:#ca8a04">${summary.starNames.length}</div></div>
           <div class="box"><div class="muted">Étoile collective</div><div class="big" style="color:#7c3aed">${summary.classStarGained?"+1":"0"}</div></div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
-          <div class="box"><div style="font-weight:700;margin-bottom:8px">Sans perte</div><div class="muted">${summary.perfectNames.length?summary.perfectNames.join(", "):"aucun"}</div></div>
-          <div class="box"><div style="font-weight:700;margin-bottom:8px">Bonus de point</div><div class="muted">${summary.bonusPointNames.length?summary.bonusPointNames.join(", "):"aucun"}</div></div>
-          <div class="box"><div style="font-weight:700;margin-bottom:8px">Restés à 20</div><div class="muted">${summary.stayedAt20.length?summary.stayedAt20.join(", "):"aucun"}</div></div>
-          <div class="box"><div style="font-weight:700;margin-bottom:8px">Montées de niveau</div><div class="muted">${summary.levelUps.length?summary.levelUps.join(", "):"aucun"}</div></div>
-        </div>
+        ${scoreGrid}
       `;
       document.getElementById("summaryModal").classList.add("show");
     }
@@ -2877,7 +2898,11 @@ Noah"
         // Cela garantit que le petit message "Fin de cours validée" reste visible.
         const lessonSummary={
           perfectNames,bonusPointNames,stayedAt20,levelUps,starNames,
-          classStarGained:everyonePerfect
+          classStarGained:everyonePerfect,
+          scoreRows:cls.students
+            .filter(s=>!s.isAbsent)
+            .map(s=>({name:s.name,score:Number(s.points||0)}))
+            .sort((a,b)=>a.name.localeCompare(b.name,"fr"))
         };
 
         // Show the exact same existing summary popup on this device and all other teacher devices.
@@ -3855,10 +3880,10 @@ Noah"
       const isMinus=type==="minus";
       const item=document.createElement("div");
       item.style.cssText=`
-        padding:16px 22px;
-        border-radius:18px;
+        padding:10px 14px;
+        border-radius:14px;
         color:white;
-        font-size:23px;
+        font-size:17px;
         font-weight:950;
         line-height:1.25;
         box-shadow:0 12px 35px rgba(0,0,0,.34);
@@ -3869,8 +3894,8 @@ Noah"
         transition:opacity .18s ease,transform .18s ease;
       `;
       item.innerHTML=`<div style="display:flex;align-items:center;gap:12px">
-        <span style="display:inline-flex;align-items:center;justify-content:center;min-width:62px;padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.18);font-size:26px">${isMinus?"−1":"＋1"}</span>
-        <div style="min-width:0"><div>${isMinus?"🔻":"✨"} ${escapeHTML(name||"Élève")}</div>${label?`<div style="font-size:16px;font-weight:800;opacity:.94;margin-top:3px">${escapeHTML(label)}</div>`:""}</div>
+        <span style="display:inline-flex;align-items:center;justify-content:center;min-width:48px;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.18);font-size:19px">${isMinus?"−1":"＋1"}</span>
+        <div style="min-width:0"><div>${isMinus?"🔻":"✨"} ${escapeHTML(name||"Élève")}</div>${label?`<div style="font-size:13px;font-weight:800;opacity:.94;margin-top:2px">${escapeHTML(label)}</div>`:""}</div>
       </div>`;
 
       stack.appendChild(item);
@@ -3880,7 +3905,7 @@ Noah"
         item.style.opacity="0";
         item.style.transform="translateY(-8px)";
         setTimeout(()=>item.remove(),220);
-      },8000);
+      },4000);
     }
 
     const BOARD_QUICK_COMMANDS={
