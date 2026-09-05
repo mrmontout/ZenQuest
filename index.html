@@ -687,6 +687,21 @@ Noah"
 
 
 
+
+  <div class="modal" id="archiveStarDetailModal" style="z-index:3100000">
+    <div class="modal-card" style="width:min(430px,92vw);text-align:center">
+      <div style="display:flex;justify-content:flex-end">
+        <button class="btn outline" id="closeArchiveStarDetailBtn">✕</button>
+      </div>
+      <div style="font-size:74px">⭐</div>
+      <div style="font-size:24px;font-weight:1000;margin-top:4px">Étoile gagnée</div>
+      <div id="archiveStarPeriod" style="font-size:15px;font-weight:850;margin-top:7px"></div>
+      <div style="margin-top:15px;padding:14px 16px;border-radius:16px;background:#fefce8;border:1px solid #fde68a;font-size:16px;font-weight:850;line-height:1.45">
+        Cette étoile fait partie de ta progression sur cette période. Continue à construire de bonnes séries de cours ! ⭐
+      </div>
+    </div>
+  </div>
+
   <div class="modal" id="levelDetailModal" style="z-index:3100000">
     <div class="modal-card" style="width:min(500px,92vw);text-align:center">
       <div style="display:flex;justify-content:flex-end">
@@ -2163,10 +2178,10 @@ Noah"
           bg="#f0fdf4"; border="#86efac"; sign="+1"; signBg="#16a34a";
           right=`Score : ${Number.isFinite(e.scoreAfter)?e.scoreAfter+"/20":"—"}`;
         }else if(success || legendary){
-          bg=legendary?"#fffbeb":"#f0fdf4";
-          border=legendary?"#f59e0b":"#86efac";
+          bg=legendary?"#ecfdf5":"#f0fdf4";
+          border=legendary?"#34d399":"#86efac";
           sign=legendary?"👑 Carte Réussite légendaire":"🏆 Carte Réussite";
-          signBg=legendary?"#b45309":"#15803d";
+          signBg=legendary?"#047857":"#15803d";
           right="";
         }else if(homework){
           bg=e.type==="homework_done"?"#f0fdf4":"#f8fafc";
@@ -2725,6 +2740,17 @@ Noah"
 
       document.getElementById("levelDetailUnlock").textContent=`🔓 Débloqué : ${info.unlock}`;
       document.getElementById("levelDetailModal").classList.add("show");
+    }
+
+    function wireArchiveStarButtons(root=document){
+      root.querySelectorAll(".archive-star-chip").forEach(btn=>{
+        btn.onclick=(e)=>{
+          e.preventDefault();
+          e.stopPropagation();
+          document.getElementById("archiveStarPeriod").textContent=btn.dataset.period||"Ancienne période";
+          document.getElementById("archiveStarDetailModal").classList.add("show");
+        };
+      });
     }
 
     function wireLevelButtons(root=document){
@@ -3518,7 +3544,7 @@ Noah"
 
           <div class="box" style="border:2px solid #e2e8f0">
             <div style="font-size:20px;font-weight:800">🧭 Suivi d’implication</div>
-            <div class="muted" style="margin:4px 0 10px">Points ajoutés ou retirés manuellement par le professeur et leur motif.</div>
+            <div class="muted" style="margin:4px 0 10px">Points, bonus et Cartes Réussite obtenus pendant les cours.</div>
             ${zqEventsFromRemarks((student.teacherRemarks||[]).map(r=>({id:r.id,remark:r.text,created_at:r.createdAt||r.date}))).length
               ? zqReasonHistoryHTML((student.teacherRemarks||[]).map(r=>({id:r.id,remark:r.text,created_at:r.createdAt||r.date})),10)
               : `<div style="padding:14px;border-radius:14px;background:#f0fdf4;border:1px solid #bbf7d0;text-align:center"><strong>✅ Rien à signaler</strong></div>`}
@@ -4367,25 +4393,70 @@ Noah"
       }
     }
 
-    function studentPeriodHistoryHTML(history=[]){
+    function studentPeriodHistoryHTML(history=[],studentId="student"){
       if(!history.length) return `<div class="box"><div style="font-size:20px;font-weight:900">📚 Mes anciennes aventures</div><div class="muted" style="margin-top:8px">Aucune période clôturée pour le moment.</div></div>`;
-      return `<div class="box"><div style="font-size:20px;font-weight:900">📚 Mes anciennes aventures</div>
-        <div class="muted" style="margin:4px 0 12px">Tes notes et ta progression des périodes précédentes restent consultables ici.</div>
-        ${history.map(h=>{
+
+      return `<div class="box">
+        <div style="font-size:20px;font-weight:900">📚 Mes anciennes aventures</div>
+        <div class="muted" style="margin:4px 0 12px">Retrouve tes résultats et tout ce que tu as gagné pendant chaque période.</div>
+
+        ${history.map((h,periodIndex)=>{
           const scores=(h.scores||[]).map(x=>Number(x.score)).filter(Number.isFinite);
+          const remarks=h.periodRemarks||[];
+          const successRows=successCardEventsFromRemarks(remarks);
+          const successStudent={
+            id:`${studentId}-${h.period_id||periodIndex}`,
+            teacherRemarks:remarks.map(r=>({id:r.id,text:r.remark,createdAt:r.created_at,date:r.created_at}))
+          };
+
+          // homeworks in period_results is the number completed at closure.
+          const homeworkDone=Math.max(0,Number(h.homeworks||0));
+          const homeworkStatsArchive={done:homeworkDone,total:homeworkDone,pct:homeworkDone?100:null,streak:homeworkDone};
+
+          const starCount=Math.max(0,Number(h.final_stars||0));
+          const diamondCount=Math.max(0,Number(h.final_diamonds||0));
+
           return `<div style="padding:16px 0;border-top:1px solid #e2e8f0">
             <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
               <strong style="font-size:18px">${escapeHTML(h.name||'Période')}</strong>
               <strong>${h.average==null?'—':String(round1(Number(h.average))).replace('.',',')+'/20'}</strong>
             </div>
+
             <div class="row wrap" style="margin:9px 0">
               <span class="toolbar-chip">🎮 Niv. ${Number(h.final_level||1)}</span>
-              <span class="toolbar-chip">⭐ ${Number(h.final_stars||0)}</span>
-              <span class="toolbar-chip">💎 ${Number(h.final_diamonds||0)}</span>
-              <span class="toolbar-chip">🟡 +${Number(h.zen_coins_earned||0)}</span>
+              <span class="toolbar-chip">⭐ ${starCount}</span>
+              <span class="toolbar-chip">💎 ${diamondCount}</span>
               <span class="toolbar-chip">📚 ${Number(h.lesson_count||scores.length)} cours</span>
             </div>
-            ${scores.length?studentChart(scores):'<div class="muted">Aucune note de fin de cours enregistrée.</div>'}
+
+            <div style="margin-top:13px;padding:12px;border-radius:15px;background:#f8fafc;border:1px solid #e2e8f0">
+              <div style="font-size:15px;font-weight:950">🏆 Collection de la période</div>
+
+              <div style="margin-top:10px">
+                <div style="font-size:12px;font-weight:900;color:#64748b;margin-bottom:6px">⭐ ÉTOILES</div>
+                ${starCount
+                  ? `<div style="display:flex;gap:6px;flex-wrap:wrap">${Array.from({length:starCount},(_,i)=>`
+                      <button type="button" class="archive-star-chip" data-period="${escapeHTML(h.name||"Période")}" title="Étoile ${i+1}"
+                        style="appearance:none;cursor:pointer;width:38px;height:38px;border-radius:50%;border:1px solid #fde68a;background:#fffef2;font-size:21px;padding:0">⭐</button>`).join("")}</div>`
+                  : '<span class="muted">Aucune étoile conservée pour cette période.</span>'}
+              </div>
+
+              <div style="margin-top:12px">
+                <div style="font-size:12px;font-weight:900;color:#64748b;margin-bottom:6px">🏅 BADGES TRAVAIL MAISON</div>
+                ${homeworkDone
+                  ? homeworkBadgeCollectionHTML(homeworkStatsArchive,true,`archive-${studentId}-${h.period_id||periodIndex}`)
+                  : '<span class="muted">Aucun badge Travail maison sur cette période.</span>'}
+              </div>
+
+              <div style="margin-top:12px">
+                <div style="font-size:12px;font-weight:900;color:#64748b;margin-bottom:6px">🏆 CARTES RÉUSSITE</div>
+                ${successRows.length
+                  ? successCardCollectionHTML(successStudent,true)
+                  : '<span class="muted">Aucune Carte Réussite sur cette période.</span>'}
+              </div>
+            </div>
+
+            ${scores.length?studentChart(scores):'<div class="muted" style="margin-top:12px">Aucune note de fin de cours enregistrée.</div>'}
             ${scores.length?`<div class="row wrap" style="margin-top:8px">${(h.scores||[]).map(s=>`<span class="toolbar-chip">📅 ${lessonDateLabel(s.created_at)} : ${Number(s.score)}/20</span>`).join('')}</div>`:''}
           </div>`;
         }).join('')}
@@ -5313,7 +5384,14 @@ Noah"
 
       const studentPeriodHistory=(periodResults||[]).map(r=>{
         const p=(periods||[]).find(x=>x.id===r.period_id);
-        return {...r,name:p?.name||"Ancienne période",scores:(allScores||[]).filter(s=>s.period_id===r.period_id)};
+        return {
+          ...r,
+          name:p?.name||"Ancienne période",
+          period_started_at:p?.created_at||null,
+          period_closed_at:p?.closed_at||r.created_at||null,
+          scores:(allScores||[]).filter(s=>s.period_id===r.period_id),
+          periodRemarks:[]
+        };
       });
 
       // Teacher remarks, restricted by RLS.
@@ -5326,6 +5404,17 @@ Noah"
       if(remarksError){
         throw new Error(`Erreur teacher_remarks : ${remarksError.message}${remarksError.code?` • code ${remarksError.code}`:""}`);
       }
+
+      // Archive the rewards earned during each closed period.
+      // teacher_remarks does not have a period_id, so period dates are used as boundaries.
+      studentPeriodHistory.forEach(h=>{
+        const start=h.period_started_at?new Date(h.period_started_at).getTime():-Infinity;
+        const end=h.period_closed_at?new Date(h.period_closed_at).getTime():Infinity;
+        h.periodRemarks=(remarks||[]).filter(r=>{
+          const t=r.created_at?new Date(r.created_at).getTime():NaN;
+          return Number.isFinite(t) && t>=start && t<=end;
+        });
+      });
 
       const {data:classMessages,error:classMessagesError}=await supabaseClient
         .from("class_messages")
@@ -5353,7 +5442,8 @@ Noah"
         remarks||[],
         (classMessages||[]).map(mapSupabaseClassMessage),
         studentPeriodHistory,
-        rewardRequests||[]
+        rewardRequests||[],
+        currentPeriod
       );
     }
 
@@ -5364,7 +5454,7 @@ Noah"
       return d.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"});
     }
 
-    function renderAuthenticatedStudentDashboard(student,cls,currentPeriodName,periodAverage,lessonScores,remarks,classMessages=[],periodHistory=[],rewardRequests=[]){
+    function renderAuthenticatedStudentDashboard(student,cls,currentPeriodName,periodAverage,lessonScores,remarks,classMessages=[],periodHistory=[],rewardRequests=[],currentPeriod=null){
       document.getElementById("studentClassPill").textContent=cls?.name||"Ma classe";
 
       const scores=(lessonScores||[])
@@ -5396,12 +5486,20 @@ Noah"
         ? Number(cls?.group1_diamonds||0)
         : group==="g2" ? Number(cls?.group2_diamonds||0) : 0;
 
+      const currentPeriodStartRaw=currentPeriod?.created_at||currentPeriod?.started_at||null;
+      const currentPeriodStart=currentPeriodStartRaw?new Date(currentPeriodStartRaw).getTime():-Infinity;
+      const currentPeriodRemarks=(remarks||[]).filter(r=>{
+        const t=r?.created_at?new Date(r.created_at).getTime():NaN;
+        return !Number.isFinite(currentPeriodStart) || (Number.isFinite(t) && t>=currentPeriodStart);
+      });
+      const isFreshPeriod=!(lessonScores||[]).length;
+
       const recentLessonRows=(lessonScores||[]).slice(-8);
       const scoreRows=recentLessonRows.length
         ? recentLessonRows.map(row=>`<span class="toolbar-chip">📅 ${lessonDateLabel(row.created_at)} : ${Number(row.score)}/20</span>`).join("")
         : '<span class="muted">Aucun score de fin de cours enregistré pour cette période.</span>';
 
-      const studentHomeworkEvents=homeworkEventsFromRemarks(remarks);
+      const studentHomeworkEvents=homeworkEventsFromRemarks(currentPeriodRemarks);
       const studentHomeworkByCode=new Map();
       studentHomeworkEvents.forEach(e=>{
         const code=e.code||e.id;
@@ -5422,9 +5520,9 @@ Noah"
 
       const successPortalStudent={
         id:student.id,
-        teacherRemarks:(remarks||[]).map(r=>({id:r.id,text:r.remark,createdAt:r.created_at,date:r.created_at}))
+        teacherRemarks:(currentPeriodRemarks||[]).map(r=>({id:r.id,text:r.remark,createdAt:r.created_at,date:r.created_at}))
       };
-      const normalRemarks=visibleTeacherRemarks(remarks);
+      const normalRemarks=visibleTeacherRemarks(currentPeriodRemarks);
       const remarksHtml=normalRemarks.length
         ? normalRemarks.map(r=>`
             <div style="padding:10px 0;border-bottom:1px solid #e2e8f0">
@@ -5432,7 +5530,7 @@ Noah"
               <div style="margin-top:4px;white-space:pre-wrap;line-height:1.5">${escapeHTML(r.remark||"")}</div>
             </div>`).join("")
         : '<div class="muted">Aucune remarque du professeur pour le moment.</div>';
-      const reasonHistoryHtml=zqReasonHistoryHTML(remarks,12);
+      const reasonHistoryHtml=zqReasonHistoryHTML(currentPeriodRemarks,12);
 
       document.getElementById("authenticatedStudentView").innerHTML=`
         <div class="student-dashboard">
@@ -5637,12 +5735,17 @@ Noah"
                   <div class="muted" style="font-size:12px">🎯 SCORE ACTUEL</div>
                   <div style="font-size:34px;font-weight:950">${Number(student.points??15)} / 20</div>
                 </div>
-                <div style="flex:1.2;min-width:180px;background:${engagementIndexTheme(engagementIndex).bg};border:2px solid ${engagementIndexTheme(engagementIndex).border};border-radius:16px;padding:12px">
-                  <div style="font-size:12px;font-weight:800;color:${engagementIndexTheme(engagementIndex).color}">📊 INDICE D’IMPLICATION</div>
-                  <div style="font-size:36px;font-weight:950;color:${engagementIndexTheme(engagementIndex).color}">${avgDisplay}${engagementIndex===null?"":" / 20"}</div>
+                <div style="flex:1.2;min-width:180px;background:${isFreshPeriod?"#eff6ff":engagementIndexTheme(engagementIndex).bg};border:2px solid ${isFreshPeriod?"#93c5fd":engagementIndexTheme(engagementIndex).border};border-radius:16px;padding:12px">
+                  <div style="font-size:12px;font-weight:800;color:${isFreshPeriod?"#2563eb":engagementIndexTheme(engagementIndex).color}">📊 INDICE D’IMPLICATION</div>
+                  <div style="font-size:${isFreshPeriod?22:36}px;font-weight:950;color:${isFreshPeriod?"#2563eb":engagementIndexTheme(engagementIndex).color}">${isFreshPeriod?"Nouvelle période ✨":avgDisplay+" / 20"}</div>
                 </div>
               </div>
-              <div class="muted" style="font-size:12px;margin-top:6px">L’indice est calculé sur les 5 derniers cours, avec davantage de poids pour les plus récents.</div>${engagementMiniDashboard({periodScores:scores},engagementIndex)}
+              ${isFreshPeriod
+                ? `<div style="margin-top:10px;padding:12px 14px;border-radius:14px;background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-weight:850;line-height:1.45">
+                     🌱 <strong>Une nouvelle période commence !</strong><br>
+                     Tout le monde repart sur une nouvelle base à <strong>15/20</strong>. Ton indice d’implication apparaîtra après le premier cours enregistré.
+                   </div>`
+                : `<div class="muted" style="font-size:12px;margin-top:6px">L’indice est calculé sur les 5 derniers cours, avec davantage de poids pour les plus récents.</div>${engagementMiniDashboard({periodScores:scores},engagementIndex)}`}
 
               <div style="margin-top:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:16px;padding:12px;line-height:1.45">
                 <strong>ℹ️ À quoi correspond cette note ?</strong><br>
@@ -5761,7 +5864,7 @@ Noah"
           </div>
 
           <div id="studentHistoryPanel" style="display:none">
-            ${studentPeriodHistoryHTML(periodHistory)}
+            ${studentPeriodHistoryHTML(periodHistory,student.id)}
           </div>
 
         </div>
@@ -5837,10 +5940,16 @@ Noah"
         document.getElementById("authenticatedStudentView"),
         student,
         "auth-"+student.id,
-        ()=>renderAuthenticatedStudentDashboard(student,cls,currentPeriodName,periodAverage,lessonScores,remarks,classMessages,periodHistory,rewardRequests)
+        ()=>renderAuthenticatedStudentDashboard(student,cls,currentPeriodName,periodAverage,lessonScores,remarks,classMessages,periodHistory,rewardRequests,currentPeriod)
       );
     
-      setTimeout(()=>{const root=document.getElementById("authenticatedStudentView");wireSuccessCardChips(root);wireHomeworkBadgeChips(root);wireLevelButtons(root);},0);
+      setTimeout(()=>{
+        const root=document.getElementById("authenticatedStudentView");
+        wireSuccessCardChips(root);
+        wireHomeworkBadgeChips(root);
+        wireLevelButtons(root);
+        wireArchiveStarButtons(root);
+      },0);
     }
 
     function lessonLossStateFromRows(remarkRows,scoreRows){
@@ -6418,7 +6527,7 @@ Noah"
       },0);
       renderClassSelect(); renderViewButtons(); renderStudentModeControls(); renderStudents(); renderHistory();
     
-      setTimeout(()=>{wireSuccessCardChips(document);wireHomeworkBadgeChips(document);wireLevelButtons(document);},0);
+      setTimeout(()=>{wireSuccessCardChips(document);wireHomeworkBadgeChips(document);wireLevelButtons(document);wireArchiveStarButtons(document);},0);
     }
 
     document.getElementById("addStudentBtn").onclick=addStudentToSupabase;
@@ -6517,6 +6626,8 @@ Noah"
     document.getElementById("closeSuccessCardDetailBtn").onclick=()=>document.getElementById("successCardDetailModal").classList.remove("show");
     document.getElementById("closeHomeworkBadgeDetailBtn").onclick=()=>document.getElementById("homeworkBadgeDetailModal").classList.remove("show");
     document.getElementById("closeLevelDetailBtn").onclick=()=>document.getElementById("levelDetailModal").classList.remove("show");
+    document.getElementById("closeArchiveStarDetailBtn").onclick=()=>document.getElementById("archiveStarDetailModal").classList.remove("show");
+
 
 
 
@@ -6901,7 +7012,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.2.8</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.3.0</span>.
   </footer>
 
 </body>
