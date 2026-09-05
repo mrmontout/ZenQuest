@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.5.5</title>
+  <title>ZenQuest v5.5.7</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -425,7 +425,7 @@
     .zq-success-spark{position:absolute;pointer-events:none;animation:zqSpark 1.35s ease-out forwards;font-size:18px}
 
     #endLessonCelebration{
-      position:relative;overflow:hidden;border-radius:22px;padding:18px 18px 16px;margin-bottom:14px;
+      position:relative;overflow:hidden;border-radius:22px;padding:12px 16px 12px;margin-bottom:12px;
       background:linear-gradient(135deg,#ecfdf5,#eff6ff,#fff7ed);
       border:2px solid #a7f3d0;
     }
@@ -436,7 +436,7 @@
     }
     @keyframes zqEndSpin{to{transform:rotate(360deg)}}
     .end-lesson-inner{position:relative;z-index:2;text-align:center}
-    .end-lesson-emoji{font-size:54px;display:inline-block;animation:zqEndWave 1.2s ease-in-out infinite alternate}
+    .end-lesson-emoji{font-size:28px;display:inline-block;animation:zqEndWave 1.2s ease-in-out infinite alternate;margin-bottom:0}
     @keyframes zqEndWave{from{transform:translateY(0) rotate(-5deg)}to{transform:translateY(-7px) rotate(5deg)}}
     #endLessonRotatingMessage{
       min-height:54px;display:flex;align-items:center;justify-content:center;
@@ -3819,12 +3819,12 @@ Noah"
       const scoreGrid=scoreRows.length?`
         <div style="margin-top:12px">
           <div style="font-size:19px;font-weight:950;margin-bottom:8px;text-align:center">📊 Scores de fin de cours</div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,max-content));justify-content:center;gap:9px 11px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));justify-content:center;gap:7px">
             ${scoreRows.map(r=>{
               const th=engagementIndexTheme(Number(r.score));
-              return `<div style="display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:9px 12px;border-radius:11px;background:${th.bg};border:1px solid ${th.border};min-width:0">
-                <span style="font-size:21px;font-weight:950;white-space:nowrap">${escapeHTML(r.name)}</span>
-                <strong style="font-size:24px;color:${th.color};white-space:nowrap">${r.score}/20</strong>
+              return `<div style="display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:7px 9px;border-radius:10px;background:${th.bg};border:1px solid ${th.border};min-width:0">
+                <span style="font-size:18px;font-weight:950;white-space:nowrap">${escapeHTML(r.name)}</span>
+                <strong style="font-size:20px;color:${th.color};white-space:nowrap">${r.score}/20</strong>
               </div>`;
             }).join("")}
           </div>
@@ -3835,46 +3835,71 @@ Noah"
           <div class="end-lesson-inner">
             <div class="end-lesson-emoji">👋✨</div>
             <div style="font-size:15px;font-weight:950;color:#166534;letter-spacing:.08em">COURS TERMINÉ</div>
-            <div id="endLessonRotatingMessage">📚 N’oubliez pas de réviser chez vous !</div>
+            <div id="endLessonRotatingMessage">✨ Fin de séance</div>
           </div>
         </div>
-        <div style="padding:9px 12px;border-radius:12px;background:#eff6ff;border:1px solid #bfdbfe;text-align:center;font-weight:900;margin-bottom:12px">
+        <div style="padding:8px 10px;border-radius:12px;background:#eff6ff;border:1px solid #bfdbfe;text-align:center;font-weight:900;margin-bottom:10px">
           📱 Vous retrouverez votre score et son évolution dans votre espace élève.
         </div>
-        <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:10px">
-          <div style="padding:5px 9px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;font-size:12px"><b>✅ Sans perte :</b> ${summary.perfectNames.length}</div>
-          <div style="padding:5px 9px;border-radius:10px;background:#eff6ff;border:1px solid #bfdbfe;font-size:12px"><b>➕ Bonus :</b> ${summary.bonusPointNames.length}</div>
-          <div style="padding:5px 9px;border-radius:10px;background:#fff7ed;border:1px solid #fed7aa;font-size:12px"><b>⬆️ Niveaux :</b> ${summary.levelUps.length}</div>
-          <div style="padding:5px 9px;border-radius:10px;background:#fffbeb;border:1px solid #fde68a;font-size:12px"><b>⭐ Étoiles :</b> ${summary.starNames.length}</div>
-          <div style="padding:5px 9px;border-radius:10px;background:#faf5ff;border:1px solid #e9d5ff;font-size:12px"><b>🌟 Collective :</b> ${summary.classStarGained?"+1":"0"}</div>
-        </div>
         ${scoreGrid}
-        <div style="margin-top:14px;text-align:center;font-size:26px;font-weight:950;color:#0f172a">👋 À bientôt !</div>
       `;
       document.getElementById("summaryModal").classList.add("show");
       startEndLessonMessages();
     }
 
     let endLessonMessageTimer=null;
-    const END_LESSON_MESSAGES=[
-      "📚 N’oubliez pas de réviser chez vous !",
-      "🌟 Chaque petit effort vous fait progresser.",
-      "🧠 Relire le cours 5 minutes, c’est déjà réviser.",
-      "💪 Continuez comme ça : la régularité paie.",
-      "🎯 Préparez vos affaires pour le prochain cours.",
-      "✨ Soyez fiers de vos progrès et continuez !"
+    const END_LESSON_MESSAGE_BANKS=[
+      [
+        "📚 N’oubliez pas de réviser chez vous !",
+        "🧠 Relire le cours 5 minutes, c’est déjà réviser.",
+        "🎯 Un petit effort aujourd’hui facilite le prochain cours.",
+        "✏️ Pensez à vérifier que vos exercices sont terminés."
+      ],
+      [
+        "🌟 Chaque petit effort vous fait progresser.",
+        "💪 La régularité finit toujours par payer.",
+        "🚀 Vous pouvez faire encore mieux au prochain cours !",
+        "✨ Soyez fiers de vos progrès et continuez !"
+      ],
+      [
+        "🧠 Se tromper fait partie de l’apprentissage.",
+        "🎯 Un objectif simple : faire un peu mieux la prochaine fois.",
+        "🌱 Les progrès se construisent petit à petit.",
+        "💡 Comprendre vaut mieux qu’apprendre sans réfléchir."
+      ],
+      [
+        "📐 Les maths se travaillent aussi entre deux cours !",
+        "📝 Pensez à relire la leçon avant le prochain cours.",
+        "🎒 Vérifiez votre matériel pour la prochaine séance.",
+        "🔥 On garde le rythme jusqu’au prochain cours !"
+      ],
+      [
+        "👏 Bravo pour les efforts fournis aujourd’hui.",
+        "🌟 Une bonne séance commence par une bonne attitude.",
+        "🤝 On progresse mieux quand chacun fait sa part.",
+        "🏆 Continuez à viser votre meilleure version."
+      ]
     ];
+    function shuffledCopy(arr){
+      const out=[...arr];
+      for(let i=out.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [out[i],out[j]]=[out[j],out[i]];
+      }
+      return out;
+    }
     function startEndLessonMessages(){
       clearInterval(endLessonMessageTimer);
       const el=document.getElementById("endLessonRotatingMessage");
       if(!el) return;
+      const bank=shuffledCopy(END_LESSON_MESSAGE_BANKS[Math.floor(Math.random()*END_LESSON_MESSAGE_BANKS.length)]);
       let i=0;
-      el.textContent=END_LESSON_MESSAGES[0];
+      el.textContent=bank[0];
       endLessonMessageTimer=setInterval(()=>{
-        i=(i+1)%END_LESSON_MESSAGES.length;
+        i=(i+1)%bank.length;
         el.classList.add("swap");
         setTimeout(()=>{
-          el.textContent=END_LESSON_MESSAGES[i];
+          el.textContent=bank[i];
           el.classList.remove("swap");
         },280);
       },2600);
@@ -7611,7 +7636,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.5.5</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.5.7</span>.
   </footer>
 
 </body>
