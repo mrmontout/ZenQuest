@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v41 Onglets et boutique</title>
+  <title>ZenQuest v5.5.4</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -350,6 +350,61 @@
       #welcomeFixedScoresGrid span{font-size:14px!important}
       #welcomeFixedScoresGrid strong{font-size:17px!important}
     }
+
+    /* v5.5.4 — distinctions cliquables + célébration tableau */
+    .merit-open-card{transition:transform .15s ease,box-shadow .15s ease}
+    .merit-open-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(15,23,42,.12)!important}
+    .merit-open-card:active{transform:scale(.985)}
+
+    #meritDetailModal{z-index:3500000}
+    #meritDetailModal .modal-card{width:min(560px,94vw);overflow:hidden;position:relative}
+    .merit-detail-orb{
+      width:112px;height:112px;border-radius:50%;margin:2px auto 14px;
+      display:flex;align-items:center;justify-content:center;font-size:58px;
+      box-shadow:0 12px 30px rgba(15,23,42,.12);
+      animation:meritPop .45s cubic-bezier(.2,.9,.2,1.3)
+    }
+    @keyframes meritPop{0%{transform:scale(.45) rotate(-10deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
+
+    #meritBoardCelebration{
+      position:fixed;inset:0;z-index:5000000;display:none;
+      align-items:center;justify-content:center;text-align:center;overflow:hidden;
+      color:white;padding:34px;background:
+      radial-gradient(circle at 50% 40%,rgba(255,255,255,.17),transparent 34%),
+      linear-gradient(135deg,#064e3b 0%,#0f766e 46%,#022c22 100%);
+    }
+    #meritBoardCelebration.show{display:flex;animation:meritBoardIn .5s ease both}
+    #meritBoardCelebration.distinguished{
+      background:
+      radial-gradient(circle at 50% 37%,rgba(255,255,255,.24),transparent 33%),
+      linear-gradient(135deg,#78350f 0%,#b45309 43%,#064e3b 100%);
+    }
+    @keyframes meritBoardIn{from{opacity:0;transform:scale(1.05)}to{opacity:1;transform:scale(1)}}
+    .merit-board-rays{
+      position:absolute;width:110vmax;height:110vmax;left:50%;top:50%;
+      transform:translate(-50%,-50%);opacity:.22;
+      background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.42) 0 7deg,transparent 7deg 16deg);
+      animation:meritSpin 18s linear infinite;
+    }
+    @keyframes meritSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+    .merit-board-content{position:relative;z-index:4;width:min(1200px,94vw)}
+    .merit-board-kicker{font-size:clamp(25px,3vw,46px);font-weight:1000;letter-spacing:.12em;text-transform:uppercase}
+    .merit-board-icon{font-size:clamp(92px,11vw,170px);line-height:1;margin:16px 0 4px;animation:meritTrophy 1.15s ease-in-out infinite alternate}
+    @keyframes meritTrophy{from{transform:translateY(0) scale(1)}to{transform:translateY(-8px) scale(1.04)}}
+    .merit-board-name{font-size:clamp(58px,8vw,122px);font-weight:1000;line-height:.95;text-shadow:0 6px 30px rgba(0,0,0,.22)}
+    .merit-board-reason{display:inline-block;margin-top:24px;padding:13px 24px;border-radius:999px;background:rgba(255,255,255,.95);color:#0f172a;font-size:clamp(24px,3vw,42px);font-weight:1000}
+    .merit-board-message{margin:24px auto 0;max-width:980px;font-size:clamp(22px,2.4vw,34px);font-weight:800;line-height:1.35}
+    .merit-board-gift{margin:20px auto 0;display:inline-block;padding:11px 18px;border-radius:16px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);font-size:clamp(18px,2vw,28px);font-weight:950}
+    .merit-confetti{position:absolute;inset:0;pointer-events:none;z-index:3}
+    .merit-confetti span{
+      position:absolute;top:-12vh;font-size:clamp(20px,2.3vw,38px);
+      animation:meritFall 4.6s linear infinite;opacity:.95
+    }
+    @keyframes meritFall{
+      0%{transform:translateY(-10vh) rotate(0deg)}
+      100%{transform:translateY(125vh) rotate(720deg)}
+    }
+
 </style>
 </head>
 <body>
@@ -406,7 +461,7 @@
           <button class="btn outline" id="classAnalyticsBtn">📈 Analyse classe</button>
         </div>
         <div class="teacher-nav-row teacher-nav-tools">
-          <button class="btn outline" id="rewardRequestsBtn">🎁 Récompenses <span id="rewardRequestsBadge"></span></button>
+          <button class="btn outline" id="meritStudentsBtn">🏆 Élèves méritants</button>
           <button class="btn outline" id="studentCodesBtn">🔑 Codes élèves</button>
           <button class="btn outline" id="studentConnectionsBtn">👁️ Connexions élèves</button>
           <button class="btn outline" id="classMessagesBtn">📢 Message classe</button>
@@ -593,16 +648,57 @@ Noah"
     </div>
   </div>
 
-  <div class="modal" id="rewardRequestsModal">
-    <div class="modal-card" style="width:min(760px,95vw);max-height:90vh;overflow:auto">
-      <div class="modal-header">
+  <div class="modal" id="meritStudentsModal">
+    <div class="modal-card" style="width:min(960px,96vw);max-height:92vh;overflow:auto">
+      <div class="modal-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
         <div>
-          <h2 style="margin:0">🎁 Demandes de récompenses</h2>
-          <div class="muted" style="margin-top:4px">Les ZenCoins sont débités uniquement lorsque tu acceptes la demande.</div>
+          <h2 style="margin:0">🏆 Élèves méritants</h2>
+          <div class="muted" style="margin-top:4px">Une reconnaissance choisie manuellement par le professeur. Ce n’est pas un classement automatique.</div>
         </div>
-        <button class="btn outline" id="closeRewardRequestsBtn">Fermer</button>
+        <button class="btn outline" id="closeMeritStudentsBtn">Fermer</button>
       </div>
-      <div id="teacherRewardRequestsList" style="margin-top:14px"></div>
+
+      <div class="box" style="margin-top:14px;background:#f8fafc;border:1px solid #e2e8f0">
+        <div style="font-weight:950">Type de reconnaissance</div>
+        <div class="row wrap" style="margin-top:9px">
+          <button type="button" class="btn primary" id="meritSpecialBtn">🌟 Mention spéciale</button>
+          <button type="button" class="btn outline" id="meritDistinguishedBtn">🏆 Élève distingué</button>
+        </div>
+        <div id="meritTypeHelp" class="muted" style="font-size:12px;margin-top:8px">Reconnaissance ponctuelle • aucune limite.</div>
+      </div>
+
+      <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:14px">
+        <button class="btn outline small" id="meritClearBtn">Effacer la sélection</button>
+        <span style="flex:1"></span>
+        <div class="toolbar-chip" id="meritSelectedCount">0 sélectionné</div>
+      </div>
+
+      <div id="meritStudentsGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;margin-top:12px"></div>
+
+      <div class="box" style="margin-top:14px">
+        <div style="font-weight:950">Pourquoi ?</div>
+        <div id="meritReasonGrid" style="display:flex;gap:7px;flex-wrap:wrap;margin-top:9px">
+          <button type="button" class="btn outline small merit-reason" data-reason="🌟 Engagement remarquable">🌟 Engagement remarquable</button>
+          <button type="button" class="btn outline small merit-reason" data-reason="📈 Belle progression">📈 Belle progression</button>
+          <button type="button" class="btn outline small merit-reason" data-reason="💪 Persévérance">💪 Persévérance</button>
+          <button type="button" class="btn outline small merit-reason" data-reason="🏆 Attitude exemplaire">🏆 Attitude exemplaire</button>
+          <button type="button" class="btn outline small merit-reason" data-reason="🎯 Régularité dans le travail">🎯 Régularité dans le travail</button>
+          <button type="button" class="btn outline small merit-reason" data-reason="✨ Autre">✨ Autre…</button>
+        </div>
+        <input id="meritCustomReason" placeholder="Écris le motif…" style="display:none;margin-top:9px;width:100%">
+      </div>
+
+      <label style="display:flex;align-items:center;gap:10px;margin-top:14px;padding:12px 14px;border-radius:14px;background:#fff7ed;border:1px solid #fed7aa;font-weight:850;cursor:pointer">
+        <input id="meritPhysicalReward" type="checkbox" style="width:auto">
+        🎁 Une récompense physique est prévue pour cette reconnaissance.
+      </label>
+      <div class="muted" style="font-size:11px;margin-top:6px">Si cette case est cochée, l’élève verra qu’une récompense l’attend auprès du professeur.</div>
+
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px">
+        <button class="btn outline" id="cancelMeritStudentsBtn">Annuler</button>
+        <button class="btn green" id="confirmMeritStudentsBtn">✓ Valider la reconnaissance</button>
+      </div>
+      <div id="meritStudentsStatus" style="display:none;margin-top:10px;padding:10px 12px;border-radius:12px;font-weight:850"></div>
     </div>
   </div>
 
@@ -674,7 +770,7 @@ Noah"
 
       <div class="box" id="periodCloseBox" style="margin-top:12px">
         <div style="font-size:18px;font-weight:700;margin-bottom:10px">Clôturer la période</div>
-        <div class="muted" style="margin-bottom:10px">Les résultats de la période seront archivés. La nouvelle période repart à 15/20, mais étoiles, niveaux, diamants et devoirs restent acquis.</div>
+        <div class="muted" style="margin-bottom:10px">Les résultats de la période seront archivés. La nouvelle période repart à 15/20 avec une nouvelle progression.</div>
         <div class="row">
           <input id="nextPeriodNameInput" placeholder="Nom de la prochaine période" value="Nouvelle période" />
           <button class="btn primary" id="confirmClosePeriodBtn">Clôturer et démarrer la suivante</button>
@@ -733,6 +829,34 @@ Noah"
       <div style="font-size:23px;font-weight:1000">🏅 Badge Travail maison</div>
       <div id="homeworkBadgeDetailNumber" style="font-size:16px;font-weight:900;margin-top:7px"></div>
       <div id="homeworkBadgeDetailMotivation" style="margin-top:16px;padding:14px 16px;border-radius:16px;background:#f0fdf4;border:1px solid #bbf7d0;font-size:16px;font-weight:850;line-height:1.45"></div>
+    </div>
+  </div>
+
+
+  <div class="modal" id="meritDetailModal">
+    <div class="modal-card">
+      <div style="display:flex;justify-content:flex-end">
+        <button class="btn outline" id="closeMeritDetailBtn">✕</button>
+      </div>
+      <div id="meritDetailOrb" class="merit-detail-orb">🏆</div>
+      <div id="meritDetailTitle" style="font-size:27px;font-weight:1000;text-align:center"></div>
+      <div id="meritDetailPeriod" class="muted" style="text-align:center;margin-top:5px"></div>
+      <div id="meritDetailReason" style="font-size:18px;font-weight:950;text-align:center;margin-top:14px"></div>
+      <div id="meritDetailMessage" style="margin-top:16px;padding:15px 17px;border-radius:17px;background:#f8fafc;border:1px solid #e2e8f0;font-size:16px;font-weight:850;line-height:1.5;text-align:center"></div>
+      <div id="meritDetailGift" style="display:none;margin-top:13px;padding:12px 14px;border-radius:15px;background:#fff7ed;border:1px solid #fed7aa;font-weight:950;text-align:center"></div>
+    </div>
+  </div>
+
+  <div id="meritBoardCelebration">
+    <div class="merit-board-rays"></div>
+    <div class="merit-confetti" id="meritConfetti"></div>
+    <div class="merit-board-content">
+      <div id="meritBoardKicker" class="merit-board-kicker">ZENQUEST</div>
+      <div id="meritBoardIcon" class="merit-board-icon">🏆</div>
+      <div id="meritBoardName" class="merit-board-name">ÉLÈVE</div>
+      <div id="meritBoardReason" class="merit-board-reason">Belle progression</div>
+      <div id="meritBoardMessage" class="merit-board-message"></div>
+      <div id="meritBoardGift" class="merit-board-gift" style="display:none"></div>
     </div>
   </div>
 
@@ -1018,13 +1142,6 @@ Noah"
           <p>Le score actuel indique ta situation du moment ; l’indice tient davantage compte de tes cours récents.</p>
           <p>Tu n’as donc pas besoin d’être le meilleur en maths pour réussir dans ZenQuest.</p>
           <strong>Si tu travailles, que tu t’impliques et que tu adoptes une bonne attitude en classe, tu ne peux que progresser.</strong>
-          <div style="margin-top:16px;padding-top:14px;border-top:1px solid #a7f3d0">
-            <strong>🟡 Les ZenCoins</strong><br>
-            À la fin de chaque période, ta progression te permet de recevoir des ZenCoins. Ils se cumulent toute l’année et peuvent être échangés contre des récompenses.
-            <div style="margin-top:8px;font-weight:900">
-              1 ⭐ = 0 🟡 &nbsp;•&nbsp; 3 ⭐ = 1 🟡 &nbsp;•&nbsp; 5 ⭐ = 2 🟡 &nbsp;•&nbsp; 6 ⭐ = 3 🟡 &nbsp;•&nbsp; 1 💎 = 4 🟡
-            </div>
-          </div>
         </div>
       </div>
 
@@ -2206,6 +2323,8 @@ Noah"
         const positive=e.type==="plus";
         const success=e.type==="success_card";
         const legendary=e.type==="success_card_legendary";
+        const meritSpecial=e.type==="merit_special";
+        const meritDistinguished=e.type==="merit_distinguished";
         const homework=e.type==="homework_done" || e.type==="homework_missed";
 
         let bg="#fff7ed", border="#fdba74", sign="−1", signBg="#dc2626", right="";
@@ -2221,6 +2340,12 @@ Noah"
           sign=legendary?"👑 Carte Réussite légendaire":"🏆 Carte Réussite";
           signBg=legendary?"#047857":"#15803d";
           right="";
+        }else if(meritSpecial || meritDistinguished){
+          bg=meritDistinguished?"#fffbeb":"#f0fdf4";
+          border=meritDistinguished?"#fbbf24":"#86efac";
+          sign=meritDistinguished?"🏆 Élève distingué":"🌟 Mention spéciale";
+          signBg=meritDistinguished?"#b45309":"#15803d";
+          right="";
         }else if(homework){
           bg=e.type==="homework_done"?"#f0fdf4":"#f8fafc";
           border=e.type==="homework_done"?"#86efac":"#cbd5e1";
@@ -2234,7 +2359,7 @@ Noah"
         const date=e.date?new Date(e.date).toLocaleDateString("fr-FR"):"";
         return `<div style="padding:10px 12px;border-radius:13px;background:${bg};border:1px solid ${border};display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
           <div style="display:flex;align-items:center;gap:10px;min-width:0">
-            <span style="display:inline-flex;align-items:center;justify-content:center;min-width:${(starLoss||success||legendary||homework)?"112px":"42px"};min-height:34px;padding:5px 10px;border-radius:999px;background:${signBg};color:white;font-size:14px;font-weight:950;box-shadow:0 1px 3px #0002">${sign}</span>
+            <span style="display:inline-flex;align-items:center;justify-content:center;min-width:${(starLoss||success||legendary||meritSpecial||meritDistinguished||homework)?"112px":"42px"};min-height:34px;padding:5px 10px;border-radius:999px;background:${signBg};color:white;font-size:14px;font-weight:950;box-shadow:0 1px 3px #0002">${sign}</span>
             <div><strong>${escapeHTML(e.label)}</strong>${date?`<div class="muted" style="font-size:11px;margin-top:2px">${date}</div>`:""}</div>
           </div>
           ${right?`<div style="font-weight:850;color:#475569">${right}</div>`:""}
@@ -3479,8 +3604,23 @@ Noah"
       const remain=Math.max(0,3-(student.progress||0));
       const nextDiamond=student.level<8?8:student.level+(student.level%2===0?2:1);
 
+      const previewMeritRows=currentPeriodTeacherRows(student);
       document.getElementById("studentViewContent").innerHTML=`
         <div class="student-dashboard">
+          <div class="box" style="border:2px solid #e2e8f0">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="font-size:30px">🏆</div>
+              <div>
+                <div style="font-size:20px;font-weight:950">Élèves méritants</div>
+                <div class="muted" style="font-size:12px">Reconnaissances de la période actuelle.</div>
+              </div>
+            </div>
+            <div style="margin-top:14px">
+              ${meritEventsFromRemarks(previewMeritRows).length
+                ? meritBannerHTML(previewMeritRows,currentClass().currentPeriodName||"cette période")
+                : `<div class="muted" style="padding:12px;border-radius:12px;background:#f8fafc">Aucune reconnaissance pour le moment.</div>`}
+            </div>
+          </div>
           <div class="student-hero">
             <div class="student-big-avatar">${student.avatar}</div>
             <div>
@@ -4192,69 +4332,6 @@ Noah"
       URL.revokeObjectURL(url);
     }
 
-    async function loadTeacherRewardRequests(openModal=false){
-      try{
-        const cls=currentClass();
-        if(!cls?.id) return;
-        const studentIds=(cls.students||[]).map(s=>s.id);
-        let requests=[];
-        if(studentIds.length){
-          const {data,error}=await supabaseClient
-            .from("reward_requests")
-            .select("id,student_id,item_code,item_name,price,status,created_at")
-            .in("student_id",studentIds)
-            .eq("status","pending")
-            .order("created_at",{ascending:true});
-          if(error) throw error;
-          requests=data||[];
-        }
-
-        const badge=document.getElementById("rewardRequestsBadge");
-        if(badge) badge.textContent=requests.length?`(${requests.length})`:"";
-
-        const list=document.getElementById("teacherRewardRequestsList");
-        if(list){
-          list.innerHTML=requests.length?requests.map(r=>{
-            const student=(cls.students||[]).find(s=>s.id===r.student_id);
-            return `<div class="box" style="margin-bottom:12px">
-              <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
-                <div>
-                  <div style="font-size:19px;font-weight:900">${escapeHTML(student?.name||"Élève")} réclame ${escapeHTML(r.item_name)}</div>
-                  <div class="muted">${Number(r.price)} 🟡 • ${new Date(r.created_at).toLocaleString("fr-FR")}</div>
-                </div>
-                <div class="row">
-                  <button class="btn green small reward-approve-btn" data-id="${r.id}">✅ Accepter</button>
-                  <button class="btn outline small reward-reject-btn" data-id="${r.id}">❌ Refuser</button>
-                </div>
-              </div>
-            </div>`;
-          }).join(""):'<div class="box"><strong>✅ Aucune demande en attente.</strong></div>';
-
-          list.querySelectorAll(".reward-approve-btn").forEach(b=>b.onclick=()=>resolveRewardRequest(b.dataset.id,"approved"));
-          list.querySelectorAll(".reward-reject-btn").forEach(b=>b.onclick=()=>resolveRewardRequest(b.dataset.id,"rejected"));
-        }
-
-        if(openModal) document.getElementById("rewardRequestsModal").classList.add("show");
-      }catch(err){
-        console.error("REWARD REQUESTS ERROR",err);
-        if(openModal) alert("❌ Impossible de charger les demandes : "+(err?.message||String(err)));
-      }
-    }
-
-    async function resolveRewardRequest(requestId,decision){
-      try{
-        const {error}=await supabaseClient.rpc("zenquest_resolve_reward_request",{
-          target_request_id:requestId,
-          decision
-        });
-        if(error) throw error;
-        await loadTeacherSupabaseData();
-        await loadTeacherRewardRequests(false);
-      }catch(err){
-        alert("❌ "+(err?.message||String(err)));
-      }
-    }
-
     function renderPeriodManager(){
       const cls=currentClass();
       const input=document.getElementById("periodNameInput");
@@ -4374,92 +4451,229 @@ Noah"
       }
     }
 
-    function zenCoinsForPeriod(student){
-      const diamonds=Number(student.diamonds||0);
-      const stars=Number(student.stars||0);
-      if(diamonds>=1) return 4;
-      if(stars>=6) return 3;
-      if(stars>=4) return 2;
-      if(stars>=2) return 1;
-      return 0;
+    const MERIT_TYPES={
+      special:{eventType:"merit_special",icon:"🌟",title:"Mention spéciale",max:Infinity,help:"Reconnaissance ponctuelle • aucune limite : tu peux en attribuer autant que tu le souhaites.",bannerBg:"#f0fdf4",bannerBorder:"#86efac",accent:"#15803d"},
+      distinguished:{eventType:"merit_distinguished",icon:"🏆",title:"Élève distingué",max:5,help:"Temps fort de valorisation • jusqu’à 5 élèves par classe et par période.",bannerBg:"#fffbeb",bannerBorder:"#fbbf24",accent:"#92400e"}
+    };
+
+    function meritEventsFromRemarks(rows){
+      return (rows||[]).map(r=>{
+        const e=parseZQEventRemark(r.remark ?? r.text);
+        if(!e || !["merit_special","merit_distinguished"].includes(e.type)) return null;
+        const code=String(e.code||"");
+        return {...e,id:r.id,date:r.created_at||r.createdAt||r.date||null,physicalReward:code.includes("_gift")};
+      }).filter(Boolean);
     }
 
-    const ZEN_SHOP=[
-      {code:"pencil",icon:"✏️",name:"Crayon",price:4,kind:"Récompense réelle"},
-      {code:"pen",icon:"🖊️",name:"Stylo",price:6,kind:"Récompense réelle"},
-      {code:"sticker",icon:"🎉",name:"Autocollant",price:8,kind:"Récompense réelle"}
-    ];
+    function meritBannerHTML(rows,periodLabel="cette période"){
+      const events=meritEventsFromRemarks(rows);
+      if(!events.length) return "";
+      return `<div style="display:grid;gap:10px;margin-bottom:14px">${events.map(e=>{
+        const distinguished=e.type==="merit_distinguished";
+        const cfg=distinguished?MERIT_TYPES.distinguished:MERIT_TYPES.special;
+        return `<button type="button" class="merit-open-card"
+          data-merit-type="${escapeHTML(e.type)}"
+          data-merit-label="${escapeHTML(e.label||cfg.title)}"
+          data-merit-period="${escapeHTML(periodLabel)}"
+          data-merit-gift="${e.physicalReward?"1":"0"}"
+          style="width:100%;text-align:left;padding:16px 18px;border-radius:20px;background:${cfg.bannerBg};border:2px solid ${cfg.bannerBorder};box-shadow:0 5px 18px rgba(15,23,42,.07);cursor:pointer;font:inherit;color:inherit">
+          <div style="display:flex;gap:13px;align-items:flex-start">
+            <div style="font-size:40px;line-height:1">${cfg.icon}</div>
+            <div style="flex:1">
+              <div style="font-size:20px;font-weight:1000;color:${cfg.accent}">${distinguished?"TU AS ÉTÉ DISTINGUÉ !":"MENTION SPÉCIALE"}</div>
+              <div style="font-size:17px;font-weight:950;margin-top:3px">${escapeHTML(e.label||cfg.title)}</div>
+              <div style="margin-top:7px;line-height:1.5">${distinguished
+                ? `Ton engagement et tes progrès ont été remarqués. Tu fais partie des élèves mis à l’honneur dans ta classe pour ${escapeHTML(periodLabel)}.`
+                : `Tes efforts ont été remarqués par ton professeur. Continue sur cette lancée !`}</div>
+              <div style="margin-top:8px;font-size:12px;font-weight:900;opacity:.7">👆 Clique pour ouvrir ta distinction</div>
+              ${e.physicalReward?`<div style="margin-top:10px;padding:9px 11px;border-radius:12px;background:white;border:1px solid ${cfg.bannerBorder};font-weight:950">🎁 Une récompense t’attend auprès de ton professeur.</div>`:""}
+            </div>
+          </div>
+        </button>`;
+      }).join("")}</div>`;
+    }
 
-    function zenShopHTML(student,rewardRequests=[]){
-      const coins=Number(student.zen_coins||student.zenCoins||0);
-      const pending=(rewardRequests||[]).find(r=>r.status==="pending");
-      const recent=(rewardRequests||[]).filter(r=>r.status!=="pending").slice(0,3);
-
-      return `<div class="box">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-          <div><div style="font-size:20px;font-weight:900">🛍️ Boutique ZenQuest</div><div class="muted">Tu recevras tes ZenCoins à la fin de chaque période. Ils se cumulent toute l’année : garde-les ou échange-les auprès du professeur contre une récompense.</div></div>
-          <div style="font-size:25px;font-weight:900">🟡 ${coins}</div>
-        </div>
-
-        ${pending?`<div style="margin-top:14px;padding:12px 14px;border-radius:14px;background:#fff7ed;border:1px solid #fdba74">
-          <div>⏳ <strong>Demande en attente :</strong> ${escapeHTML(pending.item_name)} (${Number(pending.price)} 🟡). Le professeur doit encore la valider.</div>
-          <button type="button" class="btn outline small cancel-reward-request-btn" data-request-id="${pending.id}" style="margin-top:10px">
-            ↩️ Annuler ma demande
-          </button>
-        </div>`:""}
-
-        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:18px">
-          ${ZEN_SHOP.map(x=>{
-            const enough=coins>=x.price;
-            const disabled=!enough || !!pending;
-            return `<div class="collection-item ${!enough?'locked':''}" style="display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;min-height:165px;gap:12px;padding:18px;border-radius:18px">
-              <div class="collection-icon">${x.icon}</div>
-              <div><div class="collection-name">${x.name}</div><div class="collection-condition">${x.kind}</div></div>
-              <strong>${x.price} 🟡</strong>
-              <span class="collection-condition">${enough?'Disponible':'🔒 Encore '+(x.price-coins)+' 🟡'}</span>
-              <button type="button" class="btn ${enough&&!pending?'primary':'outline'} small reward-request-btn"
-                data-reward-code="${x.code}" ${disabled?'disabled':''}
-                style="width:100%;margin-top:2px;opacity:${disabled?.58:1}">
-                ${pending?'Demande déjà envoyée':enough?'🙋 Réclamer au professeur':'Pas assez de ZenCoins'}
-              </button>
-            </div>`;
-          }).join('')}
-        </div>
-
-        ${recent.length?`<div style="margin-top:15px">
-          <div class="muted" style="font-weight:800;margin-bottom:6px">Mes dernières demandes</div>
-          ${recent.map(r=>`<div style="font-size:13px;padding:4px 0">
-            ${r.status==="approved"?"✅":"❌"} ${escapeHTML(r.item_name)} — ${r.status==="approved"?"acceptée":"refusée"}
-          </div>`).join("")}
-        </div>`:""}
+    function meritArchiveHTML(rows,periodLabel=""){
+      const events=meritEventsFromRemarks(rows);
+      if(!events.length) return "";
+      return `<div style="margin-top:12px">
+        <div style="font-size:12px;font-weight:900;color:#64748b;margin-bottom:6px">🏆 DISTINCTIONS</div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap">${events.map(e=>{
+          const distinguished=e.type==="merit_distinguished";
+          return `<button type="button" class="merit-open-card"
+            data-merit-type="${escapeHTML(e.type)}"
+            data-merit-label="${escapeHTML(e.label||"Distinction")}"
+            data-merit-period="${escapeHTML(periodLabel)}"
+            data-merit-gift="${e.physicalReward?"1":"0"}"
+            style="display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;background:${distinguished?"#fffbeb":"#f0fdf4"};border:1px solid ${distinguished?"#fbbf24":"#86efac"};font-size:12px;font-weight:900;cursor:pointer">
+            ${distinguished?"🏆":"🌟"} ${escapeHTML(e.label||"Distinction")}
+          </button>`;
+        }).join("")}</div>
       </div>`;
     }
 
-    async function requestReward(itemCode){
-      const btns=[...document.querySelectorAll(".reward-request-btn")];
-      btns.forEach(b=>b.disabled=true);
-      try{
-        const {error}=await supabaseClient.rpc("zenquest_request_reward",{target_item_code:itemCode});
-        if(error) throw error;
-        await loadAuthenticatedStudent((await supabaseClient.auth.getUser()).data.user);
-      }catch(err){
-        alert("❌ "+(err?.message||String(err)));
-        btns.forEach(b=>b.disabled=false);
-      }
+    function meritMotivationText(type,label){
+      const l=String(label||"").toLowerCase();
+      if(l.includes("progress")) return "Chaque progrès compte. Le tien a été remarqué : continue d’avancer ! 🇬🇫";
+      if(l.includes("persév")) return "Tu as continué même quand c’était difficile. Cette persévérance mérite d’être reconnue. 🇬🇫";
+      if(l.includes("régular")) return "Ta régularité fait la différence. Continue à construire de bonnes habitudes ! 🇬🇫";
+      if(l.includes("attitude")) return "Ton attitude en classe a été remarquée. Garde cette belle énergie ! 🇬🇫";
+      if(l.includes("engagement")) return "Ton engagement a été remarqué. Continue à montrer tout ce dont tu es capable ! 🇬🇫";
+      return type==="merit_distinguished"
+        ? "Cette distinction récompense ton engagement sur la période. Sois fier de ton parcours et continue ! 🇬🇫"
+        : "Tes efforts ont été remarqués. Continue sur cette lancée ! 🇬🇫";
     }
 
-    async function cancelRewardRequest(requestId){
-      const btn=document.querySelector(".cancel-reward-request-btn");
-      if(btn){ btn.disabled=true; btn.textContent="Annulation…"; }
+    function openMeritDetail(type,label,period,gift){
+      const distinguished=type==="merit_distinguished";
+      const orb=document.getElementById("meritDetailOrb");
+      orb.textContent=distinguished?"🏆":"🌟";
+      orb.style.background=distinguished?"linear-gradient(135deg,#fef3c7,#fde68a)":"linear-gradient(135deg,#dcfce7,#bbf7d0)";
+      document.getElementById("meritDetailTitle").textContent=distinguished?"ÉLÈVE DISTINGUÉ":"MENTION SPÉCIALE";
+      document.getElementById("meritDetailPeriod").textContent=period||"";
+      document.getElementById("meritDetailReason").textContent=label||"Distinction";
+      document.getElementById("meritDetailMessage").textContent=meritMotivationText(type,label);
+      const giftBox=document.getElementById("meritDetailGift");
+      giftBox.style.display=gift?"block":"none";
+      giftBox.textContent=gift?"🎁 Une récompense t’attend auprès de ton professeur.":"";
+      document.getElementById("meritDetailModal").classList.add("show");
+    }
+
+    document.addEventListener("click",e=>{
+      const btn=e.target.closest(".merit-open-card");
+      if(!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      openMeritDetail(
+        btn.dataset.meritType||"merit_special",
+        btn.dataset.meritLabel||"Distinction",
+        btn.dataset.meritPeriod||"",
+        btn.dataset.meritGift==="1"
+      );
+    });
+
+    let meritSelection=new Set();
+    let meritType="special";
+    let meritReason="";
+
+    function currentPeriodTeacherRows(student){
+      const start=currentClass()?.currentPeriodCreatedAt?new Date(currentClass().currentPeriodCreatedAt).getTime():-Infinity;
+      return (student?.teacherRemarks||[]).filter(r=>{
+        const raw=r?.createdAt||r?.date;
+        const ms=raw?new Date(raw).getTime():NaN;
+        return !Number.isFinite(start) || (Number.isFinite(ms) && ms>=start);
+      });
+    }
+
+    function existingMeritStudentIds(type=meritType){
+      const eventType=MERIT_TYPES[type].eventType;
+      return new Set((currentClass()?.students||[]).filter(s=>
+        meritEventsFromRemarks(currentPeriodTeacherRows(s)).some(e=>e.type===eventType)
+      ).map(s=>s.id));
+    }
+
+    function renderMeritStudentsGrid(){
+      const grid=document.getElementById("meritStudentsGrid");
+      const cls=currentClass();
+      if(!grid||!cls) return;
+      const cfg=MERIT_TYPES[meritType];
+      const existing=existingMeritStudentIds(meritType);
+      const students=cls.students.slice().sort((a,b)=>a.name.localeCompare(b.name,"fr"));
+      grid.innerHTML=students.map(s=>{
+        const selected=meritSelection.has(s.id), already=existing.has(s.id);
+        return `<button type="button" class="merit-student-btn" data-id="${s.id}" ${already?"disabled":""}
+          style="border:${selected?"2px solid #16a34a":"1px solid #cbd5e1"};background:${already?"#f1f5f9":selected?"#dcfce7":"#fff"};opacity:${already?".62":"1"};border-radius:13px;padding:10px 9px;cursor:${already?"default":"pointer"};text-align:left">
+          <div style="font-size:16px;font-weight:950">${selected?"✅ ":""}${escapeHTML(s.name)}</div>
+          ${already?`<div style="font-size:10px;color:#64748b;margin-top:3px">Déjà attribué cette période</div>`:""}
+        </button>`;
+      }).join("");
+      grid.querySelectorAll(".merit-student-btn:not([disabled])").forEach(btn=>{
+        btn.onclick=()=>{
+          const id=btn.dataset.id;
+          if(meritSelection.has(id)) meritSelection.delete(id);
+          else{
+            if(Number.isFinite(cfg.max)){
+              const remaining=Math.max(0,cfg.max-existing.size);
+              if(meritSelection.size>=remaining){
+                const st=document.getElementById("meritStudentsStatus");
+                st.style.display="block";st.style.background="#fff7ed";st.style.color="#92400e";
+                st.textContent=`Maximum ${cfg.max} élèves pour ce type de reconnaissance sur la période.`;
+                return;
+              }
+            }
+            meritSelection.add(id);
+          }
+          renderMeritStudentsGrid();
+        };
+      });
+      const count=document.getElementById("meritSelectedCount");
+      if(count) count.textContent=Number.isFinite(cfg.max)
+        ? `${meritSelection.size} sélectionné${meritSelection.size>1?"s":""} • ${existing.size}/${cfg.max} déjà attribué${existing.size>1?"s":""}`
+        : `${meritSelection.size} sélectionné${meritSelection.size>1?"s":""} • aucune limite`;
+    }
+
+    function refreshMeritTypeUI(){
+      const cfg=MERIT_TYPES[meritType];
+      document.getElementById("meritSpecialBtn").className=`btn ${meritType==="special"?"primary":"outline"}`;
+      document.getElementById("meritDistinguishedBtn").className=`btn ${meritType==="distinguished"?"primary":"outline"}`;
+      document.getElementById("meritTypeHelp").textContent=cfg.help;
+      meritSelection=new Set();
+      renderMeritStudentsGrid();
+    }
+
+    function openMeritStudents(){
+      meritSelection=new Set();meritType="special";meritReason="";
+      document.querySelectorAll(".merit-reason").forEach(b=>b.style.background="");
+      const custom=document.getElementById("meritCustomReason");
+      custom.value="";custom.style.display="none";
+      document.getElementById("meritPhysicalReward").checked=false;
+      const st=document.getElementById("meritStudentsStatus");if(st)st.style.display="none";
+      refreshMeritTypeUI();
+      document.getElementById("meritStudentsModal").classList.add("show");
+    }
+
+    async function confirmMeritStudents(){
+      const cls=currentClass(), status=document.getElementById("meritStudentsStatus"), btn=document.getElementById("confirmMeritStudentsBtn"), cfg=MERIT_TYPES[meritType];
+      if(!cls||!meritSelection.size){status.style.display="block";status.style.background="#fff7ed";status.style.color="#92400e";status.textContent="Sélectionne au moins un élève.";return;}
+      let reason=meritReason;
+      if(reason==="✨ Autre") reason=document.getElementById("meritCustomReason").value.trim();
+      if(!reason){status.style.display="block";status.style.background="#fff7ed";status.style.color="#92400e";status.textContent="Choisis le motif de la reconnaissance.";return;}
+      const existing=existingMeritStudentIds(meritType);
+      if(Number.isFinite(cfg.max) && existing.size+meritSelection.size>cfg.max){status.style.display="block";status.style.background="#fee2e2";status.style.color="#991b1b";status.textContent=`La limite est de ${cfg.max} élèves pour cette reconnaissance sur la période.`;return;}
+      btn.disabled=true;btn.textContent="⏳ Enregistrement…";
       try{
-        const {error}=await supabaseClient.rpc("zenquest_cancel_reward_request",{target_request_id:requestId});
+        let teacherUserId=cachedTeacherUserId;
+        if(!teacherUserId){
+          const {data:{user},error}=await supabaseClient.auth.getUser();
+          if(error||!user) throw new Error("Session professeur introuvable.");
+          teacherUserId=user.id;cachedTeacherUserId=user.id;
+        }
+        const gift=document.getElementById("meritPhysicalReward").checked;
+        const stamp=Date.now(), selected=cls.students.filter(s=>meritSelection.has(s.id));
+        const payload=selected.map((s,i)=>({teacher_id:teacherUserId,student_id:s.id,remark:encodeZQEvent(cfg.eventType,`merit_${stamp}_${i}${gift?"_gift":""}`,reason,1)}));
+        const {data,error}=await supabaseClient.from("teacher_remarks").insert(payload).select("id,student_id,remark,created_at");
         if(error) throw error;
-        const {data:{user}}=await supabaseClient.auth.getUser();
-        await loadAuthenticatedStudent(user);
+        (data||[]).forEach(row=>{
+          const student=selected.find(s=>s.id===row.student_id);if(!student)return;
+          student.teacherRemarks=student.teacherRemarks||[];
+          student.teacherRemarks.unshift({id:row.id,date:row.created_at?new Date(row.created_at).toLocaleDateString("fr-FR"):"",text:row.remark,createdAt:row.created_at});
+        });
+        save();render();
+        selected.forEach(student=>{
+          sendBoardCommand({
+            action:"merit_celebration",
+            eventId:uid(),
+            studentName:student.name,
+            meritType,
+            reason,
+            gift
+          });
+        });
+        status.style.display="block";status.style.background="#dcfce7";status.style.color="#166534";status.textContent=`✅ ${selected.length} reconnaissance${selected.length>1?"s":""} enregistrée${selected.length>1?"s":""}.`;
+        setTimeout(()=>document.getElementById("meritStudentsModal").classList.remove("show"),900);
       }catch(err){
-        alert("❌ "+(err?.message||String(err)));
-        if(btn){ btn.disabled=false; btn.textContent="↩️ Annuler ma demande"; }
-      }
+        console.error("MERIT ERROR",err);status.style.display="block";status.style.background="#fee2e2";status.style.color="#991b1b";status.textContent="❌ Impossible d’enregistrer : "+(err?.message||String(err));
+      }finally{btn.disabled=false;btn.textContent="✓ Valider la reconnaissance";}
     }
 
     function studentPeriodHistoryHTML(history=[],studentId="student"){
@@ -4523,6 +4737,7 @@ Noah"
                   ? successCardCollectionHTML(successStudent,true)
                   : '<span class="muted">Aucune Carte Réussite sur cette période.</span>'}
               </div>
+              ${meritArchiveHTML(remarks,h.name||"")}
             </div>
 
             ${scores.length?studentChart(scores):'<div class="muted" style="margin-top:12px">Aucune note de fin de cours enregistrée.</div>'}
@@ -4554,7 +4769,7 @@ Noah"
         if(error) throw error;
         if(!newPeriodId) throw new Error("Supabase n’a pas renvoyé l’identifiant de la nouvelle période.");
 
-        message.textContent=`✅ ${oldPeriodName} clôturée • ZenCoins attribués 🟡 • ${nextName} commence à 15/20, niveau 1.`;
+        message.textContent=`✅ ${oldPeriodName} clôturée • ${nextName} commence à 15/20, niveau 1.`;
 
         // Recharger depuis Supabase : aucune reconstruction locale fragile.
         await loadTeacherSupabaseData();
@@ -4580,7 +4795,7 @@ Noah"
         render();
         renderPeriodManager();
         const msg=document.getElementById("periodActionMessage");
-        if(msg) msg.textContent=`✅ ${oldPeriodName} clôturée • 🟡 attribués • ${nextName} est la période actuelle.`;
+        if(msg) msg.textContent=`✅ ${oldPeriodName} clôturée • ${nextName} est la période actuelle.`;
       }catch(err){
         console.error("ATOMIC CLOSE PERIOD ERROR",err);
         message.textContent="❌ Clôture annulée : "+(err?.message||String(err));
@@ -4829,7 +5044,7 @@ Noah"
       <div class="box"><h3>⭐ Pwogrè</h3><p>Chak kou ou reyisi san pèdi pwen fè ba pwogrè ou avanse. Apre <strong>3 kou reyisi</strong>, ou pwogrese nan ZenQuest.</p><div style="font-size:24px;font-weight:900;text-align:center">2 ⭐ → 🔥 &nbsp; 4 ⭐ → ✨ &nbsp; 6 ⭐ → 👑</div><p>Apre sa ou ka kolekte <strong>💎 dyaman</strong>. Si nòt ou desann twò ba, ou ka pèdi yon zetwal.</p></div>
       <div class="box"><h3>📝 Devwa ak 🏆 klasman</h3><p>Devwa ou fè yo konte epi yo rekonpanse regilarite ou. Klasman an baze sitou sou <strong>mwayèn angajman ou pandan peryòd la</strong>, apre sa sou pwogrè ZenQuest ou. Nòt lòt elèv yo rete prive.</p></div>
       <div class="box"><h3>🤝 Pwogrè ansanm</h3><p>Klas la ak gwoup la ka pwogrese ansanm. Si tout elèv ki prezan fini kou a san pèdi pwen, yo ka genyen yon ⭐ kolektif. <strong>8 ⭐ kolektif = 1 💎 kolektif.</strong></p></div>
-      <div class="box" style="background:#ecfdf5"><h3>🌱 Sonje</h3><p>Nòt angajman ZenQuest ou ka parèt sou bilten ou. Li pa mezire nivo matematik ou: li pa mwayèn matematik ou ni mwayèn jeneral ou. Si ou travay, ou angaje w epi ou gen yon bon atitid, ou ka pwogrese.</p><p><strong>🟡 ZenCoins:</strong> nan fen chak peryòd, pwogrè ou ka ba ou ZenCoins pou rekonpans.<br><strong>1 ⭐ = 0 🟡 • 3 ⭐ = 1 🟡 • 5 ⭐ = 2 🟡 • 6 ⭐ = 3 🟡 • 1 💎 = 4 🟡</strong></p></div>
+      <div class="box" style="background:#ecfdf5"><h3>🌱 Sonje</h3><p>Nòt angajman ZenQuest ou ka parèt sou bilten ou. Li pa mezire nivo matematik ou: li pa mwayèn matematik ou ni mwayèn jeneral ou. Si ou travay, ou angaje w epi ou gen yon bon atitid, ou ka pwogrese.</p></div>
       <div class="box"><h2>📜 Règ klas la</h2><p style="font-size:22px;font-weight:900;text-align:center">🧘 KALM • 🤫 SILANS • ⏳ PASYANS</p><p>✋ Leve men ou epi tann otorizasyon pou pale.<br>👂 Koute pwofesè a ak kamarad ou yo.<br>🤫 Travay nan kalm ak silans lè yo mande sa.<br>🪑 Pa leve san otorizasyon.<br>🙋 Mande otorizasyon anvan ou fè yon bagay yo pa mande.<br>📚 Mete w travay epi patisipe seryezman.<br>🤝 Respekte travay lòt moun epi pa deranje klas la.<br>⏳ Aprann tann.</p></div>
       <div class="box" style="background:#fff7ed"><h3>⚖️ Desizyon sou pwen yo</h3><p><strong>Se pwofesè a ki deside bay oswa retire pwen</strong> selon sa li obsève. Yon pwen pa dwe lakòz diskisyon pandan kou a. Si ou pa konprann, mande yon eksplikasyon avèk kalm nan bon moman.</p></div>`,
       gcr:`<div class="box"><h2>🎮 Kouman ZenQuest ka maché ?</h2><p>ZenQuest ka rékonpansé <strong>angajman to annan klas</strong> : travay, patisipasyon, kouté, konsantrasyon ké konpòrtman pannan kou-a.</p></div>
@@ -4837,7 +5052,7 @@ Noah"
       <div class="box"><h3>⭐ Progrès</h3><p>Chak kou to ka rivé fini san pèdi pwen ka fè to jauj vansé. Apré <strong>3 kou réussi</strong>, to ka progrésé annan ZenQuest.</p><div style="font-size:24px;font-weight:900;text-align:center">2 ⭐ → 🔥 &nbsp; 4 ⭐ → ✨ &nbsp; 6 ⭐ → 👑</div><p>Apré sa, to pouvé ranmasé <strong>💎 dyaman</strong>. Si to nòt ka désann trò ba, to pouvé pèdi roun zétwal.</p></div>
       <div class="box"><h3>📝 Déwè ké 🏆 klasman</h3><p>Déwè to fè-ya ka konté é yé ka rékonpansé to régilarité. Klasman-an ka bazé an prémyé asou <strong>mwayenn angajman to annan péryòd-a</strong>, apré sa asou to progrès annan ZenQuest. Nòt ròt élèv-ya ka rété privé.</p></div>
       <div class="box"><h3>🤝 Progrès ansanm</h3><p>Klas-a ké group-a pouvé progrésé ansanm. Si tout élèv ki la fini kou-a san pèdi pwen, yé pouvé gannyen roun ⭐ kolèktif. <strong>8 ⭐ kolèktif = 1 💎 kolèktif.</strong></p></div>
-      <div class="box" style="background:#ecfdf5"><h3>🌱 Pou sonjé</h3><p>To nòt angajman ZenQuest pouvé parèt asou to bilten. I pa ka mezuré to nivo matématik : i pa to mwayenn matématik ni to mwayenn jénéral. Si to ka travay, to ka angajé to kò épi to ka gen roun bon konpòrtman, to pouvé progrésé.</p><p><strong>🟡 ZenCoins :</strong> annan fin chak péryòd, to progrès pouvé fè to gannyen ZenCoins pou chanjé ké rékonpans.<br><strong>1 ⭐ = 0 🟡 • 3 ⭐ = 1 🟡 • 5 ⭐ = 2 🟡 • 6 ⭐ = 3 🟡 • 1 💎 = 4 🟡</strong></p></div>
+      <div class="box" style="background:#ecfdf5"><h3>🌱 Pou sonjé</h3><p>To nòt angajman ZenQuest pouvé parèt asou to bilten. I pa ka mezuré to nivo matématik : i pa to mwayenn matématik ni to mwayenn jénéral. Si to ka travay, to ka angajé to kò épi to ka gen roun bon konpòrtman, to pouvé progrésé.</p></div>
       <div class="box"><h2>📜 Règ klas-a</h2><p style="font-size:22px;font-weight:900;text-align:center">🧘 KALM • 🤫 SILANS • ⏳ PASYANS</p><p>✋ Lévé to lanmen épi antann otorizasyon pou palé.<br>👂 Kouté profésèr-a ké to kanmarad-ya.<br>🤫 Travay annan kalm ké silans lò yé ka doumandé sa.<br>🪑 Pa lévé san otorizasyon.<br>🙋 Doumandé otorizasyon anvan to fè roun bagaj yé pa doumandé.<br>📚 Mété to kò annan travay-a épi patisipé séré.<br>🤝 Rèspèkté travay ròt moun épi pa déranjé klas-a.<br>⏳ Savé antann.</p></div>
       <div class="box" style="background:#fff7ed"><h3>⚖️ Désizyon asou pwen-yan</h3><p><strong>Sa profésèr-a ki ka désidé si i ka bay ouben tiré pwen</strong>, dapré sa i ka wè pannan kou-a. Roun pwen gannyen ouben pèdi pa pou vini roun diskisyon pannan kou-a. Si to pa konprann roun désizyon, to pouvé doumandé roun èsplikasyon trankilman annan bon moman-an.</p></div>`,
       mq:`<div class="box"><h2>🎮 Ki manniè ZenQuest ka maché ?</h2><p>ZenQuest ka rékonpansé <strong>lenplikasion'w an klas</strong> : travay, patisipasion, kouté, konsantrasion épi konpowtman.</p></div><div class="box"><h3>🎯 Nòt-ou</h3><p>An koumansman chak périod, ou ka koumansé épi <strong>15/20</strong>. Pannan kou-a, ou pé genyen oben pèd pwen. Si ou la épi ou fini san pèd pwen, ou ka genyen <strong>+1</strong>, san pasé 20/20. Si ou absan, nòt-ou pa ka chanjé.</p></div><div class="box"><h3>⭐ Pwogrésyon</h3><p>Chak kou ou ka fini san pèd pwen ka fè ba pwogrésyon'w vansé. Apré <strong>3 kou réussi</strong>, ou ka pwogresé adan ZenQuest.</p><div style="font-size:24px;font-weight:900;text-align:center">2 ⭐ → 🔥 &nbsp; 4 ⭐ → ✨ &nbsp; 6 ⭐ → 👑</div><p>Apré sa, ou pé ranmasé 💎 diamants. Si nòt-ou ka désann twò ba, ou pé pèd an zétwal.</p></div><div class="box"><h3>📝 Dévwa épi 🏆 klasman</h3><p>Dévwa ou fè ka konté. Klasman-an ka bazé avan tout anlè <strong>mwayenn lenplikasion'w pannan périod-la</strong>, apré anlè pwogrésyon ZenQuest-ou. Nòt sé lézòt élèv-la ka rété privé.</p></div><div class="box"><h3>🤝 Pwogrésyon ansanm</h3><p>Klas-la épi group-la pé pwogresé ansanm. Si tout élèv ki la fini kou-a san pèd pwen, yo pé genyen an ⭐ kolèktif. <strong>8 ⭐ kolèktif = 1 💎 kolèktif.</strong></p></div><div class="box" style="background:#ecfdf5"><h3>🌱 Pou sonjé</h3><p>Nòt lenplikasion ZenQuest-ou pé parèt anlè bilten'w. I pa ka mezuré nivo matematik-ou épi i pa mwayenn matematik-ou ni mwayenn jénéral-ou.</p></div><div class="box"><h2>📜 Règ klas-la</h2><p style="font-size:22px;font-weight:900;text-align:center">🧘 KALM • 🤫 SILANS • ⏳ PASIANS</p><p>✋ Lévé lanmen'w épi atann lotorizasion pou palé.<br>👂 Kouté pwofesè-a épi kanmarad-ou.<br>🤫 Travay an kalm épi an silans lè yo ka mandé sa.<br>🪑 Pa lévé san lotorizasion.<br>🙋 Mandé lotorizasion avan ou fè an bagay yo pa mandé.<br>📚 Mété kò'w ka travay épi patisipé sérié.<br>🤝 Rèspèkté travay lézòt épi pa déranjé klas-la.<br>⏳ Aprann atann.</p></div><div class="box" style="background:#fff7ed"><h3>⚖️ Désizion anlè pwen</h3><p><strong>Sé pwofesè-a ki ka désidé si i ka ba oben tiré pwen</strong> dapré sa i ka wè. Si ou pa konprann, mandé an èsplikasion an bon moman-an, san diskision pannan kou-a.</p></div>`,
@@ -4848,12 +5063,12 @@ Noah"
 <div class="box"><h3>⭐ Progress</h3><p>Every lesson yuh complete without losing a point does move yuh progress bar forward. After <strong>3 successful lessons</strong>, yuh progress in ZenQuest.</p><div style="font-size:24px;font-weight:900;text-align:center">2 ⭐ → 🔥 &nbsp; 4 ⭐ → ✨ &nbsp; 6 ⭐ → 👑</div><p>After dat, yuh could collect 💎 diamonds. If yuh score drop too low, yuh could lose a star.</p></div>
 <div class="box"><h3>📝 Homework and 🏆 ranking</h3><p>Homework yuh complete does count and reward consistency. De ranking mainly use <strong>yuh average involvement score for de period</strong>, then yuh ZenQuest progress. Other students scores stay private.</p></div>
 <div class="box"><h3>🤝 Progress together</h3><p>De class and group could progress together too. If everybody present finish de lesson without losing a point, de group could earn a ⭐. <strong>8 collective ⭐ = 1 collective 💎.</strong></p></div>
-<div class="box" style="background:#ecfdf5"><h3>🌱 Remember</h3><p>Yuh ZenQuest involvement score may appear on yuh report card. It don’t measure yuh Maths level, and it ain’t yuh Maths average or overall average. If yuh work, get involve and keep a good attitude, yuh could progress.</p><p><strong>🟡 ZenCoins:</strong> at de end of every period, yuh progress could earn ZenCoins for rewards.<br><strong>1 ⭐ = 0 🟡 • 3 ⭐ = 1 🟡 • 5 ⭐ = 2 🟡 • 6 ⭐ = 3 🟡 • 1 💎 = 4 🟡</strong></p></div>
+<div class="box" style="background:#ecfdf5"><h3>🌱 Remember</h3><p>Yuh ZenQuest involvement score may appear on yuh report card. It don’t measure yuh Maths level, and it ain’t yuh Maths average or overall average. If yuh work, get involve and keep a good attitude, yuh could progress.</p></div>
 <div class="box"><h2>📜 Class rules</h2><p style="font-size:22px;font-weight:900;text-align:center">🧘 CALM • 🤫 SILENCE • ⏳ PATIENCE</p><p>✋ Raise yuh hand and wait for permission before yuh talk.<br>👂 Listen to de teacher and yuh classmates.<br>🤫 Work calm and quiet when asked.<br>🪑 Don’t get up without permission.<br>🙋 Ask permission before doing something yuh wasn’t asked to do.<br>📚 Get down to work and participate seriously.<br>🤝 Respect other people work and don’t disturb de class.<br>⏳ Learn to wait.</p></div>
 <div class="box" style="background:#fff7ed"><h3>⚖️ Decisions about points</h3><p><strong>De teacher decides when points get added or taken away</strong> based on what happening in class. A point gained or lost shouldn’t turn into an argument during de lesson. If yuh don’t understand, ask calmly at de right time.</p></div>`,
-      pt:`<div class="box"><h2>🎮 Como funciona o ZenQuest?</h2><p>O ZenQuest recompensa o seu <strong>envolvimento em sala</strong>: trabalho, participação, atenção, concentração e atitude.</p></div><div class="box"><h3>🎯 Sua nota</h3><p>No início de cada período, você começa com <strong>15/20</strong>. Durante a aula, pode ganhar ou perder pontos. Se estiver presente e terminar sem perder pontos, ganha <strong>+1</strong>, até 20/20. Se estiver ausente, a nota não muda.</p></div><div class="box"><h3>⭐ Progressão</h3><p>Cada aula concluída sem perda de pontos faz sua barra avançar. Após <strong>3 aulas bem-sucedidas</strong>, você progride no ZenQuest.</p><div style="font-size:24px;font-weight:900;text-align:center">2 ⭐ → 🔥 &nbsp; 4 ⭐ → ✨ &nbsp; 6 ⭐ → 👑</div><p>Depois, você pode acumular 💎 diamantes. Se a nota cair demais, pode perder uma estrela.</p></div><div class="box"><h3>📝 Tarefas e 🏆 classificação</h3><p>As tarefas realizadas contam e valorizam sua regularidade. A classificação se baseia principalmente na <strong>média de envolvimento do período</strong> e depois na progressão no ZenQuest. As notas dos outros alunos permanecem privadas.</p></div><div class="box"><h3>🤝 Progressão coletiva</h3><p>A turma e o grupo também podem progredir juntos. Se todos os alunos presentes terminarem sem perder pontos, podem ganhar uma ⭐ coletiva. <strong>8 ⭐ coletivas = 1 💎 coletivo.</strong></p></div><div class="box" style="background:#ecfdf5"><h3>🌱 Importante</h3><p>A nota de envolvimento ZenQuest poderá aparecer no boletim. Ela não mede seu nível em matemática e não é sua média de matemática nem sua média geral. Trabalhando, participando e mantendo uma boa atitude, você pode progredir.</p><p><strong>🟡 ZenCoins:</strong> no fim de cada período, sua progressão pode render ZenCoins para trocar por recompensas.<br><strong>1 ⭐ = 0 🟡 • 3 ⭐ = 1 🟡 • 5 ⭐ = 2 🟡 • 6 ⭐ = 3 🟡 • 1 💎 = 4 🟡</strong></p></div><div class="box"><h2>📜 Regras da sala</h2><p style="font-size:22px;font-weight:900;text-align:center">🧘 CALMA • 🤫 SILÊNCIO • ⏳ PACIÊNCIA</p><p>✋ Levante a mão e espere autorização para falar.<br>👂 Escute o professor e os colegas.<br>🤫 Trabalhe com calma e silêncio quando solicitado.<br>🪑 Não se levante sem autorização.<br>🙋 Peça autorização antes de fazer algo que não foi solicitado.<br>📚 Comece a trabalhar e participe seriamente.<br>🤝 Respeite o trabalho dos outros e não perturbe a aula.<br>⏳ Saiba esperar.</p></div><div class="box" style="background:#fff7ed"><h3>⚖️ Decisões sobre os pontos</h3><p><strong>O professor decide a atribuição ou retirada dos pontos</strong> com base no que observa. Um ponto ganho ou perdido não deve provocar discussão durante a aula. Se não entender, peça uma explicação com calma no momento adequado.</p></div>`,
-      es:`<div class="box"><h2>🎮 ¿Cómo funciona ZenQuest?</h2><p>ZenQuest recompensa tu <strong>implicación en clase</strong>: trabajo, participación, atención, concentración y actitud.</p></div><div class="box"><h3>🎯 Tu puntuación</h3><p>Al inicio de cada período empiezas con <strong>15/20</strong>. Durante una clase puedes ganar o perder puntos. Si estás presente y terminas sin perder puntos, ganas <strong>+1</strong>, hasta 20/20. Si estás ausente, tu puntuación no cambia.</p></div><div class="box"><h3>⭐ Progresión</h3><p>Cada clase superada sin perder puntos hace avanzar tu barra. Después de <strong>3 clases superadas</strong>, progresas en ZenQuest.</p><div style="font-size:24px;font-weight:900;text-align:center">2 ⭐ → 🔥 &nbsp; 4 ⭐ → ✨ &nbsp; 6 ⭐ → 👑</div><p>Después puedes acumular 💎 diamantes. Si tu puntuación baja demasiado, puedes perder una estrella.</p></div><div class="box"><h3>📝 Deberes y 🏆 clasificación</h3><p>Los deberes realizados cuentan y premian tu regularidad. La clasificación se basa principalmente en tu <strong>media de implicación del período</strong> y después en tu progresión ZenQuest. Las notas de los demás alumnos son privadas.</p></div><div class="box"><h3>🤝 Progresión colectiva</h3><p>La clase y el grupo también pueden progresar juntos. Si todos los alumnos presentes terminan sin perder puntos, pueden ganar una ⭐ colectiva. <strong>8 ⭐ colectivas = 1 💎 colectivo.</strong></p></div><div class="box" style="background:#ecfdf5"><h3>🌱 Importante</h3><p>Tu nota de implicación ZenQuest podrá aparecer en tu boletín. No mide tu nivel de matemáticas y no es ni tu media de matemáticas ni tu media general. Si trabajas, te implicas y mantienes una buena actitud, puedes progresar.</p><p><strong>🟡 ZenCoins:</strong> al final de cada período, tu progresión puede darte ZenCoins para canjear por recompensas.<br><strong>1 ⭐ = 0 🟡 • 3 ⭐ = 1 🟡 • 5 ⭐ = 2 🟡 • 6 ⭐ = 3 🟡 • 1 💎 = 4 🟡</strong></p></div><div class="box"><h2>📜 Reglas de la clase</h2><p style="font-size:22px;font-weight:900;text-align:center">🧘 CALMA • 🤫 SILENCIO • ⏳ PACIENCIA</p><p>✋ Levanto la mano y espero autorización para hablar.<br>👂 Escucho al profesor y a mis compañeros.<br>🤫 Trabajo con calma y en silencio cuando se pide.<br>🪑 No me levanto sin autorización.<br>🙋 Pido autorización antes de hacer algo que no se ha pedido.<br>📚 Me pongo a trabajar y participo seriamente.<br>🤝 Respeto el trabajo de los demás y no molesto a la clase.<br>⏳ Sé esperar.</p></div><div class="box" style="background:#fff7ed"><h3>⚖️ Decisiones sobre los puntos</h3><p><strong>El profesor decide la atribución o retirada de puntos</strong> según lo que observa. Un punto ganado o perdido no debe provocar una discusión durante la clase. Si no entiendes una decisión, pide una explicación con calma en el momento adecuado.</p></div>`,
-      en:`<div class="box"><h2>🎮 How does ZenQuest work?</h2><p>ZenQuest rewards your <strong>classroom engagement</strong>: work, participation, listening, concentration and attitude.</p></div><div class="box"><h3>🎯 Your score</h3><p>At the start of each period, you begin at <strong>15/20</strong>. During a lesson you can gain or lose points. If you are present and finish without losing a point, you automatically gain <strong>+1</strong>, up to 20/20. If you are absent, your score does not change.</p></div><div class="box"><h3>⭐ Progress</h3><p>Each successful lesson without losing a point advances your progress bar. After <strong>3 successful lessons</strong>, you progress in ZenQuest.</p><div style="font-size:24px;font-weight:900;text-align:center">2 ⭐ → 🔥 &nbsp; 4 ⭐ → ✨ &nbsp; 6 ⭐ → 👑</div><p>You can then collect 💎 diamonds. If your score drops too low, you may lose a star.</p></div><div class="box"><h3>📝 Homework and 🏆 ranking</h3><p>Completed homework is counted and rewards consistency. Ranking is based mainly on your <strong>average engagement score for the period</strong>, then your ZenQuest progress. Other students’ scores remain private.</p></div><div class="box"><h3>🤝 Collective progress</h3><p>Your class and group can progress together. If every student present finishes without losing a point, a collective ⭐ may be earned. <strong>8 collective ⭐ = 1 collective 💎.</strong></p></div><div class="box" style="background:#ecfdf5"><h3>🌱 Remember</h3><p>Your ZenQuest engagement score may appear on your report card. It does not measure your mathematics level and is neither your mathematics average nor your overall average. If you work, get involved and maintain a good attitude, you can progress.</p><p><strong>🟡 ZenCoins:</strong> at the end of each period, your progress can earn ZenCoins that can be exchanged for rewards.<br><strong>1 ⭐ = 0 🟡 • 3 ⭐ = 1 🟡 • 5 ⭐ = 2 🟡 • 6 ⭐ = 3 🟡 • 1 💎 = 4 🟡</strong></p></div><div class="box"><h2>📜 Classroom rules</h2><p style="font-size:22px;font-weight:900;text-align:center">🧘 CALM • 🤫 SILENCE • ⏳ PATIENCE</p><p>✋ Raise your hand and wait for permission before speaking.<br>👂 Listen to the teacher and classmates.<br>🤫 Work calmly and quietly when asked.<br>🪑 Do not get up without permission.<br>🙋 Ask permission before doing something that was not requested.<br>📚 Get to work and participate seriously.<br>🤝 Respect other people’s work and do not disrupt the class.<br>⏳ Learn to wait.</p></div><div class="box" style="background:#fff7ed"><h3>⚖️ Decisions about points</h3><p><strong>The teacher decides whether points are awarded or removed</strong> based on what is observed during the lesson. A gained or lost point should not cause an argument during class. If you do not understand a decision, calmly ask for an explanation at an appropriate time.</p></div>`
+      pt:`<div class="box"><h2>🎮 Como funciona o ZenQuest?</h2><p>O ZenQuest recompensa o seu <strong>envolvimento em sala</strong>: trabalho, participação, atenção, concentração e atitude.</p></div><div class="box"><h3>🎯 Sua nota</h3><p>No início de cada período, você começa com <strong>15/20</strong>. Durante a aula, pode ganhar ou perder pontos. Se estiver presente e terminar sem perder pontos, ganha <strong>+1</strong>, até 20/20. Se estiver ausente, a nota não muda.</p></div><div class="box"><h3>⭐ Progressão</h3><p>Cada aula concluída sem perda de pontos faz sua barra avançar. Após <strong>3 aulas bem-sucedidas</strong>, você progride no ZenQuest.</p><div style="font-size:24px;font-weight:900;text-align:center">2 ⭐ → 🔥 &nbsp; 4 ⭐ → ✨ &nbsp; 6 ⭐ → 👑</div><p>Depois, você pode acumular 💎 diamantes. Se a nota cair demais, pode perder uma estrela.</p></div><div class="box"><h3>📝 Tarefas e 🏆 classificação</h3><p>As tarefas realizadas contam e valorizam sua regularidade. A classificação se baseia principalmente na <strong>média de envolvimento do período</strong> e depois na progressão no ZenQuest. As notas dos outros alunos permanecem privadas.</p></div><div class="box"><h3>🤝 Progressão coletiva</h3><p>A turma e o grupo também podem progredir juntos. Se todos os alunos presentes terminarem sem perder pontos, podem ganhar uma ⭐ coletiva. <strong>8 ⭐ coletivas = 1 💎 coletivo.</strong></p></div><div class="box" style="background:#ecfdf5"><h3>🌱 Importante</h3><p>A nota de envolvimento ZenQuest poderá aparecer no boletim. Ela não mede seu nível em matemática e não é sua média de matemática nem sua média geral. Trabalhando, participando e mantendo uma boa atitude, você pode progredir.</p></div><div class="box"><h2>📜 Regras da sala</h2><p style="font-size:22px;font-weight:900;text-align:center">🧘 CALMA • 🤫 SILÊNCIO • ⏳ PACIÊNCIA</p><p>✋ Levante a mão e espere autorização para falar.<br>👂 Escute o professor e os colegas.<br>🤫 Trabalhe com calma e silêncio quando solicitado.<br>🪑 Não se levante sem autorização.<br>🙋 Peça autorização antes de fazer algo que não foi solicitado.<br>📚 Comece a trabalhar e participe seriamente.<br>🤝 Respeite o trabalho dos outros e não perturbe a aula.<br>⏳ Saiba esperar.</p></div><div class="box" style="background:#fff7ed"><h3>⚖️ Decisões sobre os pontos</h3><p><strong>O professor decide a atribuição ou retirada dos pontos</strong> com base no que observa. Um ponto ganho ou perdido não deve provocar discussão durante a aula. Se não entender, peça uma explicação com calma no momento adequado.</p></div>`,
+      es:`<div class="box"><h2>🎮 ¿Cómo funciona ZenQuest?</h2><p>ZenQuest recompensa tu <strong>implicación en clase</strong>: trabajo, participación, atención, concentración y actitud.</p></div><div class="box"><h3>🎯 Tu puntuación</h3><p>Al inicio de cada período empiezas con <strong>15/20</strong>. Durante una clase puedes ganar o perder puntos. Si estás presente y terminas sin perder puntos, ganas <strong>+1</strong>, hasta 20/20. Si estás ausente, tu puntuación no cambia.</p></div><div class="box"><h3>⭐ Progresión</h3><p>Cada clase superada sin perder puntos hace avanzar tu barra. Después de <strong>3 clases superadas</strong>, progresas en ZenQuest.</p><div style="font-size:24px;font-weight:900;text-align:center">2 ⭐ → 🔥 &nbsp; 4 ⭐ → ✨ &nbsp; 6 ⭐ → 👑</div><p>Después puedes acumular 💎 diamantes. Si tu puntuación baja demasiado, puedes perder una estrella.</p></div><div class="box"><h3>📝 Deberes y 🏆 clasificación</h3><p>Los deberes realizados cuentan y premian tu regularidad. La clasificación se basa principalmente en tu <strong>media de implicación del período</strong> y después en tu progresión ZenQuest. Las notas de los demás alumnos son privadas.</p></div><div class="box"><h3>🤝 Progresión colectiva</h3><p>La clase y el grupo también pueden progresar juntos. Si todos los alumnos presentes terminan sin perder puntos, pueden ganar una ⭐ colectiva. <strong>8 ⭐ colectivas = 1 💎 colectivo.</strong></p></div><div class="box" style="background:#ecfdf5"><h3>🌱 Importante</h3><p>Tu nota de implicación ZenQuest podrá aparecer en tu boletín. No mide tu nivel de matemáticas y no es ni tu media de matemáticas ni tu media general. Si trabajas, te implicas y mantienes una buena actitud, puedes progresar.</p></div><div class="box"><h2>📜 Reglas de la clase</h2><p style="font-size:22px;font-weight:900;text-align:center">🧘 CALMA • 🤫 SILENCIO • ⏳ PACIENCIA</p><p>✋ Levanto la mano y espero autorización para hablar.<br>👂 Escucho al profesor y a mis compañeros.<br>🤫 Trabajo con calma y en silencio cuando se pide.<br>🪑 No me levanto sin autorización.<br>🙋 Pido autorización antes de hacer algo que no se ha pedido.<br>📚 Me pongo a trabajar y participo seriamente.<br>🤝 Respeto el trabajo de los demás y no molesto a la clase.<br>⏳ Sé esperar.</p></div><div class="box" style="background:#fff7ed"><h3>⚖️ Decisiones sobre los puntos</h3><p><strong>El profesor decide la atribución o retirada de puntos</strong> según lo que observa. Un punto ganado o perdido no debe provocar una discusión durante la clase. Si no entiendes una decisión, pide una explicación con calma en el momento adecuado.</p></div>`,
+      en:`<div class="box"><h2>🎮 How does ZenQuest work?</h2><p>ZenQuest rewards your <strong>classroom engagement</strong>: work, participation, listening, concentration and attitude.</p></div><div class="box"><h3>🎯 Your score</h3><p>At the start of each period, you begin at <strong>15/20</strong>. During a lesson you can gain or lose points. If you are present and finish without losing a point, you automatically gain <strong>+1</strong>, up to 20/20. If you are absent, your score does not change.</p></div><div class="box"><h3>⭐ Progress</h3><p>Each successful lesson without losing a point advances your progress bar. After <strong>3 successful lessons</strong>, you progress in ZenQuest.</p><div style="font-size:24px;font-weight:900;text-align:center">2 ⭐ → 🔥 &nbsp; 4 ⭐ → ✨ &nbsp; 6 ⭐ → 👑</div><p>You can then collect 💎 diamonds. If your score drops too low, you may lose a star.</p></div><div class="box"><h3>📝 Homework and 🏆 ranking</h3><p>Completed homework is counted and rewards consistency. Ranking is based mainly on your <strong>average engagement score for the period</strong>, then your ZenQuest progress. Other students’ scores remain private.</p></div><div class="box"><h3>🤝 Collective progress</h3><p>Your class and group can progress together. If every student present finishes without losing a point, a collective ⭐ may be earned. <strong>8 collective ⭐ = 1 collective 💎.</strong></p></div><div class="box" style="background:#ecfdf5"><h3>🌱 Remember</h3><p>Your ZenQuest engagement score may appear on your report card. It does not measure your mathematics level and is neither your mathematics average nor your overall average. If you work, get involved and maintain a good attitude, you can progress.</p></div><div class="box"><h2>📜 Classroom rules</h2><p style="font-size:22px;font-weight:900;text-align:center">🧘 CALM • 🤫 SILENCE • ⏳ PATIENCE</p><p>✋ Raise your hand and wait for permission before speaking.<br>👂 Listen to the teacher and classmates.<br>🤫 Work calmly and quietly when asked.<br>🪑 Do not get up without permission.<br>🙋 Ask permission before doing something that was not requested.<br>📚 Get to work and participate seriously.<br>🤝 Respect other people’s work and do not disrupt the class.<br>⏳ Learn to wait.</p></div><div class="box" style="background:#fff7ed"><h3>⚖️ Decisions about points</h3><p><strong>The teacher decides whether points are awarded or removed</strong> based on what is observed during the lesson. A gained or lost point should not cause an argument during class. If you do not understand a decision, calmly ask for an explanation at an appropriate time.</p></div>`
     };
 
     function applyRulesLanguage(lang){
@@ -5328,6 +5543,63 @@ Noah"
       }
     }
 
+    const meritCelebrationQueue=[];
+    let meritCelebrationRunning=false;
+    let meritCelebrationTimer=null;
+
+    function buildMeritConfetti(){
+      const box=document.getElementById("meritConfetti");
+      if(!box) return;
+      const icons=["✨","🎉","⭐","🌟","💫","🎊","🇬🇫"];
+      box.innerHTML=Array.from({length:34},(_,i)=>{
+        const left=(i*29)%100;
+        const delay=(i%11)*.21;
+        const duration=3.4+(i%7)*.28;
+        const icon=icons[i%icons.length];
+        return `<span style="left:${left}%;animation-delay:-${delay}s;animation-duration:${duration}s">${icon}</span>`;
+      }).join("");
+    }
+
+    function showBoardMeritCelebration(payload){
+      meritCelebrationQueue.push(payload||{});
+      if(!meritCelebrationRunning) playNextMeritCelebration();
+    }
+
+    function playNextMeritCelebration(){
+      if(!meritCelebrationQueue.length){
+        meritCelebrationRunning=false;
+        document.getElementById("meritBoardCelebration")?.classList.remove("show","distinguished");
+        return;
+      }
+      meritCelebrationRunning=true;
+      const p=meritCelebrationQueue.shift();
+      const distinguished=p.meritType==="distinguished"||p.type==="merit_distinguished";
+      const overlay=document.getElementById("meritBoardCelebration");
+      if(!overlay) return;
+      overlay.classList.remove("show","distinguished");
+      void overlay.offsetWidth;
+      if(distinguished) overlay.classList.add("distinguished");
+      overlay.classList.add("show");
+      buildMeritConfetti();
+
+      document.getElementById("meritBoardKicker").textContent=distinguished?"🏆 ÉLÈVE DISTINGUÉ":"🌟 MENTION SPÉCIALE";
+      document.getElementById("meritBoardIcon").textContent=distinguished?"🏆":"🌟";
+      document.getElementById("meritBoardName").textContent=(p.studentName||"ÉLÈVE").toUpperCase();
+      document.getElementById("meritBoardReason").textContent=p.reason||p.label||"Bravo !";
+      document.getElementById("meritBoardMessage").textContent=distinguished
+        ?"Ton engagement, tes efforts et ta progression ont été remarqués. Félicitations ! 🇬🇫"
+        :"Tes efforts ont été remarqués par ton professeur. Continue comme ça ! 🇬🇫";
+      const gift=document.getElementById("meritBoardGift");
+      gift.style.display=p.gift?"inline-block":"none";
+      gift.textContent=p.gift?"🎁 Une récompense t’attend auprès de ton professeur.":"";
+
+      clearTimeout(meritCelebrationTimer);
+      meritCelebrationTimer=setTimeout(()=>{
+        overlay.classList.remove("show","distinguished");
+        setTimeout(playNextMeritCelebration,420);
+      },distinguished?7000:5000);
+    }
+
     const receivedPointToastIds=new Set();
 
     function applyBoardRemoteCommand(payload){
@@ -5340,6 +5612,8 @@ Noah"
         if(pdfDoc&&isPdfProjectionOpen()&&pdfPageNum>1){pdfPageNum--;renderPdfPage();}
       }else if(payload.action==="pdf_next"){
         if(pdfDoc&&isPdfProjectionOpen()&&pdfPageNum<pdfDoc.numPages){pdfPageNum++;renderPdfPage();}
+      }else if(payload.action==="merit_celebration"){
+        showBoardMeritCelebration(payload);
       }else if(payload.action==="point_toast"){
         if(payload.eventId && receivedPointToastIds.has(payload.eventId)) return;
         if(payload.eventId){
@@ -5518,7 +5792,6 @@ Noah"
           progress,
           stars,
           diamonds,
-          zen_coins,
           homeworks,
           current_streak,
           classes (
@@ -5597,7 +5870,7 @@ Noah"
 
       const {data:periodResults,error:periodResultsError}=await supabaseClient
         .from("period_results")
-        .select("period_id,average,lesson_count,best_score,worst_score,final_level,final_stars,final_diamonds,homeworks,zen_coins_earned,created_at")
+        .select("period_id,average,lesson_count,best_score,worst_score,final_level,final_stars,final_diamonds,homeworks,created_at")
         .eq("student_id",studentRow.id)
         .order("created_at",{ascending:true});
       if(periodResultsError) throw new Error(`Erreur historique périodes : ${periodResultsError.message}`);
@@ -5646,12 +5919,6 @@ Noah"
         throw new Error(`Erreur class_messages : ${classMessagesError.message}${classMessagesError.code?` • code ${classMessagesError.code}`:""}`);
       }
 
-      const {data:rewardRequests,error:rewardRequestsError}=await supabaseClient
-        .from("reward_requests")
-        .select("id,item_code,item_name,price,status,created_at,resolved_at")
-        .eq("student_id",studentRow.id)
-        .order("created_at",{ascending:false});
-      if(rewardRequestsError) throw new Error(`Erreur récompenses : ${rewardRequestsError.message}`);
 
       renderAuthenticatedStudentDashboard(
         studentRow,
@@ -5662,7 +5929,6 @@ Noah"
         remarks||[],
         (classMessages||[]).map(mapSupabaseClassMessage),
         studentPeriodHistory,
-        rewardRequests||[],
         currentPeriod
       );
     }
@@ -5674,7 +5940,7 @@ Noah"
       return d.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"});
     }
 
-    function renderAuthenticatedStudentDashboard(student,cls,currentPeriodName,periodAverage,lessonScores,remarks,classMessages=[],periodHistory=[],rewardRequests=[],currentPeriod=null){
+    function renderAuthenticatedStudentDashboard(student,cls,currentPeriodName,periodAverage,lessonScores,remarks,classMessages=[],periodHistory=[],currentPeriod=null){
       document.getElementById("studentClassPill").textContent=cls?.name||"Ma classe";
 
       const scores=(lessonScores||[])
@@ -5980,10 +6246,6 @@ Noah"
                 <span class="toolbar-chip">${trend.emoji} ${trend.label}</span>
                 <span class="toolbar-chip">⭐ ${stars}</span>
                 <span class="toolbar-chip">💎 ${diamonds}</span>
-                <span class="toolbar-chip" style="font-weight:900">🟡 ${Number(student.zen_coins||0)} ZenCoins disponibles</span>
-              </div>
-              <div class="muted" style="margin-top:8px">
-                Les ZenCoins gagnés lors des périodes précédentes sont conservés.
               </div>
 
               <button class="btn primary" id="authenticatedStudentRulesBtn"
@@ -6035,6 +6297,23 @@ Noah"
               <div style="margin-top:12px"><strong>🔥 Série actuelle : ${Number(student.current_streak||0)} cours</strong></div>
             </div>
           </div>
+          <div class="box" style="border:2px solid #e2e8f0">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="font-size:30px">🏆</div>
+              <div>
+                <div style="font-size:20px;font-weight:950">Élèves méritants</div>
+                <div class="muted" style="font-size:12px">Les reconnaissances attribuées par ton professeur pendant cette période.</div>
+              </div>
+            </div>
+            <div style="margin-top:14px">
+              ${meritEventsFromRemarks(currentPeriodRemarks).length
+                ? meritBannerHTML(currentPeriodRemarks,currentPeriodName||"cette période")
+                : `<div style="padding:14px;border-radius:14px;background:#f8fafc;border:1px solid #e2e8f0">
+                    <strong>Aucune reconnaissance pour le moment.</strong>
+                    <div class="muted" style="margin-top:4px">Les mentions spéciales et distinctions apparaîtront ici lorsqu’elles seront attribuées.</div>
+                  </div>`}
+            </div>
+          </div>
           <div class="box" style="margin-top:12px;border:2px solid #bbf7d0;background:linear-gradient(135deg,#f0fdf4,#ffffff)">
             ${successCardCollectionHTML(successPortalStudent,true)}
           </div>
@@ -6078,7 +6357,6 @@ Noah"
             </div>
           </div>
 
-          ${zenShopHTML(student,rewardRequests)}
           <div style="margin-top:18px">${collectionHTML(student,"auth-"+student.id)}</div>
           <div style="height:32px"></div>
           </div>
@@ -6147,20 +6425,13 @@ Noah"
       const parentsGoCurrentBtn=document.getElementById("parentsGoCurrentBtn");
       if(parentsGoCurrentBtn) parentsGoCurrentBtn.onclick=()=>showStudentTab("current");
 
-      document.querySelectorAll(".reward-request-btn").forEach(btn=>{
-        btn.onclick=()=>requestReward(btn.dataset.rewardCode);
-      });
-      document.querySelectorAll(".cancel-reward-request-btn").forEach(btn=>{
-        btn.onclick=()=>cancelRewardRequest(btn.dataset.requestId);
-      });
-
       const rulesBtn=document.getElementById("authenticatedStudentRulesBtn");
       if(rulesBtn) rulesBtn.onclick=openStudentRules;
       bindCollectionButtons(
         document.getElementById("authenticatedStudentView"),
         student,
         "auth-"+student.id,
-        ()=>renderAuthenticatedStudentDashboard(student,cls,currentPeriodName,periodAverage,lessonScores,remarks,classMessages,periodHistory,rewardRequests,currentPeriod)
+        ()=>renderAuthenticatedStudentDashboard(student,cls,currentPeriodName,periodAverage,lessonScores,remarks,classMessages,periodHistory,currentPeriod)
       );
     
       setTimeout(()=>{
@@ -6200,7 +6471,6 @@ Noah"
         level:Number(row.level??1),
         stars:Number(row.stars??0),
         diamonds:Number(row.diamonds??0),
-        zenCoins:Number(row.zen_coins??0),
         homeworks:Number(row.homeworks??0),
         isAbsent:false,
         isAutoAbsent:false,
@@ -6744,7 +7014,6 @@ Noah"
 
     function render(){
       setTimeout(()=>{
-        if(document.getElementById("mainApp")?.style.display!=="none") loadTeacherRewardRequests(false);
         refreshAveragesModal();
         refreshClassAnalytics();
       },0);
@@ -7211,8 +7480,25 @@ Noah"
     document.getElementById("closeAveragesBtn").onclick=()=>document.getElementById("averagesModal").classList.remove("show");
     document.getElementById("copyAveragesBtn").onclick=copyAverages;
     document.getElementById("downloadAveragesBtn").onclick=downloadAverages;
-    document.getElementById("rewardRequestsBtn").onclick=()=>loadTeacherRewardRequests(true);
-    document.getElementById("closeRewardRequestsBtn").onclick=()=>document.getElementById("rewardRequestsModal").classList.remove("show");
+    document.getElementById("closeMeritDetailBtn").onclick=()=>document.getElementById("meritDetailModal").classList.remove("show");
+    document.getElementById("meritDetailModal").onclick=(e)=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove("show");};
+    document.getElementById("meritStudentsBtn").onclick=openMeritStudents;
+    document.getElementById("closeMeritStudentsBtn").onclick=()=>document.getElementById("meritStudentsModal").classList.remove("show");
+    document.getElementById("cancelMeritStudentsBtn").onclick=()=>document.getElementById("meritStudentsModal").classList.remove("show");
+    document.getElementById("meritSpecialBtn").onclick=()=>{meritType="special";refreshMeritTypeUI();};
+    document.getElementById("meritDistinguishedBtn").onclick=()=>{meritType="distinguished";refreshMeritTypeUI();};
+    document.getElementById("meritClearBtn").onclick=()=>{meritSelection=new Set();renderMeritStudentsGrid();};
+    document.getElementById("confirmMeritStudentsBtn").onclick=confirmMeritStudents;
+    document.querySelectorAll(".merit-reason").forEach(btn=>{
+      btn.onclick=()=>{
+        meritReason=btn.dataset.reason||"";
+        document.querySelectorAll(".merit-reason").forEach(b=>b.style.background="");
+        btn.style.background="#dcfce7";
+        const custom=document.getElementById("meritCustomReason");
+        custom.style.display=meritReason==="✨ Autre"?"block":"none";
+        if(meritReason==="✨ Autre") custom.focus();
+      };
+    });
     document.getElementById("closeHistoryBtn").onclick=()=>document.getElementById("historyModal").classList.remove("show");
     document.getElementById("profModeBtn").onclick=()=> setAppMode("prof");
     document.getElementById("studentModeBtn").onclick=()=> setAppMode("student");
@@ -7238,7 +7524,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.4.7</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.5.4</span>.
   </footer>
 
 </body>
