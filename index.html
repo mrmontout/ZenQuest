@@ -364,6 +364,9 @@
       <input id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••" style="width:100%;margin-bottom:14px">
       <button class="btn primary" id="loginBtn" style="width:100%;font-size:16px">🔐 Se connecter</button>
       <div class="muted" style="text-align:center;margin-top:10px">Les élèves se connectent avec leur identifiant ZenQuest + leur mot de passe.</div>
+      <div style="margin-top:12px;padding:10px 12px;border-radius:12px;background:#f0fdf4;border:1px solid #bbf7d0;text-align:center;font-size:13px;font-weight:800;color:#166534">
+        📒 Les codes de connexion sont disponibles sur la première page du cahier de mathématiques de l’élève.
+      </div>
       <div id="loginMessage" class="muted" style="margin-top:12px;text-align:center"></div>
     </div>
   </div>
@@ -837,7 +840,7 @@ Noah"
       <div class="modal-header">
         <div>
           <h2 style="margin:0">👁️ Connexions élèves</h2>
-          <div class="muted" style="margin-top:4px">Dernières consultations de l’espace ZenQuest pour la classe active.</div>
+          <div class="muted" style="margin-top:4px">Consultations de l’espace ZenQuest pour la classe active. Les ouvertures rapprochées sont regroupées en une seule visite.</div>
         </div>
         <button class="btn outline" id="closeStudentConnectionsBtn">Fermer</button>
       </div>
@@ -847,7 +850,7 @@ Noah"
       </div>
       <div id="studentConnectionsContent" class="box">Chargement…</div>
       <div class="muted" style="font-size:11px;margin-top:10px">
-        Une consultation correspond à l’ouverture de l’espace avec le compte de l’élève. Comme l’élève et ses parents utilisent les mêmes identifiants, ZenQuest ne distingue pas qui a consulté le compte.
+        Une visite correspond à une consultation distincte de l’espace. Les ouvertures réalisées à moins de 30 minutes d’intervalle sont regroupées. Comme l’élève et ses parents utilisent les mêmes identifiants, ZenQuest ne distingue pas qui a consulté le compte.
       </div>
     </div>
   </div>
@@ -4631,11 +4634,25 @@ Noah"
 
     async function recordStudentConsultation(userId){
       if(!userId) return;
+
+      // Évite de compter 5 "connexions" pour une seule consultation :
+      // un même appareil ne peut enregistrer qu'une consultation toutes les 30 minutes.
+      const cooldownMs=30*60*1000;
+      const storageKey=`zenquest_last_consult_${userId}`;
+      try{
+        const last=Number(localStorage.getItem(storageKey)||0);
+        if(last && Date.now()-last<cooldownMs) return;
+      }catch{}
+
       try{
         const {error}=await supabaseClient.from("student_login_events").insert({
           student_user_id:userId
         });
-        if(error) console.warn("Suivi consultation ZenQuest non enregistré :",error.message);
+        if(error){
+          console.warn("Suivi consultation ZenQuest non enregistré :",error.message);
+          return;
+        }
+        try{ localStorage.setItem(storageKey,String(Date.now())); }catch{}
       }catch(err){
         console.warn("Suivi consultation ZenQuest indisponible :",err);
       }
@@ -4697,9 +4714,35 @@ Noah"
         byUser.set(e.student_user_id,arr);
       });
 
+      function consultationSessions(rows){
+        const sorted=(rows||[])
+          .slice()
+          .sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+        const sessions=[];
+        const gap=30*60*1000;
+        for(const e of sorted){
+          const t=new Date(e.created_at).getTime();
+          if(!Number.isFinite(t)) continue;
+          const last=sessions[sessions.length-1];
+          if(!last || t-last.time>=gap){
+            sessions.push({time:t,created_at:e.created_at});
+          }else{
+            // Même consultation : on garde la date la plus récente de cette session.
+            last.time=t;
+            last.created_at=e.created_at;
+          }
+        }
+        return sessions;
+      }
+
       const rows=(cls.students||[]).map(s=>{
-        const ev=byUser.get(s.supabaseUserId)||[];
-        return {student:s,last:ev[0]?.created_at||null,count:ev.length};
+        const raw=byUser.get(s.supabaseUserId)||[];
+        const sessions=consultationSessions(raw);
+        return {
+          student:s,
+          last:sessions.length?sessions[sessions.length-1].created_at:null,
+          count:sessions.length
+        };
       }).sort((a,b)=>{
         if(!a.last&&!b.last) return a.student.name.localeCompare(b.student.name,"fr");
         if(!a.last) return 1;
@@ -4714,7 +4757,7 @@ Noah"
         <div style="display:grid;grid-template-columns:minmax(130px,1.2fr) minmax(150px,1.5fr) 100px;gap:0;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden">
           <div style="padding:10px;font-weight:950;background:#f8fafc">Élève</div>
           <div style="padding:10px;font-weight:950;background:#f8fafc">Dernière consultation</div>
-          <div style="padding:10px;font-weight:950;background:#f8fafc;text-align:center">Cette période</div>
+          <div style="padding:10px;font-weight:950;background:#f8fafc;text-align:center">Visites<br><span style="font-size:10px;font-weight:700;color:#64748b">cette période</span></div>
           ${rows.map((r,i)=>`
             <div style="padding:11px;border-top:1px solid #e2e8f0;font-weight:900">${escapeHTML(r.student.name)}</div>
             <div style="padding:11px;border-top:1px solid #e2e8f0;color:${r.last?"#166534":"#94a3b8"};font-weight:${r.last?850:700}">${r.last?"👁️ "+connectionDateLabel(r.last):"Jamais"}</div>
@@ -7194,7 +7237,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.4.0</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.4.2</span>.
   </footer>
 
 </body>
