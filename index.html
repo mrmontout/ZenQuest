@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.6.5</title>
+  <title>ZenQuest v5.6.6</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -444,6 +444,24 @@
       transition:opacity .28s ease,transform .28s ease;
     }
     #endLessonRotatingMessage.swap{opacity:0;transform:translateY(8px)}
+
+
+    /* v5.6.6 — rituel matériel au tableau */
+    #materialBoardToast{
+      position:fixed;left:50%;top:18px;transform:translateX(-50%) translateY(-30px) scale(.94);
+      z-index:4900000;width:min(760px,92vw);padding:15px 20px;border-radius:22px;
+      background:rgba(255,255,255,.97);border:3px solid #cbd5e1;
+      box-shadow:0 18px 50px rgba(15,23,42,.28);opacity:0;pointer-events:none;
+      transition:opacity .25s ease,transform .38s cubic-bezier(.2,.9,.2,1.2);
+    }
+    #materialBoardToast.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+    #materialBoardToast.missing{border-color:#fb923c;background:linear-gradient(135deg,#fff7ed,#fff)}
+    #materialBoardToast.complete{border-color:#4ade80;background:linear-gradient(135deg,#f0fdf4,#fff)}
+    .material-board-row{display:flex;align-items:center;gap:14px}
+    .material-board-icon{font-size:44px;line-height:1;animation:materialBagBounce .7s ease}
+    @keyframes materialBagBounce{0%{transform:scale(.5) rotate(-12deg)}60%{transform:scale(1.15) rotate(5deg)}100%{transform:scale(1) rotate(0)}}
+    .material-board-name{font-size:clamp(24px,3vw,38px);font-weight:1000;line-height:1}
+    .material-board-text{font-size:clamp(15px,1.8vw,22px);font-weight:850;margin-top:5px}
 
 </style>
 </head>
@@ -923,6 +941,16 @@ Noah"
       <div id="meritDetailReason" style="font-size:18px;font-weight:950;text-align:center;margin-top:14px"></div>
       <div id="meritDetailMessage" style="margin-top:16px;padding:15px 17px;border-radius:17px;background:#f8fafc;border:1px solid #e2e8f0;font-size:16px;font-weight:850;line-height:1.5;text-align:center"></div>
       <div id="meritDetailGift" style="display:none;margin-top:13px;padding:12px 14px;border-radius:15px;background:#fff7ed;border:1px solid #fed7aa;font-weight:950;text-align:center"></div>
+    </div>
+  </div>
+
+  <div id="materialBoardToast">
+    <div class="material-board-row">
+      <div id="materialBoardIcon" class="material-board-icon">🎒</div>
+      <div style="flex:1">
+        <div id="materialBoardName" class="material-board-name">ÉLÈVE</div>
+        <div id="materialBoardText" class="material-board-text"></div>
+      </div>
     </div>
   </div>
 
@@ -2378,6 +2406,31 @@ Noah"
           student.teacherRemarks.unshift({id:row.id,date:row.created_at?new Date(row.created_at).toLocaleDateString("fr-FR"):"",text:row.remark,createdAt:row.created_at});
         });
         save(); renderMaterialsStudentList(); selectMaterialsStudent(student.id);
+
+        const updatedState=materialStateFromRemarks(student.teacherRemarks||[]);
+        const missingNow=SCHOOL_MATERIALS.filter(([code])=>updatedState[code]===false);
+        const becameComplete=missingNow.length===0 && SCHOOL_MATERIALS.every(([code])=>updatedState[code]===true);
+
+        if(becameComplete){
+          sendBoardCommand({
+            action:"material_toast",
+            eventId:uid(),
+            studentName:student.name,
+            complete:true
+          });
+        }else{
+          changed.filter(x=>x.value===false).forEach(x=>{
+            const item=SCHOOL_MATERIALS.find(([code])=>code===x.code);
+            sendBoardCommand({
+              action:"material_toast",
+              eventId:uid(),
+              studentName:student.name,
+              complete:false,
+              label:item?.[2]||x.code
+            });
+          });
+        }
+
         status.style.display="block";status.style.background="#dcfce7";status.style.color="#166534";status.textContent="✅ Matériel mis à jour. L’espace élève/parent est actualisé.";
       }catch(err){
         console.error(err);status.style.display="block";status.style.background="#fee2e2";status.style.color="#991b1b";status.textContent="❌ "+(err?.message||String(err));
@@ -5957,6 +6010,40 @@ Noah"
       },distinguished?7000:5000);
     }
 
+    const materialBoardQueue=[];
+    let materialBoardRunning=false;
+    let materialBoardTimer=null;
+
+    function showBoardMaterialToast(payload){
+      materialBoardQueue.push(payload||{});
+      if(!materialBoardRunning) playNextMaterialBoardToast();
+    }
+
+    function playNextMaterialBoardToast(){
+      if(!materialBoardQueue.length){
+        materialBoardRunning=false;
+        document.getElementById("materialBoardToast")?.classList.remove("show","missing","complete");
+        return;
+      }
+      materialBoardRunning=true;
+      const p=materialBoardQueue.shift();
+      const toast=document.getElementById("materialBoardToast");
+      if(!toast) return;
+      toast.classList.remove("show","missing","complete");
+      void toast.offsetWidth;
+      toast.classList.add(p.complete?"complete":"missing","show");
+      document.getElementById("materialBoardIcon").textContent=p.complete?"🎒✅":"🎒⚠️";
+      document.getElementById("materialBoardName").textContent=(p.studentName||"ÉLÈVE").toUpperCase();
+      document.getElementById("materialBoardText").textContent=p.complete
+        ?"Tout ton matériel est dans le sac. Parfait ! 👏"
+        :`${p.label||"Matériel"} : à mettre dans le sac rapidement.`;
+      clearTimeout(materialBoardTimer);
+      materialBoardTimer=setTimeout(()=>{
+        toast.classList.remove("show","missing","complete");
+        setTimeout(playNextMaterialBoardToast,260);
+      },2600);
+    }
+
     const receivedPointToastIds=new Set();
 
     function applyBoardRemoteCommand(payload){
@@ -5971,6 +6058,8 @@ Noah"
         if(pdfDoc&&isPdfProjectionOpen()&&pdfPageNum<pdfDoc.numPages){pdfPageNum++;renderPdfPage();}
       }else if(payload.action==="merit_celebration"){
         showBoardMeritCelebration(payload);
+      }else if(payload.action==="material_toast"){
+        showBoardMaterialToast(payload);
       }else if(payload.action==="point_toast"){
         if(payload.eventId && receivedPointToastIds.has(payload.eventId)) return;
         if(payload.eventId){
@@ -7945,7 +8034,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.6.5</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.6.6</span>.
   </footer>
 
 </body>
