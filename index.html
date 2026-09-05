@@ -322,6 +322,11 @@
       font-weight:950;
       padding:8px 6px;
     }
+
+    @media(max-width:700px){
+      #pdfPointToastStack{top:72px;width:94vw!important}
+      #pdfPointToastStack > div{font-size:19px!important;padding:13px 16px!important}
+    }
 </style>
 </head>
 <body>
@@ -386,7 +391,7 @@
     </div>
 
     <div id="zqVersionBadge" style="position:fixed;right:12px;bottom:12px;z-index:999998;padding:7px 10px;border-radius:999px;background:#0f172a;color:white;font-size:11px;font-weight:900;box-shadow:0 6px 18px rgba(15,23,42,.22);opacity:.88">
-      TEST • ZenQuest 5.0.3
+      TEST • ZenQuest 5.0.4
     </div>
 
     <div id="supabaseTeacherStatus" class="panel" style="margin-bottom:12px;border:1px solid #a7f3d0;background:#ecfdf5;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
@@ -939,7 +944,7 @@ Noah"
       <div id="pdfZenOverlay" style="display:none;position:absolute;inset:58px 0 0;z-index:20;background:#0f172acc;align-items:center;justify-content:center;text-align:center;padding:30px;color:white;backdrop-filter:blur(3px)">
         <div><div id="pdfOverlayEmoji" style="font-size:100px"></div><div id="pdfOverlayTitle" style="font-size:72px;font-weight:950"></div><div id="pdfOverlayText" style="font-size:34px;font-weight:800;white-space:pre-wrap;margin-top:16px"></div><div id="pdfOverlayTimer" style="font-size:105px;font-weight:950;margin-top:22px"></div></div>
       </div>
-      <div id="pdfPointToast" style="display:none;position:absolute;left:50%;top:78px;transform:translateX(-50%);z-index:30;padding:15px 22px;border-radius:18px;background:#0f172a;color:white;font-size:22px;font-weight:900;box-shadow:0 12px 35px #0006"></div>
+      <div id="pdfPointToastStack" style="position:absolute;left:50%;top:78px;transform:translateX(-50%);z-index:30;width:min(700px,92vw);display:flex;flex-direction:column;gap:10px;pointer-events:none"></div>
     </div>
   </div>
 
@@ -1914,6 +1919,17 @@ Noah"
           setAction(student,"plus");
         }
 
+        // Visual feedback is tied to the successful point action, not to motif storage.
+        // This guarantees both +1 and −1 appear, even if teacher_remarks is slow.
+        showPdfPointToast(student.name,type,label);
+        sendBoardCommand({
+          action:"point_toast",
+          eventId:uid(),
+          studentName:student.name,
+          type,
+          label
+        });
+
         // Persist the motif without re-checking auth on every tap.
         // The teacher id comes from the already authenticated session.
         const teacherId=cachedTeacherUserId;
@@ -1970,8 +1986,6 @@ Noah"
       ensureEngagementEvents(student).push({id:uid(),date:new Date().toISOString(),type,code,label,scoreAfter:student.points});
       if(student.engagementEvents.length>100) student.engagementEvents=student.engagementEvents.slice(-100);
       student.lastReasonLabel=`${type==="minus"?"−":"+"} ${label}`;
-        showPdfPointToast(student.name,type,label);
-        sendBoardCommand({action:"point_toast",studentName:student.name,type,label});
     }
     function reasonButtonsHTML(type){
       const arr=type==="minus"?NEGATIVE_REASONS:POSITIVE_REASONS;
@@ -3834,8 +3848,39 @@ Noah"
     }
     function hidePdfZenOverlay(){clearInterval(pdfOverlayTick);pdfOverlayTick=null;const e=document.getElementById("pdfZenOverlay");if(e)e.style.display="none";}
     function showPdfPointToast(name,type,label){
-      if(!isPdfProjectionOpen())return;
-      const t=document.getElementById("pdfPointToast");t.textContent=`${type==="minus"?"🔻":"✨"} ${name}  ${type==="minus"?"−1":"＋1"}${label?" • "+label:""}`;t.style.display="block";clearTimeout(pdfPointToastTimer);pdfPointToastTimer=setTimeout(()=>t.style.display="none",8000);
+      if(!isPdfProjectionOpen()) return;
+      const stack=document.getElementById("pdfPointToastStack");
+      if(!stack) return;
+
+      const isMinus=type==="minus";
+      const item=document.createElement("div");
+      item.style.cssText=`
+        padding:16px 22px;
+        border-radius:18px;
+        color:white;
+        font-size:23px;
+        font-weight:950;
+        line-height:1.25;
+        box-shadow:0 12px 35px rgba(0,0,0,.34);
+        border:2px solid ${isMinus?"#fecaca":"#bbf7d0"};
+        background:${isMinus?"#dc2626":"#16a34a"};
+        opacity:0;
+        transform:translateY(-8px);
+        transition:opacity .18s ease,transform .18s ease;
+      `;
+      item.innerHTML=`<div style="display:flex;align-items:center;gap:12px">
+        <span style="display:inline-flex;align-items:center;justify-content:center;min-width:62px;padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.18);font-size:26px">${isMinus?"−1":"＋1"}</span>
+        <div style="min-width:0"><div>${isMinus?"🔻":"✨"} ${escapeHTML(name||"Élève")}</div>${label?`<div style="font-size:16px;font-weight:800;opacity:.94;margin-top:3px">${escapeHTML(label)}</div>`:""}</div>
+      </div>`;
+
+      stack.appendChild(item);
+      requestAnimationFrame(()=>{item.style.opacity="1";item.style.transform="translateY(0)";});
+
+      setTimeout(()=>{
+        item.style.opacity="0";
+        item.style.transform="translateY(-8px)";
+        setTimeout(()=>item.remove(),220);
+      },8000);
     }
 
     const BOARD_QUICK_COMMANDS={
@@ -3965,6 +4010,8 @@ Noah"
       }
     }
 
+    const receivedPointToastIds=new Set();
+
     function applyBoardRemoteCommand(payload){
       if(!payload || payload.senderId===boardDeviceId) return;
       if(payload.classId && payload.classId!==state.currentClassId) return;
@@ -3976,6 +4023,11 @@ Noah"
       }else if(payload.action==="pdf_next"){
         if(pdfDoc&&isPdfProjectionOpen()&&pdfPageNum<pdfDoc.numPages){pdfPageNum++;renderPdfPage();}
       }else if(payload.action==="point_toast"){
+        if(payload.eventId && receivedPointToastIds.has(payload.eventId)) return;
+        if(payload.eventId){
+          receivedPointToastIds.add(payload.eventId);
+          setTimeout(()=>receivedPointToastIds.delete(payload.eventId),15000);
+        }
         showPdfPointToast(payload.studentName||"Élève",payload.type,payload.label||"");
       }else if(payload.action==="start"){
         if(!document.getElementById("boardModal").classList.contains("show")) openBoard(false);
