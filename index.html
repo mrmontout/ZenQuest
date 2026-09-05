@@ -404,6 +404,7 @@
         <div class="teacher-nav-row teacher-nav-tools">
           <button class="btn outline" id="rewardRequestsBtn">🎁 Récompenses <span id="rewardRequestsBadge"></span></button>
           <button class="btn outline" id="studentCodesBtn">🔑 Codes élèves</button>
+          <button class="btn outline" id="studentConnectionsBtn">👁️ Connexions élèves</button>
           <button class="btn outline" id="classMessagesBtn">📢 Message classe</button>
           <button class="btn outline" id="homeworkBatchBtn">📝 Travail maison</button>
           <button class="btn outline" id="successCardsBtn">🏆 Cartes Réussite</button>
@@ -831,7 +832,27 @@ Noah"
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <div class="modal" id="studentCodesModal">
+  <div class="modal" id="studentConnectionsModal">
+    <div class="modal-card" style="width:min(900px,95vw)">
+      <div class="modal-header">
+        <div>
+          <h2 style="margin:0">👁️ Connexions élèves</h2>
+          <div class="muted" style="margin-top:4px">Dernières consultations de l’espace ZenQuest pour la classe active.</div>
+        </div>
+        <button class="btn outline" id="closeStudentConnectionsBtn">Fermer</button>
+      </div>
+      <div class="row wrap" style="margin:12px 0">
+        <button class="btn primary" id="refreshStudentConnectionsBtn">↻ Actualiser</button>
+        <span class="toolbar-chip" id="studentConnectionsSummary">Chargement…</span>
+      </div>
+      <div id="studentConnectionsContent" class="box">Chargement…</div>
+      <div class="muted" style="font-size:11px;margin-top:10px">
+        Une consultation correspond à l’ouverture de l’espace avec le compte de l’élève. Comme l’élève et ses parents utilisent les mêmes identifiants, ZenQuest ne distingue pas qui a consulté le compte.
+      </div>
+    </div>
+  </div>
+
+<div class="modal" id="studentCodesModal">
     <div class="modal-card" style="width:min(760px,94vw)">
       <div class="modal-header">
         <div>
@@ -4608,6 +4629,100 @@ Noah"
       return data;
     }
 
+    async function recordStudentConsultation(userId){
+      if(!userId) return;
+      try{
+        const {error}=await supabaseClient.from("student_login_events").insert({
+          student_user_id:userId
+        });
+        if(error) console.warn("Suivi consultation ZenQuest non enregistré :",error.message);
+      }catch(err){
+        console.warn("Suivi consultation ZenQuest indisponible :",err);
+      }
+    }
+
+    function connectionDateLabel(value){
+      if(!value) return "Jamais";
+      const d=new Date(value);
+      if(Number.isNaN(d.getTime())) return "Jamais";
+      const now=new Date();
+      const sameDay=d.toDateString()===now.toDateString();
+      return sameDay
+        ? `Aujourd’hui à ${d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}`
+        : d.toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+    }
+
+    async function openStudentConnections(){
+      const cls=currentClass();
+      if(!cls) return alert("Aucune classe active.");
+      document.getElementById("studentConnectionsModal").classList.add("show");
+      await loadStudentConnections();
+    }
+
+    async function loadStudentConnections(){
+      const cls=currentClass();
+      const content=document.getElementById("studentConnectionsContent");
+      const summary=document.getElementById("studentConnectionsSummary");
+      if(!cls){ content.textContent="Aucune classe active."; return; }
+      content.innerHTML="Chargement…";
+
+      const userIds=(cls.students||[]).map(s=>s.supabaseUserId).filter(Boolean);
+      if(!userIds.length){
+        content.innerHTML='<div class="muted">Aucun compte élève lié dans cette classe.</div>';
+        summary.textContent="0 compte";
+        return;
+      }
+
+      const periodStart=cls.currentPeriodCreatedAt||null;
+      let q=supabaseClient
+        .from("student_login_events")
+        .select("student_user_id,created_at")
+        .in("student_user_id",userIds)
+        .order("created_at",{ascending:false});
+      if(periodStart) q=q.gte("created_at",periodStart);
+
+      const {data,error}=await q;
+      if(error){
+        content.innerHTML=`<div style="font-weight:900;color:#b91c1c">⚠️ Le suivi des connexions n’est pas encore activé dans Supabase.</div>
+          <div class="muted" style="margin-top:8px">Une petite table <strong>student_login_events</strong> doit être ajoutée une seule fois. L’application reste utilisable normalement en attendant.</div>`;
+        summary.textContent="Configuration requise";
+        return;
+      }
+
+      const events=data||[];
+      const byUser=new Map();
+      events.forEach(e=>{
+        const arr=byUser.get(e.student_user_id)||[];
+        arr.push(e);
+        byUser.set(e.student_user_id,arr);
+      });
+
+      const rows=(cls.students||[]).map(s=>{
+        const ev=byUser.get(s.supabaseUserId)||[];
+        return {student:s,last:ev[0]?.created_at||null,count:ev.length};
+      }).sort((a,b)=>{
+        if(!a.last&&!b.last) return a.student.name.localeCompare(b.student.name,"fr");
+        if(!a.last) return 1;
+        if(!b.last) return -1;
+        return new Date(b.last)-new Date(a.last);
+      });
+
+      const consulted=rows.filter(r=>r.count>0).length;
+      summary.textContent=`${consulted}/${rows.length} consulté(s) cette période`;
+
+      content.innerHTML=`
+        <div style="display:grid;grid-template-columns:minmax(130px,1.2fr) minmax(150px,1.5fr) 100px;gap:0;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden">
+          <div style="padding:10px;font-weight:950;background:#f8fafc">Élève</div>
+          <div style="padding:10px;font-weight:950;background:#f8fafc">Dernière consultation</div>
+          <div style="padding:10px;font-weight:950;background:#f8fafc;text-align:center">Cette période</div>
+          ${rows.map((r,i)=>`
+            <div style="padding:11px;border-top:1px solid #e2e8f0;font-weight:900">${escapeHTML(r.student.name)}</div>
+            <div style="padding:11px;border-top:1px solid #e2e8f0;color:${r.last?"#166534":"#94a3b8"};font-weight:${r.last?850:700}">${r.last?"👁️ "+connectionDateLabel(r.last):"Jamais"}</div>
+            <div style="padding:11px;border-top:1px solid #e2e8f0;text-align:center;font-weight:900">${r.count}</div>
+          `).join("")}
+        </div>`;
+    }
+
     function showLogin(message=""){
       document.getElementById("authScreen").style.display="grid";
       document.getElementById("mainApp").style.display="none";
@@ -6546,6 +6661,7 @@ Noah"
         document.getElementById("authScreen").style.display="none";
         document.getElementById("studentApp").style.display="block";
         try{
+          await recordStudentConsultation(session.user.id);
           await loadAuthenticatedStudent(session.user);
         }catch(err){
           document.getElementById("authenticatedStudentView").innerHTML=`
@@ -6674,6 +6790,9 @@ Noah"
     document.getElementById("loginPassword").addEventListener("keydown",e=>{ if(e.key==="Enter") login(); });
     document.getElementById("logoutBtn").onclick=logout;
     document.getElementById("studentCodesBtn").onclick=openStudentCodes;
+    document.getElementById("studentConnectionsBtn").onclick=openStudentConnections;
+    document.getElementById("closeStudentConnectionsBtn").onclick=()=>document.getElementById("studentConnectionsModal").classList.remove("show");
+    document.getElementById("refreshStudentConnectionsBtn").onclick=loadStudentConnections;
     document.getElementById("closeStudentCodesBtn").onclick=()=>document.getElementById("studentCodesModal").classList.remove("show");
     document.getElementById("copyStudentCodesBtn").onclick=copyStudentCodes;
     document.getElementById("downloadStudentCodesBtn").onclick=downloadStudentCodes;
@@ -7075,7 +7194,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.3.3</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.4.0</span>.
   </footer>
 
 </body>
