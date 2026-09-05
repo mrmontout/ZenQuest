@@ -414,7 +414,7 @@
     </div>
 
     <div id="zqVersionBadge" style="position:fixed;right:12px;bottom:12px;z-index:999998;padding:7px 10px;border-radius:999px;background:#0f172a;color:white;font-size:11px;font-weight:900;box-shadow:0 6px 18px rgba(15,23,42,.22);opacity:.88">
-      TEST • ZenQuest 5.0.18
+      TEST • ZenQuest 5.0.21
     </div>
 
     <div id="supabaseTeacherStatus" class="panel" style="margin-bottom:12px;border:1px solid #a7f3d0;background:#ecfdf5;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
@@ -985,9 +985,8 @@ Noah"
         <div style="margin-top:5px;padding:9px 11px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;font-size:12px;line-height:1.55;color:#475569">
           🎒 Sortez vos affaires dans le calme. &nbsp;•&nbsp;
           ✏️ Écrivez la date. &nbsp;•&nbsp;
-          🤫 Restez dans le calme pendant l’appel. &nbsp;•&nbsp;
-          ⚠️ Les points sont déjà actifs. &nbsp;•&nbsp;
-          ✨ Messages positifs et rappels des règles.
+          🤫 Restez dans le calme pendant l’appel.<br>
+          <span style="opacity:.8">Puis : messages d’ordre, rappels et encouragements choisis aléatoirement.</span>
         </div>
         <textarea id="welcomeMessageInput" style="display:none">Accueil dynamique</textarea>
       </div>
@@ -1133,6 +1132,10 @@ Noah"
     function getDefaultData(){ return {currentClassId:null,viewMode:"all",selectionMode:false,selectedStudentIds:[],appMode:"prof",periodView:"current",classes:[createClass("Classe exemple",["Paul","Clara","Emma","Lucas","Alya","Yanis","Lina","Noah"])]}; }
     function loadData(){ try{ const raw=localStorage.getItem(STORAGE_KEY); if(!raw) return getDefaultData(); const parsed=JSON.parse(raw); if(!parsed.classes||!parsed.classes.length) return getDefaultData(); if(!("viewMode" in parsed)) parsed.viewMode="all"; if(!("selectionMode" in parsed)) parsed.selectionMode=false; if(!("selectedStudentIds" in parsed)) parsed.selectedStudentIds=[]; if(!("appMode" in parsed)) parsed.appMode="prof"; if(!("periodView" in parsed)) parsed.periodView="current"; parsed.classes.forEach(c=>{ if(!c.groupStars) c.groupStars={g1:0,g2:0}; if(!c.groupDiamonds) c.groupDiamonds={g1:0,g2:0}; if(!("collectiveDiamonds" in c)) c.collectiveDiamonds=0; if(!c.currentPeriodName) c.currentPeriodName="Période 1"; if(!Array.isArray(c.periodArchive)) c.periodArchive=[]; if(!Array.isArray(c.classMessages)) c.classMessages=[]; if(!Array.isArray(c.boardPresets)) c.boardPresets=[]; c.students.forEach(s=>{ if(!("group" in s)) s.group=null; if(!("isAutoAbsent" in s)) s.isAutoAbsent=false; if(!Array.isArray(s.periodScores)) s.periodScores=[]; if(!Array.isArray(s.archivedPeriods)) s.archivedPeriods=[]; if(typeof s.points!=="number") s.points=15; }); }); return parsed; }catch{ return getDefaultData(); } }
     let state=loadData(); if(!state.currentClassId) state.currentClassId=state.classes[0]?.id||null;
+    let classSelectionRevision=0;
+    let latestUserSelectedClassId=state.currentClassId;
+
+
     function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
     function currentClass(){ return state.classes.find(c=>c.id===state.currentClassId)||state.classes[0]||null; }
 
@@ -2730,6 +2733,7 @@ Noah"
           <div style="padding:5px 9px;border-radius:10px;background:#faf5ff;border:1px solid #e9d5ff;font-size:12px"><b>🌟 Collective :</b> ${summary.classStarGained?"+1":"0"}</div>
         </div>
         ${scoreGrid}
+        <div style="margin-top:14px;text-align:center;font-size:26px;font-weight:950;color:#0f172a">👋 À bientôt !</div>
       `;
       document.getElementById("summaryModal").classList.add("show");
     }
@@ -5336,7 +5340,9 @@ Noah"
       const oldView=state.viewMode;
       const oldSelection=[...(state.selectedStudentIds||[])];
       state.classes=newClasses;
-      if(state.classes.some(c=>c.id===oldCurrent)) state.currentClassId=oldCurrent;
+      const preferred=latestUserSelectedClassId||oldCurrent;
+      if(state.classes.some(c=>c.id===preferred)) state.currentClassId=preferred;
+      else if(state.classes.some(c=>c.id===oldCurrent)) state.currentClassId=oldCurrent;
       else if(state.classes.length) state.currentClassId=state.classes[0].id;
       state.viewMode=oldView;
       state.selectedStudentIds=oldSelection.filter(id=>currentClass()?.students?.some(s=>s.id===id));
@@ -5345,13 +5351,21 @@ Noah"
     async function refreshTeacherFromRealtime(){
       if(realtimeRefreshRunning){ realtimeRefreshPending=true; return; }
       realtimeRefreshRunning=true;
+      const revisionAtStart=classSelectionRevision;
+      const currentAtStart=state.currentClassId;
       try{
-        const preservedClasses=state.classes;
-        const preservedCurrent=state.currentClassId;
         await loadTeacherSupabaseData();
         const freshlyLoaded=state.classes;
-        // loadTeacherSupabaseData already mapped everything from DB; keep current class when possible.
-        if(freshlyLoaded.some(c=>c.id===preservedCurrent)) state.currentClassId=preservedCurrent;
+
+        // Never let an older realtime request undo a class switch made while it was loading.
+        // If the teacher changed class meanwhile, the current selection wins.
+        const desiredClassId=(classSelectionRevision!==revisionAtStart)
+          ? latestUserSelectedClassId
+          : currentAtStart;
+
+        if(freshlyLoaded.some(c=>c.id===desiredClassId)){
+          state.currentClassId=desiredClassId;
+        }
         setRealtimeStatus("live","Synchronisé en direct");
         render();
       }catch(err){
@@ -5540,6 +5554,8 @@ Noah"
         if(!created) throw new Error("Classe créée mais impossible de la recharger.");
 
         state.currentClassId=newClass.id;
+        latestUserSelectedClassId=newClass.id;
+        classSelectionRevision++;
         state.appMode="prof";
         save();
         render();
@@ -5551,7 +5567,16 @@ Noah"
         btn.textContent=oldText;
       }
     };
-    document.getElementById("classSelect").onchange=(e)=>{ state.currentClassId=e.target.value; state.appMode="prof"; save(); render(); startBoardRemoteChannel(); };
+    document.getElementById("classSelect").onchange=(e)=>{
+      const chosen=e.target.value;
+      classSelectionRevision++;
+      latestUserSelectedClassId=chosen;
+      state.currentClassId=chosen;
+      state.appMode="prof";
+      save();
+      render();
+      startBoardRemoteChannel();
+    };
     document.getElementById("endLessonBtn").onclick=endLesson;
     document.getElementById("loginBtn").onclick=login;
 
@@ -5598,6 +5623,50 @@ Noah"
     let welcomeTickerHandle=null;
     let welcomeTickerIndex=0;
     let welcomeTickerItems=[];
+    let welcomeTickerPhase="setup";
+    let welcomeRandomPool=[];
+    let welcomeRandomDeck=[];
+    let welcomeLastRandomHtml=null;
+
+    const WELCOME_SETUP_MESSAGES=[
+      {kind:"instruction",html:"🎒 Sortez vos affaires dans le calme."},
+      {kind:"instruction",html:"✏️ Écrivez la date et préparez votre cahier."},
+      {kind:"calm",html:"🤫 Restez dans le calme pendant l’appel."}
+    ];
+
+    const WELCOME_RANDOM_MESSAGES=[
+      {kind:"info",html:"⚠️ Le cours a commencé : vous pouvez déjà gagner ou perdre des points."},
+      {kind:"rule",html:"📜 Respectez les règles de la classe et les consignes données."},
+      {kind:"rule",html:"👂 Une consigne donnée une fois doit suffire : soyez attentifs."},
+      {kind:"rule",html:"🪑 Restez à votre place et installez-vous correctement."},
+      {kind:"rule",html:"🚫 Ne vous déplacez pas sans autorisation !"},
+      {kind:"rule",html:"🗣️ Parlez seulement lorsque c’est le bon moment."},
+      {kind:"rule",html:"🎯 On commence bien le cours en se mettant rapidement au travail."},
+      {kind:"rule",html:"📚 Le matériel doit être prêt avant le début de l’activité."},
+      {kind:"rule",html:"🤫 Le calme permet à tout le monde de commencer dans de bonnes conditions."},
+      {kind:"rule",html:"⏱️ Plus vite la classe est prête, plus vite on peut commencer."},
+      {kind:"rule",html:"👀 Regardez le tableau et restez disponibles pour les consignes."},
+      {kind:"positive",html:"✨ Chaque cours est une nouvelle occasion de progresser."},
+      {kind:"positive",html:"💪 Faites de votre mieux dès les premières minutes."},
+      {kind:"positive",html:"🎯 Les bons réflexes font monter votre score."},
+      {kind:"positive",html:"🌱 Un bon cours commence par de petites bonnes habitudes."},
+      {kind:"positive",html:"🚀 Vous pouvez faire mieux qu’au cours précédent."},
+      {kind:"positive",html:"⭐ Un cours sérieux peut faire la différence."},
+      {kind:"positive",html:"👏 Le calme, l’écoute et le travail sont déjà des réussites."},
+      {kind:"positive",html:"🧠 Restez concentrés : vous êtes capables de progresser."},
+      {kind:"positive",html:"📈 Votre score peut évoluer dès aujourd’hui."},
+      {kind:"positive",html:"🌟 Montrez dès maintenant que vous êtes prêts à travailler."},
+      {kind:"positive",html:"🤝 Une classe calme aide tout le monde à réussir."},
+      {kind:"positive",html:"🔥 Commencez fort : les premières minutes donnent le ton du cours."},
+      {kind:"positive",html:"🏆 Objectif du jour : finir le cours fiers de votre implication."},
+      {kind:"positive",html:"💡 Être attentif maintenant, c’est se faciliter le travail ensuite."},
+      {kind:"positive",html:"✅ Matériel prêt, calme, écoute : vous partez déjà sur de bonnes bases."},
+      {kind:"positive",html:"🌈 Une bonne attitude peut transformer tout le cours."},
+      {kind:"positive",html:"🧩 Chacun peut contribuer à une bonne ambiance de travail."},
+      {kind:"positive",html:"📚 Travaillez sérieusement, votre progression se construit cours après cours."},
+      {kind:"positive",html:"🟢 Si tout se passe bien, votre score ne peut qu’en profiter."},
+      {kind:"positive",html:"💫 Gardez le cap : régularité, écoute et travail."}
+    ];
 
     function stopWelcomeTicker(){
       if(welcomeTickerHandle){clearInterval(welcomeTickerHandle);welcomeTickerHandle=null;}
@@ -5630,43 +5699,67 @@ Noah"
       wrap.style.display=students.length?"block":"none";
     }
 
-    function buildWelcomeTickerItems(){
-      return [
-        {kind:"instruction",html:"🎒 Sortez vos affaires dans le calme."},
-        {kind:"instruction",html:"✏️ Écrivez la date et préparez votre cahier."},
-        {kind:"calm",html:"🤫 Restez dans le calme pendant l’appel."},
-        {kind:"info",html:"⚠️ Le cours a commencé : vous pouvez déjà gagner ou perdre des points."},
-        {kind:"rule",html:"📜 Respectez les règles de la classe et les consignes données."},
-        {kind:"positive",html:"✨ Chaque cours est une nouvelle occasion de progresser."},
-        {kind:"positive",html:"🎯 Restez concentrés : les bons réflexes font monter votre score."},
-        {kind:"positive",html:"💪 Faites de votre mieux dès les premières minutes."}
-      ];
+    function shuffleWelcomeDeck(){
+      welcomeRandomDeck=[...WELCOME_RANDOM_MESSAGES];
+      for(let i=welcomeRandomDeck.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [welcomeRandomDeck[i],welcomeRandomDeck[j]]=[welcomeRandomDeck[j],welcomeRandomDeck[i]];
+      }
+      if(welcomeLastRandomHtml && welcomeRandomDeck.length>1 && welcomeRandomDeck[0]?.html===welcomeLastRandomHtml){
+        [welcomeRandomDeck[0],welcomeRandomDeck[1]]=[welcomeRandomDeck[1],welcomeRandomDeck[0]];
+      }
+    }
+
+    function nextWelcomeRandomMessage(){
+      if(!welcomeRandomDeck.length) shuffleWelcomeDeck();
+      const item=welcomeRandomDeck.shift() || WELCOME_RANDOM_MESSAGES[0];
+      welcomeLastRandomHtml=item.html;
+      return item;
     }
 
     function showWelcomeTickerItem(){
       const content=document.getElementById("welcomeTickerContent");
-      if(!content || !welcomeTickerItems.length) return;
+      if(!content) return;
+
+      let item;
+      if(welcomeTickerPhase==="setup"){
+        item=WELCOME_SETUP_MESSAGES[welcomeTickerIndex] || null;
+        welcomeTickerIndex++;
+        if(welcomeTickerIndex>=WELCOME_SETUP_MESSAGES.length){
+          welcomeTickerPhase="random";
+          welcomeTickerIndex=0;
+          shuffleWelcomeDeck();
+        }
+      }else{
+        item=nextWelcomeRandomMessage();
+      }
+      if(!item) return;
+
       content.style.opacity="0";
       content.style.transform="translateY(5px)";
       setTimeout(()=>{
-        const item=welcomeTickerItems[welcomeTickerIndex%welcomeTickerItems.length];
         content.innerHTML=item.html;
         content.style.opacity="1";
         content.style.transform="translateY(0)";
-        welcomeTickerIndex++;
       },220);
     }
 
     function startWelcomeTicker(){
       stopWelcomeTicker();
       renderWelcomeFixedScores();
-      welcomeTickerItems=buildWelcomeTickerItems();
+
+      welcomeTickerPhase="setup";
       welcomeTickerIndex=0;
+      welcomeRandomDeck=[];
+      welcomeLastRandomHtml=null;
+
       const box=document.getElementById("welcomeTicker");
-      if(!box || !welcomeTickerItems.length) return;
+      if(!box) return;
       box.style.display="flex";
+
+      // The installation instructions always come first.
+      // After that, ZenQuest draws from a shuffled pool so the end of the welcome feels different each time.
       showWelcomeTickerItem();
-      // ~8 seconds per slide: calm enough to read, enough time to cycle through scores + reminders.
       welcomeTickerHandle=setInterval(showWelcomeTickerItem,8000);
     }
 
