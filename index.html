@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.7.2</title>
+  <title>ZenQuest v5.7.3</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -545,6 +545,7 @@
         <div class="teacher-nav-row teacher-nav-tools">
           <button class="btn outline" id="meritStudentsBtn">🏆 Élèves méritants</button>
           <button class="btn outline" id="schoolMaterialsBtn">🎒 Matériel scolaire</button>
+          <button class="btn outline" id="waitingModeBtn">🌙 Mode attente</button>
           <button class="btn outline" id="studentCodesBtn">🔑 Codes élèves</button>
           <button class="btn outline" id="studentConnectionsBtn">👁️ Connexions élèves</button>
           <button class="btn outline" id="classMessagesBtn">📢 Message classe</button>
@@ -726,6 +727,26 @@ Noah"
         <div class="row wrap" style="margin-top:12px">
           <button class="btn primary" id="copyAveragesBtn">📋 Copier tout</button>
           <button class="btn outline" id="downloadAveragesBtn">⬇️ Télécharger .txt</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="waitingModeModal">
+    <div class="modal-card" style="width:min(620px,94vw)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div>
+          <h2 style="margin:0">🌙 Mode attente</h2>
+          <div class="muted" style="margin-top:5px">À lancer depuis l’ordinateur quand tu vérifies les cahiers, le matériel ou que la classe doit patienter calmement.</div>
+        </div>
+        <button class="btn outline" id="closeWaitingModeBtn">Fermer</button>
+      </div>
+      <div style="margin-top:16px;padding:16px;border-radius:18px;background:#faf5ff;border:2px solid #c4b5fd;text-align:center">
+        <div style="font-size:22px;font-weight:1000">🤫 CALME • SILENCE • PATIENCE</div>
+        <div class="muted" style="margin-top:7px">Les 100 mini-leçons défilent automatiquement jusqu’à l’arrêt du mode.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px">
+          <button class="btn green" id="waitingModeStartBtn">▶️ Lancer au tableau</button>
+          <button class="btn danger" id="waitingModeStopBtn">⏹️ Arrêter</button>
         </div>
       </div>
     </div>
@@ -8196,6 +8217,16 @@ Noah"
     document.getElementById("downloadAveragesBtn").onclick=downloadAverages;
     document.getElementById("closeMeritDetailBtn").onclick=()=>document.getElementById("meritDetailModal").classList.remove("show");
     document.getElementById("meritDetailModal").onclick=(e)=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove("show");};
+    document.getElementById("waitingModeBtn").onclick=()=>document.getElementById("waitingModeModal").classList.add("show");
+    document.getElementById("closeWaitingModeBtn").onclick=()=>document.getElementById("waitingModeModal").classList.remove("show");
+    document.getElementById("waitingModeStartBtn").onclick=()=>{
+      document.getElementById("waitingModeModal").classList.remove("show");
+      startFlashQuestions(true);
+    };
+    document.getElementById("waitingModeStopBtn").onclick=()=>{
+      stopFlashQuestions(true);
+      document.getElementById("waitingModeModal").classList.remove("show");
+    };
     document.getElementById("schoolMaterialsBtn").onclick=openSchoolMaterials;
     document.getElementById("closeSchoolMaterialsBtn").onclick=()=>document.getElementById("schoolMaterialsModal").classList.remove("show");
     document.getElementById("materialsCheckAllBtn").onclick=()=>{
@@ -8245,7 +8276,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.7.2</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.7.3</span>.
   </footer>
 
 </body>
