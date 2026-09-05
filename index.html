@@ -2591,6 +2591,20 @@ Noah"
 
         save();
         render();
+
+        // Tableau feedback: same compact stacked toast system as +/− points.
+        // Only pupils who completed the homework are celebrated.
+        doneStudents.forEach(student=>{
+          showPdfPointToast(student.name,"homework","+1 travail maison");
+          sendBoardCommand({
+            action:"point_toast",
+            eventId:uid(),
+            studentName:student.name,
+            type:"homework",
+            label:"+1 travail maison"
+          });
+        });
+
         status.style.display="block";
         status.style.background="#dcfce7";
         status.style.color="#166534";
@@ -4339,6 +4353,7 @@ Noah"
       if(!stack) return;
 
       const isMinus=type==="minus";
+      const isHomework=type==="homework";
       const item=document.createElement("div");
       item.style.cssText=`
         padding:10px 14px;
@@ -4355,8 +4370,8 @@ Noah"
         transition:opacity .18s ease,transform .18s ease;
       `;
       item.innerHTML=`<div style="display:flex;align-items:center;gap:12px">
-        <span style="display:inline-flex;align-items:center;justify-content:center;min-width:48px;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.18);font-size:19px">${isMinus?"−1":"＋1"}</span>
-        <div style="min-width:0"><div>${isMinus?"🔻":"✨"} ${escapeHTML(name||"Élève")}</div>${label?`<div style="font-size:13px;font-weight:800;opacity:.94;margin-top:2px">${escapeHTML(label)}</div>`:""}</div>
+        <span style="display:inline-flex;align-items:center;justify-content:center;min-width:48px;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.18);font-size:19px">${isHomework?"🌱":(isMinus?"−1":"＋1")}</span>
+        <div style="min-width:0"><div>${isHomework?"🌱":(isMinus?"🔻":"✨")} ${escapeHTML(name||"Élève")}</div>${label?`<div style="font-size:13px;font-weight:800;opacity:.94;margin-top:2px">${escapeHTML(label)}</div>`:""}</div>
       </div>`;
 
       stack.appendChild(item);
@@ -6310,7 +6325,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.1</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.1.1</span>.
   </footer>
 
 </body>
