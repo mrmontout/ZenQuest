@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.9.2</title>
+  <title>ZenQuest v5.9.3</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -6533,7 +6533,8 @@ Noah"
       return boardDisplayMode || isPdfProjectionOpen() || document.getElementById("boardModal")?.classList.contains("show");
     }
     let boardRemoteChannel=null;
-    let boardRemoteClassId=null;
+    let boardRemoteTeacherId=null;
+    let boardRemoteReadyPromise=null;
 
     function renderBoardPresetOptions(){ /* configuration moved to Télécommande */ }
 
@@ -6950,6 +6951,11 @@ Noah"
     async function sendBoardCommand(payload){
       const full={...payload,senderId:boardDeviceId,classId:state.currentClassId,sentAt:Date.now()};
       try{
+        // The remote link is teacher-scoped, not class-scoped.
+        // This avoids losing animations when a brand-new class has just been created
+        // or when the active class changes before a new realtime channel is ready.
+        if(!boardRemoteChannel) startBoardRemoteChannel();
+        if(boardRemoteReadyPromise) await boardRemoteReadyPromise;
         if(boardRemoteChannel){
           await boardRemoteChannel.send({type:"broadcast",event:"board_command",payload:full});
         }
@@ -6961,22 +6967,41 @@ Noah"
     function stopBoardRemoteChannel(){
       if(boardRemoteChannel){
         try{supabaseClient.removeChannel(boardRemoteChannel);}catch{}
-        boardRemoteChannel=null;
-        boardRemoteClassId=null;
       }
+      boardRemoteChannel=null;
+      boardRemoteTeacherId=null;
+      boardRemoteReadyPromise=null;
     }
 
     function startBoardRemoteChannel(){
-      const cls=currentClass();
-      if(!cls?.id) return;
-      if(boardRemoteChannel && boardRemoteClassId===cls.id) return;
+      const teacherId=cachedTeacherUserId;
+      if(!teacherId) return;
+      if(boardRemoteChannel && boardRemoteTeacherId===teacherId) return;
+
       stopBoardRemoteChannel();
-      boardRemoteClassId=cls.id;
+      boardRemoteTeacherId=teacherId;
+
+      let settleReady;
+      boardRemoteReadyPromise=new Promise(resolve=>{
+        let settled=false;
+        settleReady=()=>{
+          if(settled) return;
+          settled=true;
+          resolve();
+        };
+        // Never block a classroom action indefinitely if Supabase is slow.
+        setTimeout(settleReady,1500);
+      });
+
       boardRemoteChannel=supabaseClient
-        .channel(`zenquest-board-${cls.id}`,{config:{broadcast:{self:false}}})
+        .channel(`zenquest-board-teacher-${teacherId}`,{config:{broadcast:{self:false}}})
         .on("broadcast",{event:"board_command"},({payload})=>applyBoardRemoteCommand(payload))
         .subscribe(status=>{
-          if(status==="CHANNEL_ERROR"||status==="TIMED_OUT") console.error("Board remote channel:",status);
+          if(status==="SUBSCRIBED") settleReady?.();
+          if(status==="CHANNEL_ERROR"||status==="TIMED_OUT"){
+            console.error("Board remote channel:",status);
+            settleReady?.();
+          }
         });
     }
 
@@ -8698,6 +8723,7 @@ Noah"
         state.appMode="prof";
         save();
         render();
+        startBoardRemoteChannel();
       }catch(err){
         console.error("CLASS CREATION ERROR",err);
         alert("❌ "+(err?.message||String(err)));
@@ -9177,7 +9203,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.9.2</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.9.3</span>.
   </footer>
 
 </body>
