@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.9.3</title>
+  <title>ZenQuest v5.10.2</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -824,6 +824,53 @@ Noah"
         <button id="studentCodesBtn"></button><button id="studentConnectionsBtn"></button>
         <button id="classMessagesBtn"></button>
       </div>
+    </div>
+  </div>
+
+  <div class="modal" id="collectiveStickerInfoModal" style="z-index:3650000">
+    <div class="modal-card" style="width:min(520px,92vw);text-align:center">
+      <div style="display:flex;justify-content:flex-end">
+        <button class="btn outline" id="closeCollectiveStickerInfoBtn">✕</button>
+      </div>
+      <div id="collectiveStickerInfoEmoji" style="font-size:64px;line-height:1">🤝</div>
+      <div id="collectiveStickerInfoTitle" style="font-size:27px;font-weight:1000;margin-top:10px">Tous ensemble</div>
+      <div id="collectiveStickerInfoScope" class="muted" style="margin-top:5px;font-weight:850">Sticker collectif de la classe</div>
+      <div style="margin-top:16px;padding:14px;border-radius:16px;background:#eff6ff;border:1px solid #bfdbfe;line-height:1.55">
+        Ce sticker a été gagné grâce aux <strong>efforts réalisés ensemble</strong>.<br>
+        Continuez à vous entraider, à coopérer et à faire avancer votre équipe ! 🤝
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="studentIndexInfoModal" style="z-index:3650000">
+    <div class="modal-card" style="width:min(560px,92vw)">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+        <div>
+          <div style="font-size:26px;font-weight:1000">ℹ️ L’indice d’implication</div>
+          <div class="muted" style="margin-top:4px">Un repère sur ton engagement en cours.</div>
+        </div>
+        <button class="btn outline" id="closeStudentIndexInfoBtn">✕</button>
+      </div>
+      <div style="margin-top:16px;line-height:1.6">
+        Il prend en compte ton <strong>travail, ta participation, ton écoute, ta concentration et ton attitude</strong>.
+        <br><br>
+        <strong>C’est l’indice d’implication — et non le score actuel — qui peut être pris en compte dans la moyenne.</strong>
+        Le score actuel montre simplement ta situation à cet instant.
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="studentRoleInfoModal" style="z-index:3650000">
+    <div class="modal-card" style="width:min(560px,92vw)">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+        <div>
+          <div id="studentRoleInfoTitle" style="font-size:26px;font-weight:1000">🎖️ Mon rôle</div>
+          <div class="muted" style="margin-top:4px">Un rôle utile à toute la classe.</div>
+        </div>
+        <button class="btn outline" id="closeStudentRoleInfoBtn">✕</button>
+      </div>
+      <div id="studentRoleInfoText" style="margin-top:16px;line-height:1.6"></div>
+      <div style="margin-top:15px;padding:12px;border-radius:14px;background:#f5f3ff;border:1px solid #ddd6fe;font-weight:950;text-align:center">🤝 La classe compte sur toi !</div>
     </div>
   </div>
 
@@ -4255,6 +4302,37 @@ Noah"
       }
     }
 
+    const COLLECTIVE_STICKERS=[
+      {emoji:"🤝",text:"Tous ensemble"},
+      {emoji:"💪",text:"Équipe solide"},
+      {emoji:"🧩",text:"Chacun compte"},
+      {emoji:"🚀",text:"On avance ensemble"},
+      {emoji:"🫶",text:"On se soutient"},
+      {emoji:"🔥",text:"Même énergie"},
+      {emoji:"🌟",text:"Force du collectif"},
+      {emoji:"🏆",text:"Mission d’équipe"},
+      {emoji:"🌱",text:"On grandit ensemble"},
+      {emoji:"⚡",text:"Coordination parfaite"}
+    ];
+
+    function collectiveStickerHTML(stars,scope="class"){
+      const count=Math.min(4,Math.max(0,Math.floor(Number(stars||0)/2)));
+      if(!count) return `<div class="muted" style="font-size:12px;margin-top:8px">🏷️ Prochain sticker collectif à 2 étoiles.</div>`;
+      const complete=count>=4;
+      const offset=scope==="group"?2:0;
+      const items=Array.from({length:count},(_,i)=>COLLECTIVE_STICKERS[(i+offset)%COLLECTIVE_STICKERS.length]);
+      return `<div style="margin-top:10px">
+        <div style="font-size:12px;font-weight:950;color:#64748b;margin-bottom:7px">🏷️ STICKERS COLLECTIFS • ${count}/4${complete?" • COLLECTION COMPLÈTE ✨":""}</div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap">
+          ${items.map((s,i)=>`<button type="button" class="collective-sticker-btn"
+            data-sticker-scope="${scope}" data-sticker-emoji="${s.emoji}" data-sticker-text="${escapeHTML(s.text)}" data-sticker-number="${i+1}"
+            style="display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border-radius:999px;background:#fff;border:1px solid #dbeafe;font-size:13px;font-weight:900;cursor:pointer">
+            <span style="font-size:20px">${s.emoji}</span>${escapeHTML(s.text)} <span style="font-size:11px">ⓘ</span>
+          </button>`).join("")}
+        </div>
+      </div>`;
+    }
+
     function starRow(n){
       n=Math.max(0,Math.min(MAX_COLLECTIVE_STARS,Number(n||0)));
       const filled=Array.from({length:n}).map(()=>"<span>🌟</span>").join("");
@@ -4562,14 +4640,10 @@ Noah"
                 </div>
               </div>
               <div class="muted" style="font-size:12px;margin-top:6px">L’indice est calculé sur les 5 derniers cours, avec davantage de poids pour les plus récents.</div>${engagementMiniDashboard(student,ps.index)}
-              <div style="margin-top:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:16px;padding:12px;line-height:1.45">
-                <strong>ℹ️ À quoi correspond cette note ?</strong><br>
-                Cette note concerne <strong>l’implication de l’élève en classe</strong>. Elle tient compte notamment de la participation, de l’investissement dans les activités, du travail fourni, de l’écoute, de la concentration et de l’attitude permettant de travailler dans de bonnes conditions.
-                <br><br>
-                <strong>Cette note pourra apparaître sur le bulletin</strong> afin de rendre compte de l’implication de l’élève en classe.
-                <br><br>
-                <strong>Attention : elle ne correspond pas à la moyenne générale de l’élève ni à sa moyenne en mathématiques.</strong> C’est un indicateur distinct, consacré à son engagement pendant les cours.
-              </div>
+              <button type="button" class="student-index-info-btn"
+                style="margin-top:10px;border:1px solid #bfdbfe;background:#eff6ff;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:900;color:#1e40af;cursor:pointer">
+                ⓘ À quoi sert cet indice ?
+              </button>
               <div class="row wrap" style="margin-top:12px">
                 <span class="toolbar-chip active">Score : ${student.points}/20</span>
                 <span class="toolbar-chip">${trend.emoji} ${trend.label}</span>
@@ -5673,6 +5747,72 @@ Noah"
       }).filter(Boolean);
     }
 
+
+    let currentStudentSeenMeta={};
+    let currentStudentSeenPersistTimer=null;
+
+    function normalizedStudentSeenMeta(raw){
+      const data=(raw && typeof raw==="object")?raw:{};
+      return {
+        initialized:!!data.initialized,
+        resources:Array.isArray(data.resources)?data.resources.map(String):[],
+        classMessages:Array.isArray(data.classMessages)?data.classMessages.map(String):[],
+        history:Array.isArray(data.history)?data.history.map(String):[],
+        tracking:(data.tracking && typeof data.tracking==="object")?{...data.tracking}:{},
+        updatedAt:data.updatedAt||null
+      };
+    }
+
+    function queuePersistStudentSeenMeta(){
+      clearTimeout(currentStudentSeenPersistTimer);
+      currentStudentSeenPersistTimer=setTimeout(async()=>{
+        try{
+          const next={...normalizedStudentSeenMeta(currentStudentSeenMeta),initialized:true,updatedAt:new Date().toISOString()};
+          currentStudentSeenMeta=next;
+          const {error}=await supabaseClient.auth.updateUser({data:{zenquest_seen_v1:next}});
+          if(error) console.error("SEEN META UPDATE ERROR",error);
+        }catch(err){
+          console.error("SEEN META UPDATE ERROR",err);
+        }
+      },120);
+    }
+
+    async function initializeStudentSeenMeta(user,{remarks=[],classMessages=[],periodHistory=[],studentId="",currentPeriodId=""}={}){
+      const existing=normalizedStudentSeenMeta(user?.user_metadata?.zenquest_seen_v1);
+      if(existing.initialized){
+        currentStudentSeenMeta=existing;
+        return currentStudentSeenMeta;
+      }
+
+      // One-time migration: everything already existing when v5.10.0 is first opened
+      // is considered already seen, so an app update never creates dozens of fake notifications.
+      const resourceIds=[];
+      const deletedIds=new Set();
+      (remarks||[]).forEach(r=>{
+        const e=decodeZQData(r.remark??r.text);
+        if(!e?.data?.id) return;
+        if(e.type==="resource") resourceIds.push(String(e.data.id));
+        if(e.type==="resource_deleted") deletedIds.add(String(e.data.id));
+      });
+
+      const historyKeys=(periodHistory||[]).map((p,i)=>historyPeriodKey(p,i));
+      currentStudentSeenMeta={
+        initialized:true,
+        resources:[...new Set(resourceIds.filter(id=>!deletedIds.has(id)))],
+        classMessages:[...new Set((classMessages||[]).map(m=>String(m.id)).filter(Boolean))],
+        history:[...new Set(historyKeys)],
+        tracking:{[currentPeriodId||"current"]:Date.now()},
+        updatedAt:new Date().toISOString()
+      };
+
+      try{
+        const {error}=await supabaseClient.auth.updateUser({data:{zenquest_seen_v1:currentStudentSeenMeta}});
+        if(error) console.error("SEEN META INIT ERROR",error);
+      }catch(err){
+        console.error("SEEN META INIT ERROR",err);
+      }
+      return currentStudentSeenMeta;
+    }
     function historySeenStorageKey(studentId){
       return `zenquest_history_seen_${studentId}`;
     }
@@ -5682,15 +5822,13 @@ Noah"
     }
 
     function historyUnreadCount(history,studentId){
-      let seen=[];
-      try{ seen=JSON.parse(localStorage.getItem(historySeenStorageKey(studentId))||"[]"); }catch{}
-      const seenSet=new Set(Array.isArray(seen)?seen.map(String):[]);
+      const seenSet=new Set((currentStudentSeenMeta.history||[]).map(String));
       return (history||[]).filter((p,i)=>!seenSet.has(historyPeriodKey(p,i))).length;
     }
 
     function markHistorySeen(history,studentId){
-      const keys=(history||[]).map((p,i)=>historyPeriodKey(p,i));
-      try{ localStorage.setItem(historySeenStorageKey(studentId),JSON.stringify(keys)); }catch{}
+      currentStudentSeenMeta.history=[...new Set((history||[]).map((p,i)=>historyPeriodKey(p,i)))];
+      queuePersistStudentSeenMeta();
     }
 
     function trackingSeenStorageKey(studentId,periodId){
@@ -5698,15 +5836,15 @@ Noah"
     }
 
     function trackingUnreadCount(rows,studentId,periodId){
-      let seen=0;
-      try{ seen=Number(localStorage.getItem(trackingSeenStorageKey(studentId,periodId))||0); }catch{}
+      const seen=Number(currentStudentSeenMeta.tracking?.[periodId||"current"]||0);
       return trackingVisibleEvents(rows).filter(e=>e.time>seen).length;
     }
 
     function markTrackingSeen(rows,studentId,periodId){
       const events=trackingVisibleEvents(rows);
       const latest=Math.max(Date.now(),...events.map(e=>e.time||0));
-      try{ localStorage.setItem(trackingSeenStorageKey(studentId,periodId),String(latest)); }catch{}
+      currentStudentSeenMeta.tracking={...(currentStudentSeenMeta.tracking||{}),[periodId||"current"]:latest};
+      queuePersistStudentSeenMeta();
     }
 
     function studentPeriodHistoryHTML(history=[],studentId="student"){
@@ -7255,6 +7393,15 @@ Noah"
       }
 
 
+      const mappedClassMessages=(classMessages||[]).map(mapSupabaseClassMessage);
+      await initializeStudentSeenMeta(user,{
+        remarks:remarks||[],
+        classMessages:mappedClassMessages,
+        periodHistory:studentPeriodHistory,
+        studentId:studentRow.id,
+        currentPeriodId:currentPeriod?.id||"current"
+      });
+
       renderAuthenticatedStudentDashboard(
         studentRow,
         cls,
@@ -7262,7 +7409,7 @@ Noah"
         periodAverage,
         lessonScores,
         remarks||[],
-        (classMessages||[]).map(mapSupabaseClassMessage),
+        mappedClassMessages,
         studentPeriodHistory,
         currentPeriod
       );
@@ -7376,10 +7523,8 @@ Noah"
       const roleRow=zqDataRows.find(x=>x.e.type==="class_role" && (!x.e.data?.classId || String(x.e.data.classId)===String(cls?.id)));
       if(roleRow) studentRoles=roleRow.e.data?.roles||[];
 
-      const resourceSeenKey=`zenquest_resources_seen_${student.id}`;
-      let seenResources=[];try{seenResources=JSON.parse(localStorage.getItem(resourceSeenKey)||"[]");}catch{}
-      const seenResourceSet=new Set(Array.isArray(seenResources)?seenResources:[]);
-      const resourceUnread=resources.filter(r=>!seenResourceSet.has(r.id)).length;
+      const seenResourceSet=new Set((currentStudentSeenMeta.resources||[]).map(String));
+      const resourceUnread=resources.filter(r=>!seenResourceSet.has(String(r.id))).length;
       const urgentResources=resources.filter(r=>!seenResourceSet.has(r.id)&&(r.type==="lesson"||r.type==="exercise"));
 
       const announcementSeenKey=`zenquest_announcements_seen_${student.id}`;
@@ -7390,12 +7535,13 @@ Noah"
       const activeAnnouncements=[];
       const announcementUnread=0;
 
-      const classMessageSeenKey=`zenquest_class_messages_seen_${student.id}`;
-      let seenClassMessages=[];try{seenClassMessages=JSON.parse(localStorage.getItem(classMessageSeenKey)||"[]");}catch{}
-      const classMessageSeenSet=new Set(Array.isArray(seenClassMessages)?seenClassMessages.map(String):[]);
+      const classMessageSeenSet=new Set((currentStudentSeenMeta.classMessages||[]).map(String));
       const classMessageUnread=(classMessages||[]).filter(m=>m?.id&&!classMessageSeenSet.has(String(m.id))).length;
 
-      const roleLabels=studentRoles.map(r=>r==="delegate"?"🗳️ Délégué(e) de classe":r==="substitute"?"🗳️ Suppléant(e)":r==="eco"?"🌱 Éco-délégué(e)":"").filter(Boolean);
+      const roleLabels=studentRoles.map(r=>({
+        code:r,
+        label:r==="delegate"?"🗳️ Délégué(e) de classe":r==="substitute"?"🗳️ Suppléant(e)":r==="eco"?"🌱 Éco-délégué(e)":""
+      })).filter(x=>x.label);
 
       document.getElementById("authenticatedStudentView").innerHTML=`
         <div class="student-dashboard">
@@ -7663,13 +7809,10 @@ Noah"
                    </div>`
                 : `<div class="muted" style="font-size:12px;margin-top:6px">L’indice est calculé sur les 5 derniers cours, avec davantage de poids pour les plus récents.</div>${engagementMiniDashboard({periodScores:scores},engagementIndex)}`}
 
-              <div style="margin-top:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:16px;padding:12px;line-height:1.45">
-                <strong>ℹ️ À quoi correspond cette note ?</strong><br>
-                Cette note concerne <strong>ton implication en classe</strong> : travail, participation, écoute, concentration et attitude.
-                <br><br>
-                <strong>C’est l’indice d’implication — et non le score actuel — qui sera pris en compte dans la moyenne.</strong>
-                Le score actuel montre simplement ta situation à cet instant.
-              </div>
+              <button type="button" class="student-index-info-btn"
+                style="margin-top:10px;border:1px solid #bfdbfe;background:#eff6ff;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:900;color:#1e40af;cursor:pointer">
+                ⓘ À quoi sert cet indice ?
+              </button>
 
               <div class="row wrap" style="margin-top:12px">
                 <span class="toolbar-chip active">Score : ${Number(student.points??15)}/20</span>
@@ -7730,7 +7873,10 @@ Noah"
 
           ${roleLabels.length?`<div class="box" style="border:1px solid #ddd6fe;background:#faf5ff;margin-top:12px">
             <strong>🎖️ Mon rôle dans la classe</strong>
-            <div style="margin-top:6px;font-size:15px;font-weight:850">${roleLabels.map(escapeHTML).join(" • ")}</div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px">
+              ${roleLabels.map(role=>`<button type="button" class="student-role-info-btn" data-role="${escapeHTML(role.code)}"
+                style="border:1px solid #c4b5fd;background:white;border-radius:999px;padding:8px 11px;font-weight:900;cursor:pointer">${escapeHTML(role.label)} ⓘ</button>`).join("")}
+            </div>
           </div>`:""}
           <div class="box" style="border:2px solid #e2e8f0">
             <div style="display:flex;align-items:center;gap:10px">
@@ -7776,6 +7922,7 @@ Noah"
               <div style="font-size:20px;font-weight:800">🏫 Ma classe</div>
               <div style="margin-top:8px"><strong>${escapeHTML(cls?.name||"Ma classe")}</strong></div>
               <div style="font-size:21px;margin:9px 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap">${starRow(classStars)} <span class="diamond-inline">💎 x${classDiamonds}</span></div>
+              ${collectiveStickerHTML(classStars,"class")}
               <div class="student-objective">
                 <strong>🤝 Progression collective</strong><br>
                 Toute la classe peut gagner des étoiles ensemble lorsque le cours se passe bien.
@@ -7787,7 +7934,8 @@ Noah"
               <div style="margin-top:8px"><strong>${groupName}</strong></div>
               ${group
                 ? `<div style="font-size:21px;margin:9px 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap">${starRow(groupStars)} <span class="diamond-inline">💎 x${groupDiamonds}</span></div>
-                   <div class="muted">Ta progression de groupe est distincte de celle de toute la classe.</div>`
+                   ${collectiveStickerHTML(groupStars,"group")}
+                   <div class="muted" style="margin-top:8px">Ta progression de groupe est distincte de celle de toute la classe.</div>`
                 : '<div class="muted" style="margin-top:8px">Tu n’es pas encore affecté à un groupe.</div>'}
             </div>
           </div>
@@ -7970,8 +8118,9 @@ Noah"
 
       const markResourceSeenAndOpen=(id)=>{
         const r=resources.find(x=>x.id===id); if(!r) return;
-        seenResourceSet.add(id);
-        try{localStorage.setItem(resourceSeenKey,JSON.stringify([...seenResourceSet]));}catch{}
+        seenResourceSet.add(String(id));
+        currentStudentSeenMeta.resources=[...seenResourceSet];
+        queuePersistStudentSeenMeta();
         const badge=document.getElementById("studentResourcesNotifBadge");
         if(badge){const left=resources.filter(x=>!seenResourceSet.has(x.id)).length;if(left) badge.textContent=left;else badge.remove();}
         openResourceInsideZenQuest(r);
@@ -7984,7 +8133,8 @@ Noah"
           const id=String(btn.dataset.messageId||"");
           if(!id) return;
           classMessageSeenSet.add(id);
-          try{localStorage.setItem(classMessageSeenKey,JSON.stringify([...classMessageSeenSet]));}catch{}
+          currentStudentSeenMeta.classMessages=[...classMessageSeenSet];
+          queuePersistStudentSeenMeta();
           btn.textContent="✓ Vu";
           btn.disabled=true;
           const card=btn.closest(".student-class-message-card");
@@ -8069,6 +8219,10 @@ Noah"
       const parentsGoCurrentBtn=document.getElementById("parentsGoCurrentBtn");
       if(parentsGoCurrentBtn) parentsGoCurrentBtn.onclick=()=>showStudentTab("current");
 
+      wireStudentInfoButtons(document.getElementById("authenticatedStudentView"));
+      document.getElementById("closeCollectiveStickerInfoBtn").onclick=()=>document.getElementById("collectiveStickerInfoModal").classList.remove("show");
+    document.getElementById("closeStudentIndexInfoBtn").onclick=()=>document.getElementById("studentIndexInfoModal").classList.remove("show");
+      document.getElementById("closeStudentRoleInfoBtn").onclick=()=>document.getElementById("studentRoleInfoModal").classList.remove("show");
       const rulesBtn=document.getElementById("authenticatedStudentRulesBtn");
       if(rulesBtn) rulesBtn.onclick=openStudentRules;
       bindCollectionButtons(
@@ -8656,6 +8810,35 @@ Noah"
       },5000);
     }
 
+    function wireStudentInfoButtons(root=document){
+      root.querySelectorAll?.(".collective-sticker-btn").forEach(btn=>{
+        btn.onclick=()=>{
+          const scope=btn.dataset.stickerScope==="group"?"group":"class";
+          document.getElementById("collectiveStickerInfoEmoji").textContent=btn.dataset.stickerEmoji||"🤝";
+          document.getElementById("collectiveStickerInfoTitle").textContent=btn.dataset.stickerText||"Sticker collectif";
+          document.getElementById("collectiveStickerInfoScope").textContent=
+            scope==="group" ? "Sticker collectif de ton groupe" : "Sticker collectif de la classe";
+          document.getElementById("collectiveStickerInfoModal")?.classList.add("show");
+        };
+      });
+      root.querySelectorAll?.(".student-index-info-btn").forEach(btn=>{
+        btn.onclick=()=>document.getElementById("studentIndexInfoModal")?.classList.add("show");
+      });
+      root.querySelectorAll?.(".student-role-info-btn").forEach(btn=>{
+        btn.onclick=()=>{
+          const role=btn.dataset.role;
+          const data=role==="delegate"
+            ? ["🗳️ Délégué(e) de classe","Tu représentes les élèves, tu peux transmettre leurs idées et leurs questions et tu participes à certains temps importants de la vie de la classe."]
+            : role==="substitute"
+              ? ["🗳️ Suppléant(e)","Tu aides les délégués et tu peux prendre leur relais lorsqu’ils ne sont pas disponibles."]
+              : ["🌱 Éco-délégué(e)","Tu aides la classe à adopter de bonnes habitudes pour l’environnement et tu peux proposer ou porter des actions éco-responsables."];
+          document.getElementById("studentRoleInfoTitle").textContent=data[0];
+          document.getElementById("studentRoleInfoText").textContent=data[1];
+          document.getElementById("studentRoleInfoModal").classList.add("show");
+        };
+      });
+    }
+
     function render(){
       setTimeout(()=>{
         refreshAveragesModal();
@@ -8663,7 +8846,7 @@ Noah"
       },0);
       renderClassSelect(); renderViewButtons(); renderStudentModeControls(); renderStudents(); renderHistory();
     
-      setTimeout(()=>{wireSuccessCardChips(document);wireHomeworkBadgeChips(document);wireLevelButtons(document);wireArchiveStarButtons(document);},0);
+      setTimeout(()=>{wireSuccessCardChips(document);wireHomeworkBadgeChips(document);wireLevelButtons(document);wireArchiveStarButtons(document);wireStudentInfoButtons(document);},0);
     }
 
     document.getElementById("addStudentBtn").onclick=addStudentToSupabase;
@@ -9199,11 +9382,16 @@ Noah"
       };
     });
 
+
+
+    document.getElementById("closeCollectiveStickerInfoBtn").onclick=()=>document.getElementById("collectiveStickerInfoModal").classList.remove("show");
+    document.getElementById("closeStudentIndexInfoBtn").onclick=()=>document.getElementById("studentIndexInfoModal").classList.remove("show");
+    document.getElementById("closeStudentRoleInfoBtn").onclick=()=>document.getElementById("studentRoleInfoModal").classList.remove("show");
 </script>
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.9.3</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.10.2</span>.
   </footer>
 
 </body>
