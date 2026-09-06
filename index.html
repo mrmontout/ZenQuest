@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.7.6</title>
+  <title>ZenQuest v5.9.0</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -524,6 +524,9 @@
 </style>
 </head>
 <body>
+<!-- ZenQuest v5.9.0 — contrôle technique avant mise en production école.
+     Vérifications: portée classe des ressources/messages/rôles, syntaxe JS,
+     IDs statiques, flux Supabase/Storage, navigation prof et notifications. -->
   <div id="globalBoardPointToastStack" style="position:fixed;top:18px;right:18px;z-index:4950000;width:min(470px,92vw);display:flex;flex-direction:column;gap:9px;pointer-events:none"></div>
   
   <div id="authScreen" style="min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(180deg,#ecfeff,#f0fdf4,#fff7ed)">
@@ -572,23 +575,18 @@
       <div class="teacher-nav">
         <div class="teacher-nav-row teacher-nav-main">
           <button class="btn primary" id="endLessonBtn">Fin d'heure</button>
-          <button class="btn outline" id="teacherRulesBtn">📜 Règles</button>
-          <button class="btn outline" id="openHistoryBtn">🕘 Historique</button>
-          <button class="btn outline" id="averagesBtn">📊 Indices d’implication</button>
-          <button class="btn outline" id="classAnalyticsBtn">📈 Analyse classe</button>
         </div>
         <div class="teacher-nav-row teacher-nav-tools">
-          <button class="btn outline" id="meritStudentsBtn">🏆 Élèves méritants</button>
-          <button class="btn outline" id="schoolMaterialsBtn">🎒 Matériel scolaire</button>
-          <button class="btn outline" id="waitingModeBtn">🌙 Mode attente</button>
-          <button class="btn outline" id="studentCodesBtn">🔑 Codes élèves</button>
-          <button class="btn outline" id="studentConnectionsBtn">👁️ Connexions élèves</button>
-          <button class="btn outline" id="classMessagesBtn">📢 Message classe</button>
-          <button class="btn outline" id="homeworkBatchBtn">📝 Travail maison</button>
-          <button class="btn outline" id="successCardsBtn">🏆 Cartes Réussite</button>
-          <button class="btn outline" id="boardRemoteBtn">📱 Télécommande</button>
-          <button class="btn outline" id="pdfProjectionBtn">📄 Projection PDF</button>
           <button class="btn outline" id="boardBtn">👋 Accueil</button>
+          <button class="btn outline" id="boardRemoteBtn">📱 Télécommande</button>
+          <button class="btn outline" id="successCardsBtn">🏆 Cartes Réussite</button>
+          <button class="btn outline" id="homeworkBatchBtn">📝 Travail maison</button>
+          <button class="btn outline" id="schoolMaterialsBtn">🎒 Matériel scolaire</button>
+          <button class="btn outline" id="meritStudentsBtn">🌟 Élèves méritants</button>
+          <button class="btn outline" id="pdfProjectionBtn">📄 Projection PDF</button>
+        </div>
+        <div class="teacher-nav-row teacher-nav-secondary" style="margin-top:4px">
+          <button class="btn outline" id="teacherToolsBtn">🧰 Outils</button>
           <button class="btn outline" id="logoutBtn">🔒 Déconnexion</button>
         </div>
       </div>
@@ -784,6 +782,150 @@ Noah"
           <button class="btn danger" id="waitingModeStopBtn">⏹️ Arrêter</button>
         </div>
       </div>
+    </div>
+  </div>
+
+
+  <div class="modal" id="teacherToolsModal">
+    <div class="modal-card" style="width:min(900px,94vw)">
+      <div class="modal-header">
+        <div><h2 style="margin:0">🧰 Outils</h2><div class="muted">Les fonctions ponctuelles, rangées au même endroit.</div></div>
+        <button class="btn outline" id="closeTeacherToolsBtn">Fermer</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:16px">
+        <button class="btn outline teacher-tool-launch" data-target="teacherRulesBtn">📜 Règles</button>
+        <button class="btn outline teacher-tool-launch" data-target="openHistoryBtn">🕘 Historique</button>
+        <button class="btn outline teacher-tool-launch" data-target="averagesBtn">📊 Indices d’implication</button>
+        <button class="btn outline teacher-tool-launch" data-target="classAnalyticsBtn">📈 Analyse classe</button>
+        <button class="btn outline teacher-tool-launch" data-target="resourcesBtn">📚 Ressources</button>
+                <button class="btn outline teacher-tool-launch" data-target="classRolesBtn">🎖️ Rôles</button>
+        <button class="btn outline teacher-tool-launch" data-target="waitingModeBtn">🌙 Mode attente</button>
+        <button class="btn outline teacher-tool-launch" data-target="studentCodesBtn">🔑 Codes élèves</button>
+        <button class="btn outline teacher-tool-launch" data-target="studentConnectionsBtn">👁️ Connexions élèves</button>
+        <button class="btn outline teacher-tool-launch" data-target="classMessagesBtn">📢 Message classe</button>
+      </div>
+      <div style="display:none">
+        <button id="teacherRulesBtn"></button><button id="openHistoryBtn"></button>
+        <button id="averagesBtn"></button><button id="classAnalyticsBtn"></button>
+        <button id="resourcesBtn"></button><button id="announcementsBtn" style="display:none"></button>
+        <button id="classRolesBtn"></button><button id="waitingModeBtn"></button>
+        <button id="studentCodesBtn"></button><button id="studentConnectionsBtn"></button>
+        <button id="classMessagesBtn"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="resourcesModal">
+    <div class="modal-card" style="width:min(820px,95vw);max-height:92vh;overflow:auto">
+      <div class="modal-header"><div><h2 style="margin:0">📚 Ressources</h2><div class="muted">Publier une leçon, un exercice ou un autre document pour toute la classe.</div></div><button class="btn outline" id="closeResourcesBtn">Fermer</button></div>
+      <div class="box" style="margin-top:14px">
+        <div class="row wrap">
+          <select id="resourceType"><option value="lesson">📘 Leçon</option><option value="exercise">✏️ Exercice à faire</option><option value="other">📎 Autre</option></select>
+          <input id="resourceTitle" placeholder="Titre • ex. Les nombres décimaux" style="flex:1;min-width:240px">
+        </div>
+        <textarea id="resourceInstruction" placeholder="Consigne facultative" style="width:100%;margin-top:9px;min-height:70px"></textarea>
+        <div id="resourceDueWrap" style="margin-top:9px"><label style="font-weight:850">📅 À faire pour : <input type="date" id="resourceDueDate"></label></div>
+        <div style="margin-top:12px">
+          <div style="font-weight:950;margin-bottom:7px">Contenu de la ressource</div>
+          <div class="row wrap">
+            <label style="padding:9px 12px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;font-weight:850"><input type="radio" name="resourceSourceType" value="file" checked> 📄 Fichier</label>
+            <label style="padding:9px 12px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;font-weight:850"><input type="radio" name="resourceSourceType" value="link"> 🔗 Lien</label>
+          </div>
+        </div>
+        <div id="resourceFileWrap" style="margin-top:10px;padding:16px;border:2px dashed #94a3b8;border-radius:16px;background:#f8fafc">
+          <strong>📄 Image ou PDF</strong>
+          <div class="muted" style="margin:4px 0 9px">PNG, JPG, WebP ou PDF.</div>
+          <input type="file" id="resourceFile" accept="image/png,image/jpeg,image/webp,application/pdf">
+        </div>
+        <div id="resourceLinkWrap" style="display:none;margin-top:10px;padding:16px;border:2px dashed #60a5fa;border-radius:16px;background:#eff6ff">
+          <strong>🔗 Lien vers une ressource</strong>
+          <div class="muted" style="margin:4px 0 9px">YouTube, GeoGebra ou tout autre site utile.</div>
+          <input type="url" id="resourceLink" placeholder="https://…" style="width:100%">
+        </div>
+        <button class="btn primary" id="publishResourceBtn" style="margin-top:12px">Publier pour la classe</button>
+        <div id="resourceStatus" style="display:none;margin-top:10px;padding:10px;border-radius:12px;font-weight:850"></div>
+      </div>
+
+      <div class="box" style="margin-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <div>
+            <div style="font-size:20px;font-weight:1000">🗂️ Ressources publiées</div>
+            <div class="muted" style="margin-top:3px">Modifier le titre, la consigne ou la date, ou supprimer une ressource.</div>
+          </div>
+          <button class="btn outline small" id="refreshResourceManagerBtn">↻ Actualiser</button>
+        </div>
+        <div id="resourceManagerList" style="display:grid;gap:9px;margin-top:12px"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="deleteResourceModal" style="z-index:3400000">
+    <div class="modal-card" style="width:min(560px,94vw)">
+      <div style="text-align:center;font-size:54px">🗑️</div>
+      <div style="font-size:25px;font-weight:1000;text-align:center;margin-top:5px">Supprimer cette ressource ?</div>
+      <div id="deleteResourceName" style="text-align:center;font-size:18px;font-weight:900;margin-top:10px"></div>
+      <div style="margin-top:14px;padding:12px 14px;border-radius:14px;background:#fff7ed;border:1px solid #fdba74">
+        Elle disparaîtra immédiatement de l’espace des élèves. ZenQuest essaiera ensuite de supprimer également le fichier du stockage Supabase.
+      </div>
+      <input type="hidden" id="deleteResourceId">
+      <div id="deleteResourceStatus" style="display:none;margin-top:12px;padding:10px 12px;border-radius:12px;font-weight:850"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px">
+        <button class="btn outline" id="cancelDeleteResourceBtn">Annuler</button>
+        <button class="btn danger" id="confirmDeleteResourceBtn">🗑️ Supprimer</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="editResourceModal" style="z-index:3300000">
+    <div class="modal-card" style="width:min(650px,94vw)">
+      <div class="modal-header">
+        <div><h2 style="margin:0">✏️ Modifier la ressource</h2><div class="muted">Le fichier reste le même.</div></div>
+        <button class="btn outline" id="closeEditResourceBtn">Fermer</button>
+      </div>
+      <input type="hidden" id="editResourceId">
+      <div class="box" style="margin-top:12px">
+        <select id="editResourceType" style="width:100%">
+          <option value="lesson">📘 Leçon</option>
+          <option value="exercise">✏️ Exercice à faire</option>
+          <option value="other">📎 Autre</option>
+        </select>
+        <input id="editResourceTitle" placeholder="Titre" style="width:100%;margin-top:9px">
+        <textarea id="editResourceInstruction" placeholder="Consigne facultative" style="width:100%;min-height:80px;margin-top:9px"></textarea>
+        <div id="editResourceDueWrap" style="margin-top:9px">
+          <label style="font-weight:850">📅 À faire pour : <input type="date" id="editResourceDueDate"></label>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:12px">
+          <button class="btn green" id="saveEditedResourceBtn">💾 Enregistrer les modifications</button>
+        </div>
+        <div id="editResourceStatus" style="display:none;margin-top:10px;padding:10px;border-radius:12px;font-weight:850"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="announcementsModal" style="display:none!important">
+    <div class="modal-card" style="width:min(760px,95vw)">
+      <div class="modal-header"><div><h2 style="margin:0">📢 Annonces</h2><div class="muted">Une information visible directement dans l’espace élève/parent.</div></div><button class="btn outline" id="closeAnnouncementsBtn">Fermer</button></div>
+      <div class="box" style="margin-top:14px">
+        <select id="announcementType" style="width:100%">
+          <option value="pronote">🔵 Pense à consulter Pronote</option>
+          <option value="parents">👨‍👩‍👧 Réunion parents-professeurs</option>
+          <option value="council">🏫 Conseil de classe</option>
+          <option value="other">📢 Autre information</option>
+        </select>
+        <input id="announcementDate" type="datetime-local" style="width:100%;margin-top:9px">
+        <textarea id="announcementText" placeholder="Petite précision facultative…" style="width:100%;margin-top:9px;min-height:80px"></textarea>
+        <button class="btn primary" id="publishAnnouncementBtn" style="margin-top:10px">Publier pour la classe</button>
+        <div id="announcementStatus" style="display:none;margin-top:10px;padding:10px;border-radius:12px;font-weight:850"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="classRolesModal">
+    <div class="modal-card" style="width:min(760px,95vw);max-height:92vh;overflow:auto">
+      <div class="modal-header"><div><h2 style="margin:0">🎖️ Rôles dans la classe</h2><div class="muted">Délégués, suppléants et éco-délégués. Aucun bonus ZenQuest.</div></div><button class="btn outline" id="closeClassRolesBtn">Fermer</button></div>
+      <div id="classRolesList" style="display:grid;gap:9px;margin-top:14px"></div>
+      <button class="btn primary" id="saveClassRolesBtn" style="margin-top:12px">Enregistrer les rôles</button>
+      <div id="rolesStatus" style="display:none;margin-top:10px;padding:10px;border-radius:12px;font-weight:850"></div>
     </div>
   </div>
 
@@ -1379,7 +1521,7 @@ Noah"
       <div class="modal-header">
         <div>
           <h2 style="margin:0">📢 Message de la classe</h2>
-          <div class="muted" id="classMessagesSubtitle" style="margin-top:4px"></div>
+          <div class="muted" id="classMessagesSubtitle" style="margin-top:4px"></div><div class="muted" style="margin-top:3px;font-size:12px">Chaque nouvelle info déclenche une notification côté élève/parent. Même après « J’ai vu », le message reste affiché ici jusqu’à ce que tu le supprimes.</div>
         </div>
         <button class="btn outline" id="closeClassMessagesBtn">Fermer</button>
       </div>
@@ -1387,11 +1529,15 @@ Noah"
       <div class="box" style="margin-top:12px">
         <div style="font-size:18px;font-weight:900;margin-bottom:10px">Ajouter une information</div>
         <div class="row wrap" style="align-items:stretch">
-          <select id="classMessageType" style="min-width:180px">
+          <select id="classMessageType" style="min-width:220px">
             <option value="message">📢 Message du professeur</option>
             <option value="work">📚 Travail à faire</option>
             <option value="bring">🎒 À apporter</option>
             <option value="reminder">⏰ Rappel</option>
+            <option value="pronote">🔵 Consulter Pronote</option>
+            <option value="parents">👨‍👩‍👧 Réunion parents-professeurs</option>
+            <option value="council">🏫 Conseil de classe</option>
+            <option value="other">📌 Autre information</option>
           </select>
           <input id="classMessageDueDate" type="date" style="min-width:170px" />
         </div>
@@ -1399,6 +1545,7 @@ Noah"
           style="width:100%;min-height:110px;margin-top:10px;border:1px solid #e2e8f0;border-radius:16px;padding:12px;font:inherit;resize:vertical"></textarea>
         <div class="muted" style="font-size:12px;margin:6px 0 10px">La date est facultative. Si tu en ajoutes une, elle apparaîtra comme échéance.</div>
         <button class="btn green" id="addClassMessageBtn">➕ Publier pour la classe</button>
+        <div id="classMessagePublishStatus" style="display:none;margin-top:10px;padding:10px 12px;border-radius:12px;font-weight:850"></div>
       </div>
 
       <div style="font-size:18px;font-weight:900;margin:16px 0 8px">Messages publiés</div>
@@ -2350,8 +2497,26 @@ Noah"
       const safeLabel=String(label||"").replace(/\|/g,"/");
       return `${ZQ_EVENT_PREFIX}${type}|${code}|${safeLabel}|${scoreAfter}`;
     }
+    function encodeZQData(type,obj){
+      const json=JSON.stringify(obj||{});
+      const bytes=new TextEncoder().encode(json);
+      let bin=""; bytes.forEach(b=>bin+=String.fromCharCode(b));
+      return `ZQDATA|${type}|${btoa(bin)}`;
+    }
+    function decodeZQData(value){
+      const s=String(value||"");
+      if(!s.startsWith("ZQDATA|")) return null;
+      const p=s.split("|");
+      try{
+        const bin=atob(p.slice(2).join("|"));
+        const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
+        return {type:p[1],data:JSON.parse(new TextDecoder().decode(bytes))};
+      }catch{return null;}
+    }
     function parseZQEventRemark(value){
       const s=String(value||"");
+      const dataEvent=decodeZQData(s);
+      if(dataEvent) return {type:dataEvent.type,code:"data",label:"",scoreAfter:0,data:dataEvent.data};
       if(!s.startsWith(ZQ_EVENT_PREFIX)) return null;
       const parts=s.split("|");
       if(parts.length<5) return null;
@@ -2489,6 +2654,332 @@ Noah"
       renderMaterialsStudentList();
       document.getElementById("schoolMaterialsModal").classList.add("show");
     }
+
+
+    async function currentTeacherId(){
+      if(cachedTeacherUserId) return cachedTeacherUserId;
+      const {data:{user},error}=await supabaseClient.auth.getUser();
+      if(error||!user) throw new Error("Session professeur introuvable.");
+      cachedTeacherUserId=user.id; return user.id;
+    }
+    async function publishDataToClass(type,data){
+      const cls=currentClass();
+      if(!cls?.id) throw new Error("Aucune classe active.");
+      if(!cls?.students?.length) throw new Error("Aucun élève dans la classe.");
+      const teacher_id=await currentTeacherId();
+      const scopedData={...(data||{}),classId:(data&&data.classId)||cls.id};
+      const remark=encodeZQData(type,scopedData);
+      const payload=cls.students.map(s=>({teacher_id,student_id:s.id,remark}));
+      const {data:rows,error}=await supabaseClient.from("teacher_remarks").insert(payload).select("id,student_id,remark,created_at");
+      if(error) throw error;
+      (rows||[]).forEach(row=>{
+        const s=cls.students.find(x=>x.id===row.student_id);
+        if(s){s.teacherRemarks=s.teacherRemarks||[];s.teacherRemarks.unshift({id:row.id,text:row.remark,createdAt:row.created_at,date:row.created_at});}
+      });
+      return rows||[];
+    }
+    function resourceIcon(type){return type==="lesson"?"📘":type==="exercise"?"✏️":"📎";}
+    function announcementMeta(type){
+      return type==="pronote"?["🔵","Pense à consulter Pronote"]:
+             type==="parents"?["👨‍👩‍👧","Réunion parents-professeurs"]:
+             type==="council"?["🏫","Conseil de classe"]:["📢","Information importante"];
+    }
+
+    function resourceStoragePath(resource){
+      if(resource?.path) return resource.path;
+      const url=String(resource?.url||"");
+      const marker="/storage/v1/object/public/zenquest-resources/";
+      const i=url.indexOf(marker);
+      return i>=0 ? decodeURIComponent(url.slice(i+marker.length)) : "";
+    }
+
+    function classResourceCatalog(){
+      const cls=currentClass();
+      const events=[];
+      (cls?.students||[]).forEach(s=>{
+        (s.teacherRemarks||[]).forEach(r=>{
+          const e=decodeZQData(r.text??r.remark);
+          if(!e || !["resource","resource_update","resource_deleted"].includes(e.type)) return;
+          const d=e.data||{};
+          if(!d.id) return;
+          if(d.classId && String(d.classId)!==String(cls?.id)) return;
+          const t=new Date(r.createdAt||r.created_at||r.date||d.updatedAt||d.createdAt||0).getTime()||0;
+          events.push({type:e.type,data:d,time:t});
+        });
+      });
+      events.sort((a,b)=>a.time-b.time);
+      const map=new Map();
+      events.forEach(ev=>{
+        const id=ev.data.id;
+        if(ev.type==="resource_deleted"){ map.delete(id); return; }
+        if(ev.type==="resource"){
+          map.set(id,{...(map.get(id)||{}),...ev.data});
+        }else if(ev.type==="resource_update" && map.has(id)){
+          map.set(id,{...map.get(id),...ev.data});
+        }
+      });
+      return [...map.values()].sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+    }
+
+    function renderResourceManager(){
+      const box=document.getElementById("resourceManagerList");
+      if(!box) return;
+      const resources=classResourceCatalog();
+      if(!resources.length){
+        box.innerHTML='<div class="muted" style="padding:13px;text-align:center">Aucune ressource publiée pour cette classe.</div>';
+        return;
+      }
+      box.innerHTML=resources.map(r=>`
+        <div style="padding:12px 13px;border-radius:15px;border:1px solid #e2e8f0;background:#fff;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+          <div style="min-width:0;flex:1">
+            <div style="font-weight:1000;font-size:17px">${resourceIcon(r.type)} ${escapeHTML(r.title||"Ressource")}</div>
+            <div class="muted" style="font-size:12px;margin-top:3px">
+              ${r.sourceType==="link"?(r.isYoutube?"🎥 Vidéo YouTube":"🔗 Lien"):r.fileName?escapeHTML(r.fileName):"📄 Fichier"}${r.dueDate?` • 📅 pour le ${new Date(r.dueDate+"T12:00:00").toLocaleDateString("fr-FR")}`:""}
+            </div>
+            ${r.instruction?`<div style="font-size:12px;margin-top:4px">${escapeHTML(r.instruction)}</div>`:""}
+          </div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            ${r.url?`<button class="btn outline small resource-preview-btn" data-id="${escapeHTML(r.id)}">👁️ Voir</button>`:""}
+            <button class="btn outline small resource-edit-btn" data-id="${escapeHTML(r.id)}">✏️ Modifier</button>
+            <button class="btn danger small resource-delete-btn" data-id="${escapeHTML(r.id)}">🗑️ Supprimer</button>
+          </div>
+        </div>`).join("");
+
+      box.querySelectorAll(".resource-preview-btn").forEach(btn=>btn.onclick=()=>{
+        const r=classResourceCatalog().find(x=>x.id===btn.dataset.id);
+        if(r?.url) window.open(r.url,"_blank","noopener");
+      });
+      box.querySelectorAll(".resource-edit-btn").forEach(btn=>btn.onclick=()=>openEditResource(btn.dataset.id));
+      box.querySelectorAll(".resource-delete-btn").forEach(btn=>btn.onclick=()=>openDeleteResource(btn.dataset.id));
+    }
+
+    function openResourcesManager(){
+      renderResourceManager();
+      document.getElementById("resourcesModal").classList.add("show");
+    }
+
+    document.getElementById("resourcesBtn").onclick=openResourcesManager;
+    document.getElementById("closeResourcesBtn").onclick=()=>document.getElementById("resourcesModal").classList.remove("show");
+    document.getElementById("refreshResourceManagerBtn").onclick=renderResourceManager;
+    document.getElementById("resourceType").onchange=()=>{
+      document.getElementById("resourceDueWrap").style.display=document.getElementById("resourceType").value==="exercise"?"block":"none";
+    };
+    document.getElementById("resourceType").dispatchEvent(new Event("change"));
+    function refreshResourceSourceType(){
+      const mode=document.querySelector('input[name="resourceSourceType"]:checked')?.value||"file";
+      document.getElementById("resourceFileWrap").style.display=mode==="file"?"block":"none";
+      document.getElementById("resourceLinkWrap").style.display=mode==="link"?"block":"none";
+    }
+    document.querySelectorAll('input[name="resourceSourceType"]').forEach(r=>r.onchange=refreshResourceSourceType);
+    refreshResourceSourceType();
+
+    document.getElementById("publishResourceBtn").onclick=async()=>{
+      const btn=document.getElementById("publishResourceBtn"),status=document.getElementById("resourceStatus");
+      const cls=currentClass(),file=document.getElementById("resourceFile").files?.[0];
+      const type=document.getElementById("resourceType").value,title=document.getElementById("resourceTitle").value.trim();
+      if(!cls?.id || !cls?.students?.length){
+        status.style.display="block";status.style.background="#fee2e2";status.style.color="#991b1b";
+        status.textContent="⚠️ Choisis d’abord une classe contenant des élèves.";return;
+      }
+      const sourceType=document.querySelector('input[name="resourceSourceType"]:checked')?.value||"file";
+      const linkValue=document.getElementById("resourceLink").value.trim();
+      if(!title || (sourceType==="file"&&!file) || (sourceType==="link"&&!linkValue)){
+        status.style.display="block";status.style.background="#fee2e2";
+        status.textContent=sourceType==="file"?"⚠️ Ajoute un titre et un fichier.":"⚠️ Ajoute un titre et un lien.";return;
+      }
+      btn.disabled=true;btn.textContent="⏳ Publication…";
+      try{
+        let url="",path="",fileName="",mime="",isYoutube=false;
+        if(sourceType==="file"){
+          const ext=(file.name.split(".").pop()||"bin").toLowerCase();
+          path=`${cls.id}/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+          const {error:upErr}=await supabaseClient.storage.from("zenquest-resources").upload(path,file,{contentType:file.type,upsert:false});
+          if(upErr) throw new Error(`Stockage : ${upErr.message}.`);
+          const {data:urlData}=supabaseClient.storage.from("zenquest-resources").getPublicUrl(path);
+          url=urlData.publicUrl;fileName=file.name;mime=file.type;
+        }else{
+          let parsed;try{parsed=new URL(linkValue);}catch{throw new Error("Le lien indiqué n’est pas valide.");}
+          if(!["http:","https:"].includes(parsed.protocol)) throw new Error("Le lien doit commencer par http:// ou https://");
+          url=parsed.href;
+          isYoutube=/(^|\.)youtube\.com$|(^|\.)youtu\.be$/i.test(parsed.hostname);
+        }
+        const payload={id:uid(),classId:cls.id,type,title,instruction:document.getElementById("resourceInstruction").value.trim(),dueDate:document.getElementById("resourceDueDate").value||null,sourceType,fileName,mime,url,path,isYoutube,createdAt:new Date().toISOString()};
+        await publishDataToClass("resource",payload);
+        status.style.display="block";status.style.background="#dcfce7";status.textContent=`✅ ${resourceIcon(type)} Ressource publiée pour ${cls.students.length} élèves.`;
+        document.getElementById("resourceTitle").value="";document.getElementById("resourceInstruction").value="";document.getElementById("resourceFile").value="";document.getElementById("resourceLink").value="";
+        renderResourceManager();
+      }catch(e){status.style.display="block";status.style.background="#fee2e2";status.textContent="❌ "+e.message;}
+      finally{btn.disabled=false;btn.textContent="Publier pour la classe";}
+    };
+
+
+    function openEditResource(id){
+      const r=classResourceCatalog().find(x=>x.id===id);
+      if(!r) return;
+      document.getElementById("editResourceId").value=r.id;
+      document.getElementById("editResourceType").value=r.type||"other";
+      document.getElementById("editResourceTitle").value=r.title||"";
+      document.getElementById("editResourceInstruction").value=r.instruction||"";
+      document.getElementById("editResourceDueDate").value=r.dueDate||"";
+      document.getElementById("editResourceDueWrap").style.display=(r.type==="exercise")?"block":"none";
+      const st=document.getElementById("editResourceStatus"); st.style.display="none";
+      document.getElementById("editResourceModal").classList.add("show");
+    }
+    document.getElementById("closeEditResourceBtn").onclick=()=>document.getElementById("editResourceModal").classList.remove("show");
+    document.getElementById("editResourceType").onchange=()=>{
+      document.getElementById("editResourceDueWrap").style.display=document.getElementById("editResourceType").value==="exercise"?"block":"none";
+    };
+    document.getElementById("saveEditedResourceBtn").onclick=async()=>{
+      const btn=document.getElementById("saveEditedResourceBtn"),st=document.getElementById("editResourceStatus");
+      const id=document.getElementById("editResourceId").value;
+      const original=classResourceCatalog().find(x=>x.id===id);
+      const title=document.getElementById("editResourceTitle").value.trim();
+      if(!original||!title){st.style.display="block";st.style.background="#fee2e2";st.textContent="⚠️ Titre obligatoire.";return;}
+      btn.disabled=true;btn.textContent="⏳ Enregistrement…";
+      try{
+        const type=document.getElementById("editResourceType").value;
+        const updated={...original,id,type,title,
+          instruction:document.getElementById("editResourceInstruction").value.trim(),
+          dueDate:type==="exercise"?(document.getElementById("editResourceDueDate").value||null):null,
+          updatedAt:new Date().toISOString()
+        };
+        await publishDataToClass("resource_update",updated);
+        st.style.display="block";st.style.background="#dcfce7";st.textContent="✅ Ressource modifiée pour toute la classe.";
+        renderResourceManager();
+        setTimeout(()=>document.getElementById("editResourceModal").classList.remove("show"),700);
+      }catch(e){
+        st.style.display="block";st.style.background="#fee2e2";st.textContent="❌ "+(e?.message||String(e));
+      }finally{btn.disabled=false;btn.textContent="💾 Enregistrer les modifications";}
+    };
+
+    function openDeleteResource(id){
+      const r=classResourceCatalog().find(x=>x.id===id);
+      if(!r) return;
+      document.getElementById("deleteResourceId").value=id;
+      document.getElementById("deleteResourceName").textContent=`${resourceIcon(r.type)} ${r.title||"Ressource"}`;
+      const st=document.getElementById("deleteResourceStatus");
+      st.style.display="none"; st.textContent="";
+      document.getElementById("confirmDeleteResourceBtn").disabled=false;
+      document.getElementById("deleteResourceModal").classList.add("show");
+    }
+
+    document.getElementById("cancelDeleteResourceBtn").onclick=()=>document.getElementById("deleteResourceModal").classList.remove("show");
+
+    async function deletePublishedResource(id){
+      const r=classResourceCatalog().find(x=>x.id===id);
+      if(!r) throw new Error("Ressource introuvable.");
+
+      // 1. First remove the resource from ZenQuest for every pupil.
+      // This uses the same INSERT permission that already works for publishing resources.
+      await publishDataToClass("resource_deleted",{
+        id:r.id,
+        title:r.title||"",
+        deletedAt:new Date().toISOString()
+      });
+
+      // Refresh immediately: the card disappears even if file cleanup later fails.
+      renderResourceManager();
+      render();
+
+      // 2. Then try to remove the physical file from Supabase Storage.
+      if(r.sourceType==="link") return {storageDeleted:true,linkOnly:true};
+      const path=resourceStoragePath(r);
+      if(!path) return {storageDeleted:false,reason:"Chemin du fichier introuvable"};
+
+      const {error:storageError}=await supabaseClient
+        .storage
+        .from("zenquest-resources")
+        .remove([path]);
+
+      if(storageError){
+        return {storageDeleted:false,reason:storageError.message};
+      }
+      return {storageDeleted:true};
+    }
+
+    document.getElementById("confirmDeleteResourceBtn").onclick=async()=>{
+      const btn=document.getElementById("confirmDeleteResourceBtn");
+      const st=document.getElementById("deleteResourceStatus");
+      const id=document.getElementById("deleteResourceId").value;
+      btn.disabled=true; btn.textContent="⏳ Suppression…";
+      try{
+        const result=await deletePublishedResource(id);
+        st.style.display="block";
+        if(result.storageDeleted){
+          st.style.background="#dcfce7"; st.style.color="#166534";
+          st.textContent=result.linkOnly?"✅ Lien supprimé pour les élèves.":"✅ Ressource supprimée pour les élèves et fichier supprimé du stockage.";
+        }else{
+          st.style.background="#fff7ed"; st.style.color="#9a3412";
+          st.textContent=`✅ Ressource supprimée pour les élèves. ⚠️ Le fichier n’a pas pu être nettoyé du stockage : ${result.reason||"raison inconnue"}.`;
+        }
+        setTimeout(()=>document.getElementById("deleteResourceModal").classList.remove("show"),1200);
+      }catch(e){
+        console.error("RESOURCE DELETE ERROR",e);
+        st.style.display="block"; st.style.background="#fee2e2"; st.style.color="#991b1b";
+        st.textContent="❌ Impossible de supprimer la ressource : "+(e?.message||String(e));
+      }finally{
+        btn.disabled=false; btn.textContent="🗑️ Supprimer";
+      }
+    };
+
+    document.getElementById("announcementsBtn").onclick=()=>document.getElementById("announcementsModal").classList.add("show");
+    document.getElementById("closeAnnouncementsBtn").onclick=()=>document.getElementById("announcementsModal").classList.remove("show");
+    document.getElementById("publishAnnouncementBtn").onclick=async()=>{
+      const btn=document.getElementById("publishAnnouncementBtn"),status=document.getElementById("announcementStatus");
+      btn.disabled=true;btn.textContent="⏳ Publication…";
+      try{
+        const type=document.getElementById("announcementType").value;
+        const [icon,title]=announcementMeta(type);
+        await publishDataToClass("announcement",{id:uid(),type,icon,title,text:document.getElementById("announcementText").value.trim(),eventDate:document.getElementById("announcementDate").value||null,createdAt:new Date().toISOString()});
+        status.style.display="block";status.style.background="#dcfce7";status.textContent="✅ Annonce publiée. Elle restera visible côté élève/parent jusqu’à ce qu’elle soit marquée comme vue.";
+        document.getElementById("announcementText").value="";
+      }catch(e){status.style.display="block";status.style.background="#fee2e2";status.textContent="❌ "+e.message;}
+      finally{btn.disabled=false;btn.textContent="Publier pour la classe";}
+    };
+
+    function latestRoleForStudent(student){
+      const rows=student.teacherRemarks||[];
+      const cls=currentClass();
+      for(const r of rows){
+        const e=decodeZQData(r.text??r.remark);
+        if(e?.type!=="class_role") continue;
+        if(e.data?.classId && String(e.data.classId)!==String(cls?.id)) continue;
+        return e.data?.roles||[];
+      }
+      return [];
+    }
+    document.getElementById("classRolesBtn").onclick=()=>{
+      const cls=currentClass(),box=document.getElementById("classRolesList");
+      box.innerHTML=(cls?.students||[]).slice().sort((a,b)=>a.name.localeCompare(b.name,"fr")).map(s=>{
+        const roles=latestRoleForStudent(s);
+        return `<div class="box" data-role-student="${s.id}" style="padding:10px 12px">
+          <strong>${escapeHTML(s.name)}</strong>
+          <div class="row wrap" style="margin-top:7px">
+            <label><input type="checkbox" value="delegate" ${roles.includes("delegate")?"checked":""}> 🗳️ Délégué(e)</label>
+            <label><input type="checkbox" value="substitute" ${roles.includes("substitute")?"checked":""}> 🗳️ Suppléant(e)</label>
+            <label><input type="checkbox" value="eco" ${roles.includes("eco")?"checked":""}> 🌱 Éco-délégué(e)</label>
+          </div></div>`;
+      }).join("");
+      document.getElementById("classRolesModal").classList.add("show");
+    };
+    document.getElementById("closeClassRolesBtn").onclick=()=>document.getElementById("classRolesModal").classList.remove("show");
+    document.getElementById("saveClassRolesBtn").onclick=async()=>{
+      const btn=document.getElementById("saveClassRolesBtn"),status=document.getElementById("rolesStatus"),cls=currentClass();
+      btn.disabled=true;btn.textContent="⏳ Enregistrement…";
+      try{
+        const teacher_id=await currentTeacherId(),payload=[];
+        document.querySelectorAll("[data-role-student]").forEach(row=>{
+          const student_id=row.dataset.roleStudent;
+          const roles=[...row.querySelectorAll('input[type="checkbox"]:checked')].map(x=>x.value);
+          payload.push({teacher_id,student_id,remark:encodeZQData("class_role",{classId:cls.id,roles,updatedAt:new Date().toISOString()})});
+        });
+        const {data,error}=await supabaseClient.from("teacher_remarks").insert(payload).select("id,student_id,remark,created_at");
+        if(error) throw error;
+        (data||[]).forEach(r=>{const s=cls.students.find(x=>x.id===r.student_id);if(s){s.teacherRemarks=s.teacherRemarks||[];s.teacherRemarks.unshift({id:r.id,text:r.remark,createdAt:r.created_at});}});
+        status.style.display="block";status.style.background="#dcfce7";status.textContent="✅ Rôles enregistrés.";
+      }catch(e){status.style.display="block";status.style.background="#fee2e2";status.textContent="❌ "+e.message;}
+      finally{btn.disabled=false;btn.textContent="Enregistrer les rôles";}
+    };
 
     async function saveSchoolMaterials(){
       const cls=currentClass(), student=cls?.students.find(s=>s.id===materialsSelectedStudentId);
@@ -2720,7 +3211,7 @@ Noah"
       }).filter(Boolean);
     }
     function zqReasonHistoryHTML(rows,limit=10){
-      const events=zqEventsFromRemarks(rows).filter(e=>!["star_sync","school_material"].includes(e.type)).slice(0,limit);
+      const events=zqEventsFromRemarks(rows).filter(e=>!["star_sync","school_material","resource","resource_update","resource_deleted","announcement","class_role"].includes(e.type)).slice(0,limit);
       if(!events.length) return '<div style="padding:14px;border-radius:14px;background:#f0fdf4;border:1px solid #bbf7d0;text-align:center"><strong>✅ Rien à signaler</strong></div>';
 
       return `<div style="display:grid;gap:8px">${events.map(e=>{
@@ -5652,14 +6143,25 @@ Noah"
       message:{icon:"📢",label:"Message du professeur"},
       work:{icon:"📚",label:"Travail à faire"},
       bring:{icon:"🎒",label:"À apporter"},
-      reminder:{icon:"⏰",label:"Rappel"}
+      reminder:{icon:"⏰",label:"Rappel"},
+      pronote:{icon:"🔵",label:"Pense à consulter Pronote"},
+      parents:{icon:"👨‍👩‍👧",label:"Réunion parents-professeurs"},
+      council:{icon:"🏫",label:"Conseil de classe"},
+      other:{icon:"📌",label:"Information"}
     };
 
     function mapSupabaseClassMessage(row){
+      let type=row.type||"message";
+      let text=row.text||"";
+      const special=text.match(/^\[ZQTYPE:(pronote|parents|council|other)\]\s*/);
+      if(special){
+        type=special[1];
+        text=text.replace(special[0],"");
+      }
       return {
         id:row.id,
-        type:row.type||"message",
-        text:row.text||"",
+        type,
+        text,
         dueDate:row.due_date||"",
         createdAt:row.created_at||""
       };
@@ -5672,28 +6174,32 @@ Noah"
       return d.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric"});
     }
 
-    function studentClassMessagesHTML(cls){
+    function studentClassMessagesHTML(cls,seenSet=new Set()){
       const messages=(cls.classMessages||[]).slice().sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
       if(!messages.length) return `
-        <div class="box" style="border:1px dashed #cbd5e1">
+        <div class="box" style="margin-top:24px;border:1px dashed #cbd5e1">
           <div style="font-size:18px;font-weight:900">📢 Infos de la classe</div>
           <div class="muted" style="margin-top:5px">Aucun message du professeur pour le moment.</div>
         </div>
       `;
 
       return `
-        <div class="box" style="border:1px solid #bfdbfe;background:#eff6ff">
+        <div class="box" style="margin-top:28px;border:1px solid #bfdbfe;background:#eff6ff">
           <div style="font-size:20px;font-weight:900;margin-bottom:8px">📢 Infos de la classe</div>
           <div style="display:grid;gap:9px">
             ${messages.map(m=>{
               const meta=CLASS_MESSAGE_META[m.type]||CLASS_MESSAGE_META.message;
               return `
-                <div style="background:white;border:1px solid #dbeafe;border-radius:14px;padding:12px">
+                <div class="student-class-message-card" data-message-id="${escapeHTML(m.id)}" style="background:white;border:${seenSet.has(String(m.id))?"1px solid #dbeafe":"2px solid #60a5fa"};border-radius:14px;padding:12px">
                   <div class="row wrap" style="justify-content:space-between;gap:8px">
                     <strong>${meta.icon} ${meta.label}</strong>
                     ${m.dueDate?`<span class="toolbar-chip">📅 ${formatFrenchDate(m.dueDate)}</span>`:""}
                   </div>
-                  <div style="margin-top:7px;line-height:1.5;white-space:pre-wrap">${escapeHTML(m.text||"")}</div>
+                  <div style="margin-top:16px;line-height:1.5;white-space:pre-wrap">${escapeHTML(m.text||"")}</div>
+                  ${m.type==="council"?`<div class="muted" style="margin-top:7px;font-size:12px">💪 C’est le moment de terminer la période du mieux possible.</div>`:""}
+                  <div style="display:flex;justify-content:flex-end;margin-top:9px">
+                    <button type="button" class="btn outline small student-class-message-seen" data-message-id="${escapeHTML(m.id)}" ${seenSet.has(String(m.id))?"disabled":""}>${seenSet.has(String(m.id))?"✓ Vu":"✓ J’ai vu"}</button>
+                  </div>
                 </div>
               `;
             }).join("")}
@@ -5705,6 +6211,7 @@ Noah"
     function openClassMessages(){
       const cls=currentClass();
       document.getElementById("classMessagesSubtitle").textContent=`Classe active : ${cls.name}`;
+      const st=document.getElementById("classMessagePublishStatus"); if(st) st.style.display="none";
       renderClassMessagesList();
       document.getElementById("classMessagesModal").classList.add("show");
     }
@@ -5771,8 +6278,8 @@ Noah"
       const btn=document.getElementById("addClassMessageBtn");
 
       if(!textValue) return;
-      if(!cls?.id || !cls.fromSupabase){
-        alert("Choisis d’abord une classe Supabase.");
+      if(!cls?.id || !cls.fromSupabase || !Array.isArray(cls.students)){
+        alert("Choisis d’abord une classe Supabase valide.");
         return;
       }
 
@@ -5780,12 +6287,16 @@ Noah"
       btn.textContent="Publication…";
 
       try{
+        const specialTypes=["pronote","parents","council","other"];
+        const dbType=specialTypes.includes(type)?"message":type;
+        const dbText=specialTypes.includes(type)?`[ZQTYPE:${type}] ${textValue}`:textValue;
+
         const {data,error}=await supabaseClient
           .from("class_messages")
           .insert({
             class_id:cls.id,
-            type,
-            text:textValue,
+            type:dbType,
+            text:dbText,
             due_date:dueDate||null
           })
           .select("*")
@@ -5801,10 +6312,20 @@ Noah"
         document.getElementById("classMessageType").value="message";
 
         renderClassMessagesList();
-        alert("✅ Message publié pour la classe.");
+        const st=document.getElementById("classMessagePublishStatus");
+        if(st){
+          st.style.display="block";st.style.background="#dcfce7";st.style.color="#166534";
+          st.textContent="✅ Information publiée pour la classe.";
+        }
       }catch(err){
         console.error("CLASS MESSAGE INSERT ERROR",err);
-        alert("❌ Impossible de publier le message.\n\n"+(err?.message||String(err)));
+        const st=document.getElementById("classMessagePublishStatus");
+        if(st){
+          st.style.display="block";st.style.background="#fee2e2";st.style.color="#991b1b";
+          st.textContent="❌ Impossible de publier : "+(err?.message||String(err));
+        }else{
+          alert("❌ Impossible de publier le message.\n\n"+(err?.message||String(err)));
+        }
       }finally{
         btn.disabled=false;
         btn.textContent="➕ Publier pour la classe";
@@ -6782,11 +7303,56 @@ Noah"
       const trackingUnread=trackingUnreadCount(currentPeriodRemarks,student.id,currentPeriod?.id||cls.currentPeriodId||"current");
       const historyUnread=historyUnreadCount(periodHistory,student.id);
 
+      const zqDataRows=(remarks||[]).map(r=>({row:r,e:decodeZQData(r.remark ?? r.text)})).filter(x=>x.e);
+      const resourceEvents=zqDataRows
+        .filter(x=>["resource","resource_update","resource_deleted"].includes(x.e.type))
+        .filter(x=>!x.e.data?.classId || String(x.e.data.classId)===String(cls?.id))
+        .map(x=>({type:x.e.type,data:x.e.data||{},time:new Date(x.row.created_at||x.row.createdAt||x.e.data?.updatedAt||x.e.data?.createdAt||0).getTime()||0}))
+        .sort((a,b)=>a.time-b.time);
+      const resourceMap=new Map();
+      resourceEvents.forEach(ev=>{
+        const id=ev.data.id;if(!id)return;
+        if(ev.type==="resource_deleted"){resourceMap.delete(id);return;}
+        if(ev.type==="resource") resourceMap.set(id,{...(resourceMap.get(id)||{}),...ev.data});
+        else if(ev.type==="resource_update"&&resourceMap.has(id)) resourceMap.set(id,{...resourceMap.get(id),...ev.data});
+      });
+      const resources=[...resourceMap.values()].sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+      const announcements=[];
+      const seenAnnouncementIds=new Set();
+      zqDataRows.filter(x=>x.e.type==="announcement").forEach(x=>{const d=x.e.data||{};if(d.id&&!seenAnnouncementIds.has(d.id)){seenAnnouncementIds.add(d.id);announcements.push({...d,rowCreatedAt:x.row.created_at});}});
+      let studentRoles=[];
+      const roleRow=zqDataRows.find(x=>x.e.type==="class_role" && (!x.e.data?.classId || String(x.e.data.classId)===String(cls?.id)));
+      if(roleRow) studentRoles=roleRow.e.data?.roles||[];
+
+      const resourceSeenKey=`zenquest_resources_seen_${student.id}`;
+      let seenResources=[];try{seenResources=JSON.parse(localStorage.getItem(resourceSeenKey)||"[]");}catch{}
+      const seenResourceSet=new Set(Array.isArray(seenResources)?seenResources:[]);
+      const resourceUnread=resources.filter(r=>!seenResourceSet.has(r.id)).length;
+      const urgentResources=resources.filter(r=>!seenResourceSet.has(r.id)&&(r.type==="lesson"||r.type==="exercise"));
+
+      const announcementSeenKey=`zenquest_announcements_seen_${student.id}`;
+      let seenAnnouncements=[];try{seenAnnouncements=JSON.parse(localStorage.getItem(announcementSeenKey)||"[]");}catch{}
+      const seenAnnouncementSet=new Set(Array.isArray(seenAnnouncements)?seenAnnouncements:[]);
+      const now=Date.now();
+      // v5.8.6 : les anciennes "Annonces" sont fusionnées avec Infos de la classe.
+      const activeAnnouncements=[];
+      const announcementUnread=0;
+
+      const classMessageSeenKey=`zenquest_class_messages_seen_${student.id}`;
+      let seenClassMessages=[];try{seenClassMessages=JSON.parse(localStorage.getItem(classMessageSeenKey)||"[]");}catch{}
+      const classMessageSeenSet=new Set(Array.isArray(seenClassMessages)?seenClassMessages.map(String):[]);
+      const classMessageUnread=(classMessages||[]).filter(m=>m?.id&&!classMessageSeenSet.has(String(m.id))).length;
+
+      const roleLabels=studentRoles.map(r=>r==="delegate"?"🗳️ Délégué(e) de classe":r==="substitute"?"🗳️ Suppléant(e)":r==="eco"?"🌱 Éco-délégué(e)":"").filter(Boolean);
+
       document.getElementById("authenticatedStudentView").innerHTML=`
         <div class="student-dashboard">
 
           <div class="mode-switch" style="margin-bottom:16px;width:100%;display:flex;flex-wrap:wrap">
-            <button type="button" id="studentCurrentTabBtn" class="active" style="flex:1;min-width:170px">🎮 Période actuelle</button>
+            <button type="button" id="studentCurrentTabBtn" class="active" style="flex:1;min-width:170px;position:relative">
+              🎮 Période actuelle
+              ${classMessageUnread>0?`<span id="studentClassMessageNotifBadge" title="${classMessageUnread} info${classMessageUnread>1?"s":""} de classe à voir" style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;margin-left:5px;border-radius:999px;background:#dc2626;color:white;font-size:12px;font-weight:1000">${classMessageUnread}</span>`:""}
+            </button>
             <button type="button" id="studentTrackingTabBtn" style="flex:1;min-width:170px;position:relative">
               🧭 Suivi d’implication
               ${trackingUnread>0?`<span id="studentTrackingNotifBadge" title="${trackingUnread} nouveauté${trackingUnread>1?"s":""}" style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;margin-left:5px;border-radius:999px;background:#dc2626;color:white;font-size:12px;font-weight:1000;box-shadow:0 2px 7px rgba(220,38,38,.28)">${trackingUnread>99?"99+":trackingUnread}</span>`:""}
@@ -6794,6 +7360,10 @@ Noah"
             <button type="button" id="studentHistoryTabBtn" style="flex:1;min-width:170px;position:relative">
               📚 Mes anciennes périodes
               ${historyUnread>0?`<span id="studentHistoryNotifBadge" title="${historyUnread} nouvelle${historyUnread>1?"s":""} période${historyUnread>1?"s":""} archivée${historyUnread>1?"s":""}" style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;margin-left:5px;border-radius:999px;background:#dc2626;color:white;font-size:12px;font-weight:1000;box-shadow:0 2px 7px rgba(220,38,38,.28)">${historyUnread>99?"99+":historyUnread}</span>`:""}
+            </button>
+            <button type="button" id="studentResourcesTabBtn" style="flex:1;min-width:170px;position:relative">
+              📚 Ressources
+              ${resourceUnread>0?`<span id="studentResourcesNotifBadge" style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;margin-left:5px;border-radius:999px;background:#dc2626;color:white;font-size:12px;font-weight:1000">${resourceUnread}</span>`:""}
             </button>
             <button type="button" id="studentMaterialsTabBtn" style="flex:1;min-width:170px;position:relative">
               🎒 Matériel scolaire
@@ -6989,6 +7559,23 @@ Noah"
           </div>
 
           <div id="studentCurrentPeriodPanel">
+            ${urgentResources.length?`<div class="box" style="border:2px solid #fbbf24;background:#fffbeb">
+              <div style="font-size:21px;font-weight:1000">🔔 À ne pas manquer</div>
+              <div style="display:grid;gap:8px;margin-top:10px">
+                ${urgentResources.slice(0,3).map(r=>`<button type="button" class="student-open-resource-alert" data-resource-id="${escapeHTML(r.id)}" style="text-align:left;padding:11px;border-radius:13px;border:1px solid #fde68a;background:white;cursor:pointer"><strong>${resourceIcon(r.type)} ${r.type==="lesson"?"Nouvelle leçon à voir":"Exercice à faire"}</strong><div style="margin-top:3px">${escapeHTML(r.title||"Ressource")}${r.dueDate?` • 📅 pour le ${new Date(r.dueDate+"T12:00:00").toLocaleDateString("fr-FR")}`:""}</div></button>`).join("")}
+                ${activeAnnouncements.filter(a=>!seenAnnouncementSet.has(a.id)).map(a=>`<div class="student-announcement-card" data-announcement-id="${escapeHTML(a.id)}" style="padding:12px;border-radius:13px;border:1px solid #bfdbfe;background:white">
+                  <strong style="font-size:16px">${escapeHTML(a.icon||"📢")} ${escapeHTML(a.title||"Information")}</strong>
+                  ${a.eventDate?`<div style="margin-top:5px;font-weight:850">📅 ${new Date(a.eventDate).toLocaleString("fr-FR",{dateStyle:"medium",timeStyle:"short"})}</div>`:""}
+                  ${a.text?`<div style="margin-top:5px">${escapeHTML(a.text)}</div>`:""}
+                  ${a.type==="council"?`<div style="margin-top:6px;font-size:12px;color:#64748b">💪 C’est le moment de terminer la période du mieux possible.</div>`:""}
+                  <div style="display:flex;justify-content:flex-end;margin-top:9px">
+                    <button type="button" class="btn outline small student-announcement-seen" data-announcement-id="${escapeHTML(a.id)}">✓ J’ai vu</button>
+                  </div>
+                </div>`).join("")}
+              </div>
+            </div>`:""}
+
+
             ${(()=>{
               const ms=materialStateFromRemarks(remarks);
               const known=SCHOOL_MATERIALS.some(([code])=>ms[code]!==undefined);
@@ -7046,7 +7633,7 @@ Noah"
             </div>
           </div>
 
-          ${studentClassMessagesHTML({classMessages})}
+          ${studentClassMessagesHTML({classMessages},classMessageSeenSet)}
 
           <div class="box" style="border:2px solid #bfdbfe">
             <div style="font-size:20px;font-weight:900">💬 Remarques du professeur</div>
@@ -7088,6 +7675,11 @@ Noah"
               <div style="margin-top:12px"><strong>🔥 Série actuelle : ${Number(student.current_streak||0)} cours</strong></div>
             </div>
           </div>
+
+          ${roleLabels.length?`<div class="box" style="border:1px solid #ddd6fe;background:#faf5ff;margin-top:12px">
+            <strong>🎖️ Mon rôle dans la classe</strong>
+            <div style="margin-top:6px;font-size:15px;font-weight:850">${roleLabels.map(escapeHTML).join(" • ")}</div>
+          </div>`:""}
           <div class="box" style="border:2px solid #e2e8f0">
             <div style="display:flex;align-items:center;gap:10px">
               <div style="font-size:30px">🏆</div>
@@ -7152,6 +7744,23 @@ Noah"
           <div style="height:32px"></div>
           </div>
 
+          <div id="studentResourcesPanel" style="display:none">
+            <div class="box" style="border:2px solid #bfdbfe;background:linear-gradient(135deg,#eff6ff,#fff)">
+              <div style="font-size:25px;font-weight:1000">📚 Mes ressources</div>
+              <div class="muted" style="margin-top:5px">Retrouve ici les ressources mises à disposition pour t’aider en mathématiques.</div>
+            </div>
+            <div style="display:grid;gap:10px">
+              ${resources.length?resources.map(r=>`<div class="box" style="margin:0">
+                <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
+                  <div><div style="font-size:18px;font-weight:1000">${resourceIcon(r.type)} ${escapeHTML(r.title||"Ressource")}</div>
+                  ${r.instruction?`<div style="margin-top:5px">${escapeHTML(r.instruction)}</div>`:""}
+                  ${r.dueDate?`<div style="margin-top:5px;font-weight:900;color:#b45309">📅 À faire pour le ${new Date(r.dueDate+"T12:00:00").toLocaleDateString("fr-FR")}</div>`:""}</div>
+                  <button type="button" class="btn primary student-resource-open" data-resource-id="${escapeHTML(r.id)}">${r.isYoutube?"▶️ Voir la vidéo":r.sourceType==="link"?"🔗 Ouvrir le lien":"👁️ Ouvrir"}</button>
+                </div>
+              </div>`).join(""):'<div class="box muted">Aucune ressource publiée pour le moment.</div>'}
+            </div>
+          </div>
+
           <div id="studentMaterialsPanel" style="display:none">
             <div class="box" style="border:2px solid #bfdbfe;background:linear-gradient(135deg,#eff6ff,#ffffff)">
               <div style="font-size:25px;font-weight:1000">🎒 Mon matériel scolaire</div>
@@ -7172,30 +7781,88 @@ Noah"
       const currentTabBtn=document.getElementById("studentCurrentTabBtn");
       const trackingTabBtn=document.getElementById("studentTrackingTabBtn");
       const historyTabBtn=document.getElementById("studentHistoryTabBtn");
+      const resourcesTabBtn=document.getElementById("studentResourcesTabBtn");
       const materialsTabBtn=document.getElementById("studentMaterialsTabBtn");
       const parentsTabBtn=document.getElementById("studentParentsTabBtn");
       const currentPanel=document.getElementById("studentCurrentPeriodPanel");
       const trackingPanel=document.getElementById("studentTrackingPanel");
       const historyPanel=document.getElementById("studentHistoryPanel");
+      const resourcesPanel=document.getElementById("studentResourcesPanel");
       const materialsPanel=document.getElementById("studentMaterialsPanel");
       const parentsPanel=document.getElementById("studentParentsPanel");
       const showStudentTab=(tab)=>{
         const current=tab==="current";
         const tracking=tab==="tracking";
         const history=tab==="history";
+        const resourcesTab=tab==="resources";
         const materials=tab==="materials";
         const parents=tab==="parents";
         currentPanel.style.display=current?"block":"none";
         trackingPanel.style.display=tracking?"block":"none";
         historyPanel.style.display=history?"block":"none";
+        resourcesPanel.style.display=resourcesTab?"block":"none";
         materialsPanel.style.display=materials?"block":"none";
         parentsPanel.style.display=parents?"block":"none";
         currentTabBtn.classList.toggle("active",current);
         trackingTabBtn.classList.toggle("active",tracking);
         historyTabBtn.classList.toggle("active",history);
+        resourcesTabBtn.classList.toggle("active",resourcesTab);
         materialsTabBtn.classList.toggle("active",materials);
         parentsTabBtn.classList.toggle("active",parents);
       };
+      const markResourceSeenAndOpen=(id)=>{
+        const r=resources.find(x=>x.id===id); if(!r) return;
+        seenResourceSet.add(id);
+        try{localStorage.setItem(resourceSeenKey,JSON.stringify([...seenResourceSet]));}catch{}
+        const badge=document.getElementById("studentResourcesNotifBadge");
+        if(badge){const left=resources.filter(x=>!seenResourceSet.has(x.id)).length;if(left) badge.textContent=left;else badge.remove();}
+        window.open(r.url,"_blank","noopener");
+      };
+      document.querySelectorAll(".student-resource-open,.student-open-resource-alert").forEach(b=>b.onclick=()=>markResourceSeenAndOpen(b.dataset.resourceId));
+      if(resourcesTabBtn) resourcesTabBtn.onclick=()=>showStudentTab("resources");
+
+      document.querySelectorAll(".student-class-message-seen").forEach(btn=>{
+        btn.onclick=()=>{
+          const id=String(btn.dataset.messageId||"");
+          if(!id) return;
+          classMessageSeenSet.add(id);
+          try{localStorage.setItem(classMessageSeenKey,JSON.stringify([...classMessageSeenSet]));}catch{}
+          btn.textContent="✓ Vu";
+          btn.disabled=true;
+          const card=btn.closest(".student-class-message-card");
+          if(card) card.style.border="1px solid #dbeafe";
+          const remaining=(classMessages||[]).filter(m=>m?.id&&!classMessageSeenSet.has(String(m.id))).length;
+          const badge=document.getElementById("studentClassMessageNotifBadge");
+          if(badge){
+            if(remaining) badge.textContent=remaining;
+            else badge.remove();
+          }
+        };
+      });
+
+      document.querySelectorAll(".student-announcement-seen").forEach(btn=>{
+        btn.onclick=()=>{
+          const id=btn.dataset.announcementId;
+          if(!id) return;
+          seenAnnouncementSet.add(id);
+          try{localStorage.setItem(announcementSeenKey,JSON.stringify([...seenAnnouncementSet]));}catch{}
+          const card=btn.closest(".student-announcement-card");
+          if(card) card.remove();
+          const remaining=activeAnnouncements.filter(a=>!seenAnnouncementSet.has(a.id)).length;
+          const badge=document.getElementById("studentAnnouncementNotifBadge");
+          if(badge){
+            if(remaining) badge.textContent=remaining;
+            else badge.remove();
+          }
+          const alertBox=document.querySelector("#studentCurrentPeriodPanel .box[style*='fbbf24']");
+          if(alertBox){
+            const hasResourceAlert=alertBox.querySelector(".student-open-resource-alert");
+            const hasAnnouncement=alertBox.querySelector(".student-announcement-card");
+            if(!hasResourceAlert && !hasAnnouncement) alertBox.remove();
+          }
+        };
+      });
+
       if(currentTabBtn) currentTabBtn.onclick=()=>showStudentTab("current");
       if(trackingTabBtn) trackingTabBtn.onclick=()=>{
         showStudentTab("tracking");
@@ -8362,11 +9029,22 @@ Noah"
     document.getElementById("viewG2Btn").onclick=()=>{ state.viewMode="g2"; save(); render(); };
 
     initAuth();
-  </script>
+  
+    // Navigation prof : panneau des outils secondaires
+    document.getElementById("teacherToolsBtn").onclick=()=>document.getElementById("teacherToolsModal").classList.add("show");
+    document.getElementById("closeTeacherToolsBtn").onclick=()=>document.getElementById("teacherToolsModal").classList.remove("show");
+    document.querySelectorAll(".teacher-tool-launch").forEach(btn=>{
+      btn.onclick=()=>{
+        document.getElementById("teacherToolsModal").classList.remove("show");
+        document.getElementById(btn.dataset.target)?.click();
+      };
+    });
+
+</script>
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.7.6</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.9.0</span>.
   </footer>
 
 </body>
