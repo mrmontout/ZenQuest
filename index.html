@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.9.0</title>
+  <title>ZenQuest v5.9.2</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -521,6 +521,18 @@
       }
     }
 
+
+    @media(max-width:700px){
+      #studentResourceViewerModal .modal-card{
+        width:98vw!important;
+        height:92vh!important;
+        border-radius:20px!important;
+      }
+      #studentResourceViewerBody{
+        padding:6px!important;
+      }
+    }
+
 </style>
 </head>
 <body>
@@ -811,6 +823,21 @@ Noah"
         <button id="classRolesBtn"></button><button id="waitingModeBtn"></button>
         <button id="studentCodesBtn"></button><button id="studentConnectionsBtn"></button>
         <button id="classMessagesBtn"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="studentResourceViewerModal" style="z-index:3600000">
+    <div class="modal-card" style="width:min(1100px,96vw);height:min(88vh,900px);padding:0;overflow:hidden;display:flex;flex-direction:column">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid #e2e8f0;background:white">
+        <div style="min-width:0">
+          <div id="studentResourceViewerTitle" style="font-size:20px;font-weight:1000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📚 Ressource</div>
+          <div id="studentResourceViewerMeta" class="muted" style="font-size:12px;margin-top:2px"></div>
+        </div>
+        <button class="btn outline" id="closeStudentResourceViewerBtn">✕ Fermer</button>
+      </div>
+      <div id="studentResourceViewerBody" style="flex:1;min-height:0;background:#f8fafc;display:flex;align-items:center;justify-content:center;overflow:auto;padding:12px">
+        <div class="muted">Chargement…</div>
       </div>
     </div>
   </div>
@@ -7755,7 +7782,7 @@ Noah"
                   <div><div style="font-size:18px;font-weight:1000">${resourceIcon(r.type)} ${escapeHTML(r.title||"Ressource")}</div>
                   ${r.instruction?`<div style="margin-top:5px">${escapeHTML(r.instruction)}</div>`:""}
                   ${r.dueDate?`<div style="margin-top:5px;font-weight:900;color:#b45309">📅 À faire pour le ${new Date(r.dueDate+"T12:00:00").toLocaleDateString("fr-FR")}</div>`:""}</div>
-                  <button type="button" class="btn primary student-resource-open" data-resource-id="${escapeHTML(r.id)}">${r.isYoutube?"▶️ Voir la vidéo":r.sourceType==="link"?"🔗 Ouvrir le lien":"👁️ Ouvrir"}</button>
+                  <button type="button" class="btn primary student-resource-open" data-resource-id="${escapeHTML(r.id)}">${r.isYoutube?"▶️ Voir la vidéo":r.sourceType==="link"?"🔗 Voir la ressource":"👁️ Voir"}</button>
                 </div>
               </div>`).join(""):'<div class="box muted">Aucune ressource publiée pour le moment.</div>'}
             </div>
@@ -7810,13 +7837,119 @@ Noah"
         materialsTabBtn.classList.toggle("active",materials);
         parentsTabBtn.classList.toggle("active",parents);
       };
+      const getYouTubeVideoId=(rawUrl)=>{
+        try{
+          const u=new URL(String(rawUrl||"").trim());
+          const host=u.hostname.toLowerCase().replace(/^www\./,"");
+          if(host==="youtu.be"){
+            return u.pathname.split("/").filter(Boolean)[0]||"";
+          }
+          if(host==="youtube.com" || host==="m.youtube.com" || host==="music.youtube.com"){
+            if(u.pathname==="/watch") return u.searchParams.get("v")||"";
+            const parts=u.pathname.split("/").filter(Boolean);
+            if(["shorts","embed","live"].includes(parts[0])) return parts[1]||"";
+          }
+        }catch{}
+        return "";
+      };
+
+      const openResourceInsideZenQuest=(r)=>{
+        if(!r?.url) return;
+        const modal=document.getElementById("studentResourceViewerModal");
+        const body=document.getElementById("studentResourceViewerBody");
+        const title=document.getElementById("studentResourceViewerTitle");
+        const meta=document.getElementById("studentResourceViewerMeta");
+        if(!modal||!body||!title||!meta) return;
+
+        title.textContent=`${resourceIcon(r.type)} ${r.title||"Ressource"}`;
+        meta.textContent=r.dueDate?`📅 À faire pour le ${new Date(r.dueDate+"T12:00:00").toLocaleDateString("fr-FR")}`:"";
+        body.innerHTML="";
+
+        const mime=String(r.mime||"").toLowerCase();
+        const url=String(r.url||"");
+        const isImage=mime.startsWith("image/") || /\.(png|jpe?g|webp|gif)(\?|#|$)/i.test(url);
+        const isPdf=mime==="application/pdf" || /\.pdf(\?|#|$)/i.test(url);
+
+        if(isImage){
+          const img=document.createElement("img");
+          img.src=url;
+          img.alt=r.title||"Ressource";
+          img.style.maxWidth="100%";
+          img.style.maxHeight="100%";
+          img.style.objectFit="contain";
+          img.style.borderRadius="12px";
+          img.style.boxShadow="0 8px 30px rgba(15,23,42,.12)";
+          body.appendChild(img);
+        }else if(isPdf){
+          const frame=document.createElement("iframe");
+          frame.src=url;
+          frame.title=r.title||"Ressource PDF";
+          frame.style.width="100%";
+          frame.style.height="100%";
+          frame.style.border="0";
+          frame.style.borderRadius="12px";
+          frame.style.background="white";
+          body.appendChild(frame);
+        }else if(r.isYoutube || getYouTubeVideoId(url)){
+          const videoId=getYouTubeVideoId(url);
+          if(!videoId){
+            body.innerHTML='<div style="text-align:center;padding:28px"><div style="font-size:42px">🎥</div><strong>Lien YouTube non reconnu.</strong></div>';
+          }else{
+            const frame=document.createElement("iframe");
+            frame.src=`https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?rel=0`;
+            frame.title=r.title||"Vidéo YouTube";
+            frame.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+            frame.referrerPolicy="strict-origin-when-cross-origin";
+            frame.allowFullscreen=true;
+            frame.style.width="100%";
+            frame.style.height="100%";
+            frame.style.minHeight="360px";
+            frame.style.border="0";
+            frame.style.borderRadius="12px";
+            frame.style.background="black";
+            body.appendChild(frame);
+          }
+        }else{
+          const frame=document.createElement("iframe");
+          frame.src=url;
+          frame.title=r.title||"Ressource";
+          frame.style.width="100%";
+          frame.style.height="100%";
+          frame.style.border="0";
+          frame.style.borderRadius="12px";
+          frame.style.background="white";
+          body.appendChild(frame);
+
+          const fallback=document.createElement("div");
+          fallback.style.position="absolute";
+          fallback.style.bottom="18px";
+          fallback.style.right="18px";
+          fallback.innerHTML=`<button type="button" class="btn outline" id="resourceExternalFallbackBtn">↗️ Ouvrir dans un nouvel onglet</button>`;
+          body.style.position="relative";
+          body.appendChild(fallback);
+          setTimeout(()=>{
+            const b=document.getElementById("resourceExternalFallbackBtn");
+            if(b) b.onclick=()=>window.open(url,"_blank","noopener");
+          },0);
+        }
+
+        modal.classList.add("show");
+      };
+
+      document.getElementById("closeStudentResourceViewerBtn").onclick=()=>{
+        const modal=document.getElementById("studentResourceViewerModal");
+        const body=document.getElementById("studentResourceViewerBody");
+        if(body) body.innerHTML="";
+        modal?.classList.remove("show");
+      };
+
       const markResourceSeenAndOpen=(id)=>{
         const r=resources.find(x=>x.id===id); if(!r) return;
         seenResourceSet.add(id);
         try{localStorage.setItem(resourceSeenKey,JSON.stringify([...seenResourceSet]));}catch{}
         const badge=document.getElementById("studentResourcesNotifBadge");
         if(badge){const left=resources.filter(x=>!seenResourceSet.has(x.id)).length;if(left) badge.textContent=left;else badge.remove();}
-        window.open(r.url,"_blank","noopener");
+        openResourceInsideZenQuest(r);
       };
       document.querySelectorAll(".student-resource-open,.student-open-resource-alert").forEach(b=>b.onclick=()=>markResourceSeenAndOpen(b.dataset.resourceId));
       if(resourcesTabBtn) resourcesTabBtn.onclick=()=>showStudentTab("resources");
@@ -9044,7 +9177,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.9.0</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.9.2</span>.
   </footer>
 
 </body>
