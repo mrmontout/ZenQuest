@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.10.2</title>
+  <title>ZenQuest v5.10.5</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -5847,6 +5847,33 @@ Noah"
       queuePersistStudentSeenMeta();
     }
 
+    function archivedCollectiveStickersHTML(archive){
+      if(!archive?.snapshot){
+        return `<div style="margin-top:12px">
+          <div style="font-size:12px;font-weight:900;color:#64748b;margin-bottom:6px">🏷️ STICKERS COLLECTIFS</div>
+          <div style="padding:11px 12px;border-radius:14px;background:#f8fafc;border:1px dashed #cbd5e1">
+            <strong>Aucun sticker collectif pour cette période.</strong>
+          </div>
+        </div>`;
+      }
+      const snap=archive.snapshot||{};
+      const group=archive.studentGroup==="g1"?"g1":archive.studentGroup==="g2"?"g2":null;
+      const groupStars=group==="g1"?Number(snap.g1Stars||0):group==="g2"?Number(snap.g2Stars||0):0;
+      const groupName=group==="g1"?"Groupe 1":group==="g2"?"Groupe 2":"";
+
+      return `<div style="margin-top:12px">
+        <div style="font-size:12px;font-weight:900;color:#64748b;margin-bottom:6px">🏷️ STICKERS COLLECTIFS</div>
+        <div style="padding:11px;border-radius:14px;background:#eff6ff;border:1px solid #bfdbfe">
+          <strong>🏫 Classe</strong>
+          ${collectiveStickerHTML(Number(snap.classStars||0),"class").replaceAll('data-sticker-scope="class"','data-sticker-scope="class" data-sticker-archive="1"')}
+        </div>
+        ${group?`<div style="margin-top:8px;padding:11px;border-radius:14px;background:#f5f3ff;border:1px solid #ddd6fe">
+          <strong>👥 ${groupName}</strong>
+          ${collectiveStickerHTML(groupStars,"group").replaceAll('data-sticker-scope="group"','data-sticker-scope="group" data-sticker-archive="1"')}
+        </div>`:""}
+      </div>`;
+    }
+
     function studentPeriodHistoryHTML(history=[],studentId="student"){
       if(!history.length) return `<div class="box"><div style="font-size:20px;font-weight:900">📚 Mes anciennes aventures</div><div class="muted" style="margin-top:8px">Aucune période clôturée pour le moment.</div></div>`;
 
@@ -5909,6 +5936,7 @@ Noah"
                   : '<span class="muted">Aucune Carte Réussite sur cette période.</span>'}
               </div>
               ${meritArchiveHTML(remarks,h.name||"")}
+              ${archivedCollectiveStickersHTML(h.collectiveArchive)}
             </div>
 
             ${scores.length?studentChart(scores):'<div class="muted" style="margin-top:12px">Aucune note de fin de cours enregistrée.</div>'}
@@ -5932,6 +5960,33 @@ Noah"
         if(btn){ btn.disabled=true; btn.textContent="⏳ Clôture sécurisée…"; }
         message.textContent="🔒 Clôture atomique en cours…";
 
+        // Archive collective progression for this period before Supabase resets it.
+        // One scoped snapshot is written to each student's remarks so the student
+        // history can show class + own-group collective stickers later.
+        try{
+          const teacher_id=await currentTeacherId();
+          const snap=collectiveSnapshot(cls);
+          const archiveRows=(cls.students||[]).map(s=>({
+            teacher_id,
+            student_id:s.id,
+            remark:encodeZQData("collective_period_archive",{
+              classId:cls.id,
+              periodId:oldPeriodId,
+              periodName:oldPeriodName,
+              studentGroup:s.group||null,
+              snapshot:snap,
+              archivedAt:new Date().toISOString()
+            })
+          }));
+          if(archiveRows.length){
+            const {error:archiveCollectiveError}=await supabaseClient.from("teacher_remarks").insert(archiveRows);
+            if(archiveCollectiveError) throw archiveCollectiveError;
+          }
+        }catch(archiveErr){
+          console.error("COLLECTIVE PERIOD ARCHIVE ERROR",archiveErr);
+          throw new Error("Impossible d’archiver les stickers collectifs de la période : "+(archiveErr?.message||String(archiveErr)));
+        }
+
         const {data:newPeriodId,error}=await supabaseClient.rpc("zenquest_close_period",{
           target_class_id:cls.id,
           target_period_id:oldPeriodId,
@@ -5951,6 +6006,10 @@ Noah"
         state.viewMode="all";
         const freshClass=currentClass();
         if(freshClass){
+          freshClass.collectiveStars=0;
+          freshClass.collectiveDiamonds=0;
+          freshClass.groupStars={g1:0,g2:0};
+          freshClass.groupDiamonds={g1:0,g2:0};
           freshClass.students.forEach(s=>{
             s.isAbsent=false;
             s.isAutoAbsent=false;
@@ -7380,6 +7439,10 @@ Noah"
           const t=r.created_at?new Date(r.created_at).getTime():NaN;
           return Number.isFinite(t) && t>=start && t<=end;
         });
+        const collectiveArchive=(remarks||[])
+          .map(r=>({row:r,event:decodeZQData(r.remark??r.text)}))
+          .find(x=>x.event?.type==="collective_period_archive" && String(x.event.data?.periodId||"")===String(h.period_id||""));
+        h.collectiveArchive=collectiveArchive?.event?.data||null;
       });
 
       const {data:classMessages,error:classMessagesError}=await supabaseClient
@@ -7421,6 +7484,8 @@ Noah"
       if(Number.isNaN(d.getTime())) return "Cours";
       return d.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"});
     }
+
+    let authenticatedStudentActiveTab="current";
 
     function renderAuthenticatedStudentDashboard(student,cls,currentPeriodName,periodAverage,lessonScores,remarks,classMessages=[],periodHistory=[],currentPeriod=null){
       document.getElementById("studentClassPill").textContent=cls?.name||"Ma classe";
@@ -7991,6 +8056,7 @@ Noah"
       const materialsPanel=document.getElementById("studentMaterialsPanel");
       const parentsPanel=document.getElementById("studentParentsPanel");
       const showStudentTab=(tab)=>{
+        authenticatedStudentActiveTab=tab||"current";
         const current=tab==="current";
         const tracking=tab==="tracking";
         const history=tab==="history";
@@ -8010,6 +8076,11 @@ Noah"
         materialsTabBtn.classList.toggle("active",materials);
         parentsTabBtn.classList.toggle("active",parents);
       };
+      // Keep the pupil exactly where they were after a live refresh.
+      if(["current","tracking","history","resources","materials","parents"].includes(authenticatedStudentActiveTab)){
+        showStudentTab(authenticatedStudentActiveTab);
+      }
+
       const getYouTubeVideoId=(rawUrl)=>{
         try{
           const u=new URL(String(rawUrl||"").trim());
@@ -8794,7 +8865,16 @@ Noah"
       if(session) await routeAuthenticatedUser(session);
       else showLogin();
 
-      supabaseClient.auth.onAuthStateChange(async (_event,session)=>{
+      supabaseClient.auth.onAuthStateChange(async (event,session)=>{
+        // Saving "seen" notifications updates Auth user_metadata and emits USER_UPDATED.
+        // Do NOT rebuild the whole student dashboard for that event, otherwise the
+        // user is thrown back to "Période actuelle" while reading/scolling archives.
+        if(event==="USER_UPDATED"){
+          if(session?.user?.user_metadata?.zenquest_seen_v1){
+            currentStudentSeenMeta=normalizedStudentSeenMeta(session.user.user_metadata.zenquest_seen_v1);
+          }
+          return;
+        }
         if(session) await routeAuthenticatedUser(session);
         else showLogin();
       });
@@ -8816,8 +8896,9 @@ Noah"
           const scope=btn.dataset.stickerScope==="group"?"group":"class";
           document.getElementById("collectiveStickerInfoEmoji").textContent=btn.dataset.stickerEmoji||"🤝";
           document.getElementById("collectiveStickerInfoTitle").textContent=btn.dataset.stickerText||"Sticker collectif";
+          const archived=btn.dataset.stickerArchive==="1";
           document.getElementById("collectiveStickerInfoScope").textContent=
-            scope==="group" ? "Sticker collectif de ton groupe" : "Sticker collectif de la classe";
+            (scope==="group" ? "Sticker collectif de ton groupe" : "Sticker collectif de la classe") + (archived?" • ancienne période":"");
           document.getElementById("collectiveStickerInfoModal")?.classList.add("show");
         };
       });
@@ -9391,7 +9472,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.10.2</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.10.5</span>.
   </footer>
 
 </body>
