@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.10.9</title>
+  <title>ZenQuest v5.11.3</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -531,6 +531,125 @@
       #studentResourceViewerBody{
         padding:6px!important;
       }
+    }
+
+
+    /* v5.11 — cartes prof express : le détail vit dans la fiche élève */
+    #studentsGrid{
+      grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+      gap:9px !important;
+    }
+    .quick-student-card{
+      padding:10px !important;
+      min-height:180px !important;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      align-items:stretch;
+      justify-content:flex-start;
+      cursor:pointer;
+      overflow:visible;
+    }
+    .quick-student-main{
+      appearance:none;
+      border:0;
+      background:transparent;
+      padding:0;
+      min-width:0;
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      gap:5px;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      cursor:pointer;
+      color:inherit;
+    }
+    .quick-student-avatar{
+      width:46px;
+      height:46px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:50%;
+      background:rgba(255,255,255,.9);
+      border:1px solid #e2e8f0;
+      font-size:30px;
+      line-height:1;
+    }
+    .quick-student-name{
+      width:100%;
+      min-width:0;
+      overflow:visible;
+      text-overflow:clip;
+      white-space:normal;
+      overflow-wrap:anywhere;
+      word-break:normal;
+      font-size:16px;
+      font-weight:1000;
+      line-height:1.15;
+      text-align:center;
+    }
+    .quick-absent-badge{
+      padding:3px 6px;
+      border-radius:999px;
+      background:#e2e8f0;
+      color:#475569;
+      font-size:9px;
+      font-weight:1000;
+    }
+    .quick-student-score{
+      display:block;
+      font-size:25px;
+      line-height:1;
+      font-weight:1000;
+      white-space:nowrap;
+      text-align:center;
+      margin-top:2px;
+    }
+    .quick-student-score span{
+      font-size:10px;
+      color:#64748b;
+      margin-left:1px;
+    }
+    .quick-student-actions{
+      width:100%;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:7px;
+      margin-top:auto;
+    }
+    .quick-attendance-btn{
+      grid-column:1 / -1;
+      font-size:11px !important;
+      font-weight:950 !important;
+      min-height:34px;
+    }
+    .quick-student-actions .btn{
+      min-height:38px;
+      padding:5px 8px;
+      font-size:22px;
+      line-height:1;
+    }
+    @media (min-width:700px){
+      #studentsGrid{grid-template-columns:repeat(3,minmax(0,1fr)) !important;}
+    }
+    @media (min-width:1050px){
+      #studentsGrid{grid-template-columns:repeat(5,minmax(0,1fr)) !important;}
+    }
+    @media (min-width:1450px){
+      #studentsGrid{grid-template-columns:repeat(6,minmax(0,1fr)) !important;}
+    }
+    @media (max-width:430px){
+      #studentsGrid{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:7px !important;}
+      .quick-student-card{padding:8px !important;gap:6px;min-height:170px !important;}
+      .quick-student-main{display:flex;flex-direction:column;gap:4px;}
+      .quick-student-avatar{width:40px;height:40px;font-size:26px;}
+      .quick-student-name{font-size:14px;}
+      .quick-absent-badge{font-size:8px;}
+      .quick-student-score{font-size:21px;}
+      .quick-student-actions .btn{min-height:34px;font-size:20px;}
     }
 
 </style>
@@ -3783,47 +3902,46 @@ Noah"
 
     function renderStudents(){
       applyViewAbsences();
-      const grid=document.getElementById("studentsGrid"); grid.innerHTML="";
-      currentClass().students.forEach(student=>{
-        const alert=getAlert(student.points), deco=getDecoration(student.stars), fillPct=Math.max(0,Math.min(100,(student.progress/3)*100)), selected=state.selectedStudentIds.includes(student.id);
-        const card=document.createElement("div");
-        card.className=`card ${student.isAbsent?"absent":""} ${selected?"selected":""}`;
+      const grid=document.getElementById("studentsGrid");
+      grid.innerHTML="";
 
-        let floating=""; if(student.lastAction){ const t=student.lastAction.type; floating=`<div class="floating ${t}">${t==="plus"?"+1 ✨":t==="minus"?"-1 💢":"+1 📝"}</div>`; }
-        let decorations=""; if(deco==="fire") decorations=`<div class="decoration fire">🔥</div>`; if(deco==="sparkles") decorations=`<div class="decoration spark1">✨</div><div class="decoration spark2">✨</div><div class="decoration spark3">✨</div>`; if(deco==="crown") decorations=`<div class="decoration crown">👑</div>`;
-        const groupTagClass=student.group==="g1"?"g1":student.group==="g2"?"g2":"g0";
-        const groupTagLabel=student.group==="g1"?"G1":student.group==="g2"?"G2":"—";
+      currentClass().students.forEach(student=>{
+        const selected=state.selectedStudentIds.includes(student.id);
+        const card=document.createElement("div");
+        card.className=`card quick-student-card ${student.isAbsent?"absent":""} ${selected?"selected":""}`;
+
+        let floating="";
+        if(student.lastAction){
+          const t=student.lastAction.type;
+          floating=`<div class="floating ${t}">${t==="plus"?"+1 ✨":t==="minus"?"-1 💢":"+1 📝"}</div>`;
+        }
 
         card.innerHTML=`
           ${floating}
-          <div class="card-top">
-            <button class="btn small outline toggle-absent">${student.isAbsent ? "Absent":"Présent"}</button>
-            <button class="btn small outline open-profile">Fiche</button>
+          <button type="button" class="quick-student-main" title="Afficher la fiche de ${escapeHTML(student.name)}">
+            <span class="quick-student-avatar">${student.avatar}</span>
+            <span class="quick-student-name">${escapeHTML(student.name)}</span>
+            ${student.isAbsent?`<span class="quick-absent-badge">ABSENT</span>`:""}
+            <span class="quick-student-score">${Number(student.points||0)}<span>/20</span></span>
+          </button>
+
+          <div class="quick-student-actions">
+            <button class="btn outline quick-attendance-btn" aria-label="Changer la présence de ${escapeHTML(student.name)}">${student.isAbsent?"Absent":"Présent"}</button>
+            <button class="btn minus score-minus" ${student.isAbsent?"disabled":""} aria-label="Retirer un point à ${escapeHTML(student.name)}">−</button>
+            <button class="btn plus score-plus" ${student.isAbsent?"disabled":""} aria-label="Ajouter un point à ${escapeHTML(student.name)}">＋</button>
           </div>
-          <div class="avatar-wrap">
-            ${decorations}
-            <button class="avatar avatar-btn">${student.avatar}</button>
-          </div>
-          <div class="score-under-avatar" title="Score actuel">${student.points}<span>/20</span></div>
-          <div class="name">
-            <span class="name-text">${student.name}</span>
-            <span class="group-tag ${groupTagClass}">${groupTagLabel}</span>
-            <button class="btn icon outline edit-name">✏️</button>
-          </div>
-          <div class="stars-line">${Array.from({length:MAX_INDIVIDUAL_STARS}).map((_,i)=>`<span style="opacity:${i<student.stars?1:.2}">⭐</span>`).join("")}<span class="diamond-inline">💎 x${student.diamonds}</span></div>
-          <div style="display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:5px">
-            <button class="btn outline manual-star-minus" ${student.isAbsent||student.stars<=0?"disabled":""} style="font-size:11px;padding:5px 9px">⭐ Retirer une étoile</button>
-            <button class="btn outline last-score-adjust-btn" style="font-size:11px;padding:5px 9px">⚙️ Ajuster dernière note</button>
-          </div>
-          <div class="progress"><div class="bar-box"><div class="bar-row"><div class="bar"><div class="fill" style="width:${fillPct}%"></div></div><div style="width:38px;text-align:right;font-size:13px;font-weight:700;color:var(--muted)">${student.progress}/3</div></div></div><div class="lvl">Niv. ${student.level}</div></div>
-          <div class="homework"><div>${homeworkDisplayHTML(student,true)}</div><div class="muted" style="font-size:10px">Travail maison</div></div>
-          <div class="alert">${alert?`<span>${alert.emoji} ${alert.label}</span>`:`<span style="opacity:0">placeholder</span>`}</div>
-          <div class="score-row score-actions-only"><button class="btn minus score-minus" ${student.isAbsent?"disabled":""}>−</button><button class="btn plus score-plus" ${student.isAbsent?"disabled":""}>＋</button></div>
-          <div style="text-align:center;margin-top:7px;font-size:13px;font-weight:900;color:${engagementIndexTheme(periodStats(student).index).color}">Indice d’implication : ${periodStats(student).index===null?"—":periodStats(student).index+"/20"}</div><div style="text-align:center;margin-top:3px;font-size:11px;font-weight:800;color:#64748b">${(()=>{const t=engagementTrend((student.periodScores||[]).map(x=>typeof x==="number"?x:x.score));return `${t.arrow} ${t.label} • 🔥 ${engagementStreak(student)}`})()}</div>
         `;
 
-        card.onclick=(e)=>{ if(e.target.closest("button,input,textarea,select")) return; toggleSelection(student.id); };
-        card.querySelector(".toggle-absent").onclick=(e)=>{
+        card.onclick=(e)=>{
+          if(e.target.closest(".score-minus,.score-plus,.quick-attendance-btn")) return;
+          if(state.selectionMode){
+            toggleSelection(student.id);
+          }else{
+            openProfile(student.id);
+          }
+        };
+
+        card.querySelector(".quick-attendance-btn").onclick=(e)=>{
           e.stopPropagation();
           const nextAbsent=!student.isAbsent;
           student.isAbsent=nextAbsent;
@@ -3834,20 +3952,18 @@ Noah"
           student.lostStarThisLesson=false;
           student.pointsLostThisLesson=0;
           student.homeworkAddedThisLesson=false;
-          render(); save();
+          save();
+          render();
         };
-        card.querySelector(".open-profile").onclick=(e)=>{ e.stopPropagation(); openProfile(student.id); };
-        card.querySelector(".avatar-btn").onclick=(e)=>{
+
+        card.querySelector(".score-minus").onclick=(e)=>{
           e.stopPropagation();
-          openAvatarModal(student.id);
+          openReasonPicker(student,"minus");
         };
-        card.querySelector(".edit-name").onclick=(e)=>{ e.stopPropagation(); const n=prompt("Modifier le prénom :",student.name); if(n&&n.trim()){ student.name=n.trim(); render(); save(); } };
-        card.querySelector(".score-minus").onclick=(e)=>{e.stopPropagation();openReasonPicker(student,"minus");};
-        card.querySelector(".score-plus").onclick=(e)=>{e.stopPropagation();openReasonPicker(student,"plus");};
-        const manualStarBtn=card.querySelector(".manual-star-minus");
-        if(manualStarBtn) manualStarBtn.onclick=(e)=>{e.stopPropagation();openStarLossModal(student);};
-        const lastScoreAdjustBtn=card.querySelector(".last-score-adjust-btn");
-        if(lastScoreAdjustBtn) lastScoreAdjustBtn.onclick=(e)=>{e.stopPropagation();openLastScoreAdjustModal(student);};
+        card.querySelector(".score-plus").onclick=(e)=>{
+          e.stopPropagation();
+          openReasonPicker(student,"plus");
+        };
 
         grid.appendChild(card);
       });
@@ -4638,11 +4754,21 @@ Noah"
               <div class="muted" style="margin-top:4px">Niv. ${student.level} • ${student.stars}⭐ • 💎 x${student.diamonds} • ${homeworkDisplayHTML(student,true)} • ${student.group==="g1"?"G1":student.group==="g2"?"G2":"—"}</div>
               <div style="margin-top:4px;font-size:14px;font-weight:600">Tendance : ${trend}</div>
               <div style="margin-top:8px;display:flex;gap:7px;flex-wrap:wrap">
-                <button class="btn outline small" id="previewStudentBtn">Voir comme cet élève</button>
-                <button class="btn outline small" id="technicalScoreCorrectionBtn">⚙️ Ajuster dernière note</button>
+                <button class="btn outline small" id="previewStudentBtn">👁️ Voir comme cet élève</button>
               </div>
             </div>
           </div>
+        </div>
+        <div class="box" style="margin:0 0 12px;border:2px solid #dbeafe;background:#f8fbff">
+          <div style="font-size:18px;font-weight:950;margin-bottom:9px">⚙️ Gestion de l’élève</div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            <button class="btn ${student.isAbsent?"green":"outline"} small" id="profileAttendanceBtn">${student.isAbsent?"✅ Remettre présent":"🚫 Marquer absent"}</button>
+            <button class="btn outline small" id="technicalScoreCorrectionBtn">📊 Ajuster dernière note</button>
+            <button class="btn outline small" id="profileStarAdjustBtn">⭐ Ajuster les étoiles</button>
+            <button class="btn outline small" id="profileAvatarBtn">🙂 Changer l’emoji</button>
+            <button class="btn outline small" id="profileEditNameBtn">✏️ Modifier le prénom</button>
+          </div>
+          <div class="muted" style="font-size:11px;margin-top:8px">Les corrections techniques de note n’ajoutent aucun motif de comportement.</div>
         </div>
         <div class="profile-grid">
           <div class="box"><div class="muted">Cours totaux</div><div class="big">${student.totalLessons}</div></div>
@@ -4676,9 +4802,45 @@ Noah"
       document.getElementById("profileModal").classList.add("show");
       document.getElementById("saveNotesBtn").onclick=()=>addRemark(student.id);
       document.getElementById("previewStudentBtn").onclick=()=>{ document.getElementById("profileModal").classList.remove("show"); openStudentView(student.id); };
+
       document.getElementById("technicalScoreCorrectionBtn").onclick=()=>{
         document.getElementById("profileModal").classList.remove("show");
         openLastScoreAdjustModal(student);
+      };
+
+      document.getElementById("profileAttendanceBtn").onclick=()=>{
+        const nextAbsent=!student.isAbsent;
+        student.isAbsent=nextAbsent;
+        student.isAutoAbsent=false;
+        student.manualPresenceOverride=false;
+        setLessonAttendanceOverride(currentClass().id,student.id,nextAbsent);
+        student.lostThisLesson=false;
+        student.lostStarThisLesson=false;
+        student.pointsLostThisLesson=0;
+        student.homeworkAddedThisLesson=false;
+        save();
+        render();
+        openProfile(student.id);
+      };
+
+      document.getElementById("profileStarAdjustBtn").onclick=()=>{
+        document.getElementById("profileModal").classList.remove("show");
+        openStarAdjustModal(student);
+      };
+
+      document.getElementById("profileAvatarBtn").onclick=()=>{
+        document.getElementById("profileModal").classList.remove("show");
+        openAvatarModal(student.id);
+      };
+
+      document.getElementById("profileEditNameBtn").onclick=()=>{
+        const n=prompt("Modifier le prénom :",student.name);
+        if(n&&n.trim()){
+          student.name=n.trim();
+          save();
+          render();
+          openProfile(student.id);
+        }
       };
     }
 
@@ -9659,7 +9821,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.10.9</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.11.3</span>.
   </footer>
 
 </body>
