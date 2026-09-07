@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.10.7</title>
+  <title>ZenQuest v5.10.8</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -1840,6 +1840,22 @@ Noah"
     let classSelectionRevision=0;
     let latestUserSelectedClassId=state.currentClassId;
 
+    // Source of truth for attendance during the current lesson.
+    // Kept outside student objects so a Supabase rebuild cannot erase it.
+    const lessonAttendanceOverrides=new Map();
+    function attendanceKey(classId,studentId){ return `${classId}::${studentId}`; }
+    function setLessonAttendanceOverride(classId,studentId,isAbsent){
+      lessonAttendanceOverrides.set(attendanceKey(classId,studentId),!!isAbsent);
+    }
+    function getLessonAttendanceOverride(classId,studentId){
+      const key=attendanceKey(classId,studentId);
+      return lessonAttendanceOverrides.has(key)?lessonAttendanceOverrides.get(key):null;
+    }
+    function clearLessonAttendanceOverrides(classId){
+      const prefix=`${classId}::`;
+      [...lessonAttendanceOverrides.keys()].forEach(k=>{if(k.startsWith(prefix)) lessonAttendanceOverrides.delete(k);});
+    }
+
 
     function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
     function currentClass(){ return state.classes.find(c=>c.id===state.currentClassId)||state.classes[0]||null; }
@@ -2205,6 +2221,12 @@ Noah"
     function applyViewAbsences(){
       const cls=currentClass();
       cls.students.forEach(s=>{
+        const explicit=getLessonAttendanceOverride(cls.id,s.id);
+        if(explicit!==null){
+          s.isAbsent=explicit;
+          s.isAutoAbsent=false;
+          return;
+        }
         if(state.viewMode==="all"){
           if(s.isAutoAbsent) s.isAbsent=false;
           s.isAutoAbsent=false;
@@ -3663,18 +3685,11 @@ Noah"
         card.onclick=(e)=>{ if(e.target.closest("button,input,textarea,select")) return; toggleSelection(student.id); };
         card.querySelector(".toggle-absent").onclick=(e)=>{
           e.stopPropagation();
-          const outsideGroup=(state.viewMode==="g1" && student.group==="g2") || (state.viewMode==="g2" && student.group==="g1");
-          if(outsideGroup){
-            // Un clic sur un élève automatiquement absent force sa présence ;
-            // un nouveau clic rétablit l'absence automatique.
-            student.manualPresenceOverride=!student.manualPresenceOverride;
-            student.isAbsent=!student.manualPresenceOverride;
-            student.isAutoAbsent=!student.manualPresenceOverride;
-          }else{
-            student.isAbsent=!student.isAbsent;
-            student.isAutoAbsent=false;
-            student.manualPresenceOverride=false;
-          }
+          const nextAbsent=!student.isAbsent;
+          student.isAbsent=nextAbsent;
+          student.isAutoAbsent=false;
+          student.manualPresenceOverride=false;
+          setLessonAttendanceOverride(currentClass().id,student.id,nextAbsent);
           student.lostThisLesson=false;
           student.lostStarThisLesson=false;
           student.pointsLostThisLesson=0;
@@ -5044,20 +5059,6 @@ Noah"
 
         let presentStudents=cls.students.filter(s=>!s.isAbsent);
 
-        // Sécurité après changement de période / rechargement :
-        // en mode "Toute la classe", une classe entière ne doit pas devenir absente
-        // à cause d'un ancien état local.
-        if(!presentStudents.length && state.viewMode==="all" && cls.students.length){
-          cls.students.forEach(s=>{
-            s.isAbsent=false;
-            s.isAutoAbsent=false;
-            s.manualPresenceOverride=false;
-          });
-          presentStudents=cls.students.slice();
-          save();
-          render();
-        }
-
         if(!presentStudents.length){
           throw new Error("Aucun élève présent à enregistrer. Vérifie l’appel ou le groupe affiché.");
         }
@@ -5242,6 +5243,7 @@ Noah"
         }
 
         showEndLessonStatus("Fin de cours validée !", "success", true);
+        clearLessonAttendanceOverrides(cls.id);
         setTimeout(()=>{
           try{ showSummary(lessonSummary); }
           catch(summaryErr){ console.error("SUMMARY ERROR", summaryErr); }
@@ -8537,6 +8539,13 @@ Noah"
           s.lostStarThisLesson=old.lostStarThisLesson;
           s.lastAction=old.lastAction;
         });
+        mappedClass.students.forEach(s=>{
+          const explicit=getLessonAttendanceOverride(mappedClass.id,s.id);
+          if(explicit!==null){
+            s.isAbsent=explicit;
+            s.isAutoAbsent=false;
+          }
+        });
 
         mappedClass.periodArchive=(periods||[]).filter(p=>!p.is_current).map(p=>{
           const rankingRows=mappedClass.students.map(s=>{
@@ -9525,7 +9534,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.10.7</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.10.8</span>.
   </footer>
 
 </body>
