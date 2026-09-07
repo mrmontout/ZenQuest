@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.11.3</title>
+  <title>ZenQuest v5.11.5</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -2556,8 +2556,15 @@ Noah"
     }
 
     function setAction(student,type){
-      student.lastAction={id:uid(),type};
-      setTimeout(()=>{ const target=currentClass().students.find(s=>s.id===student.id); if(target){ target.lastAction=null; render(); save(); } },650);
+      const actionId=uid();
+      student.lastAction={id:actionId,type};
+      setTimeout(()=>{
+        const target=currentClass()?.students?.find(s=>s.id===student.id);
+        if(target?.lastAction?.id===actionId) target.lastAction=null;
+        // Never persist/replay the visual action after its short animation.
+        render();
+        save();
+      },650);
     }
 
     function renderClassSelect(){
@@ -3948,6 +3955,14 @@ Noah"
           student.isAutoAbsent=false;
           student.manualPresenceOverride=false;
           setLessonAttendanceOverride(currentClass().id,student.id,nextAbsent);
+          showBoardAttendanceToast(student.name,nextAbsent);
+          sendBoardCommand({
+            action:"attendance_update",
+            eventId:uid(),
+            studentId:student.id,
+            studentName:student.name,
+            isAbsent:nextAbsent
+          });
           student.lostThisLesson=false;
           student.lostStarThisLesson=false;
           student.pointsLostThisLesson=0;
@@ -6956,6 +6971,48 @@ Noah"
       const tick=()=>{if(!end){t.textContent="";return}const r=Math.max(0,Math.ceil((end-Date.now())/1000));t.textContent=`${String(Math.floor(r/60)).padStart(2,"0")}:${String(r%60).padStart(2,"0")}`;if(r<=0)hidePdfZenOverlay()};tick();if(end)pdfOverlayTick=setInterval(tick,250);return true;
     }
     function hidePdfZenOverlay(){clearInterval(pdfOverlayTick);pdfOverlayTick=null;const e=document.getElementById("pdfZenOverlay");if(e)e.style.display="none";}
+    function showBoardAttendanceToast(name,isAbsent){
+      if(!canShowBoardPresentation()) return;
+      const stack=isPdfProjectionOpen()
+        ? document.getElementById("pdfPointToastStack")
+        : document.getElementById("globalBoardPointToastStack");
+      if(!stack) return;
+
+      const item=document.createElement("div");
+      item.style.cssText=`
+        padding:10px 14px;
+        border-radius:14px;
+        color:white;
+        font-size:17px;
+        font-weight:950;
+        line-height:1.25;
+        box-shadow:0 12px 35px rgba(0,0,0,.34);
+        border:2px solid ${isAbsent?"#cbd5e1":"#bbf7d0"};
+        background:${isAbsent?"#475569":"#16a34a"};
+        opacity:0;
+        transform:translateY(-8px);
+        transition:opacity .18s ease,transform .18s ease;
+      `;
+      item.innerHTML=`
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:25px">${isAbsent?"📝":"✅"}</span>
+          <div>
+            <div>${escapeHTML(name||"Élève")}</div>
+            <div style="font-size:13px;opacity:.9">${isAbsent?"Absent(e) • appel enregistré":"Présent(e) • appel corrigé"}</div>
+          </div>
+        </div>`;
+      stack.appendChild(item);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        item.style.opacity="1";
+        item.style.transform="translateY(0)";
+      }));
+      setTimeout(()=>{
+        item.style.opacity="0";
+        item.style.transform="translateY(-8px)";
+        setTimeout(()=>item.remove(),220);
+      },2600);
+    }
+
     function showPdfPointToast(name,type,label,prevScore=null,nextScore=null){
       const stack=isPdfProjectionOpen()
         ? document.getElementById("pdfPointToastStack")
@@ -7431,6 +7488,23 @@ Noah"
         if(canShowBoardPresentation()) startFlashQuestions(false);
       }else if(payload.action==="flash_stop"){
         if(canShowBoardPresentation()) stopFlashQuestions(false);
+      }else if(payload.action==="attendance_update"){
+        const cls=currentClass();
+        if(!cls || String(payload.classId)!==String(cls.id)) return;
+        const student=cls.students.find(s=>String(s.id)===String(payload.studentId));
+        if(!student) return;
+        const isAbsent=!!payload.isAbsent;
+        setLessonAttendanceOverride(cls.id,student.id,isAbsent);
+        student.isAbsent=isAbsent;
+        student.isAutoAbsent=false;
+        student.manualPresenceOverride=false;
+        student.lostThisLesson=false;
+        student.lostStarThisLesson=false;
+        student.pointsLostThisLesson=0;
+        student.homeworkAddedThisLesson=false;
+        save();
+        render();
+        showBoardAttendanceToast(student.name,isAbsent);
       }else if(payload.action==="point_toast"){
         if(!canShowBoardPresentation()) return;
         if(payload.eventId && receivedPointToastIds.has(payload.eventId)) return;
@@ -8722,8 +8796,7 @@ Noah"
           isAutoAbsent:!!s.isAutoAbsent,
           manualPresenceOverride:!!s.manualPresenceOverride,
           homeworkAddedThisLesson:!!s.homeworkAddedThisLesson,
-          lostStarThisLesson:!!s.lostStarThisLesson,
-          lastAction:s.lastAction||null
+          lostStarThisLesson:!!s.lostStarThisLesson
         });
       }));
 
@@ -8824,7 +8897,7 @@ Noah"
           s.manualPresenceOverride=old.manualPresenceOverride;
           s.homeworkAddedThisLesson=old.homeworkAddedThisLesson;
           s.lostStarThisLesson=old.lostStarThisLesson;
-          s.lastAction=old.lastAction;
+          // lastAction is deliberately NOT restored: point animations are one-shot.
         });
         mappedClass.students.forEach(s=>{
           const explicit=getLessonAttendanceOverride(mappedClass.id,s.id);
@@ -9821,7 +9894,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.11.3</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.11.5</span>.
   </footer>
 
 </body>
