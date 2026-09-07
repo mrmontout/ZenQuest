@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.10.8</title>
+  <title>ZenQuest v5.10.9</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -1423,6 +1423,27 @@ Noah"
   
   
   
+  <div class="modal" id="lastScoreAdjustModal">
+    <div class="modal-card" style="width:min(560px,92vw)">
+      <div class="modal-header">
+        <div>
+          <h2 style="margin:0">⚙️ Ajuster la dernière note</h2>
+          <div class="muted" id="lastScoreAdjustSubtitle" style="margin-top:4px"></div>
+        </div>
+        <button class="btn outline" id="closeLastScoreAdjustBtn">Fermer</button>
+      </div>
+      <div class="box" style="margin-top:14px;background:#f8fafc">
+        <div class="muted" style="font-size:12px">Correction technique</div>
+        <div style="margin-top:4px;font-weight:850;line-height:1.5">
+          Modifie uniquement la <strong>dernière note de fin de cours</strong> et le score actuel.
+          Aucun motif de comportement n’est ajouté.
+        </div>
+      </div>
+      <div id="lastScoreAdjustChoices" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:14px"></div>
+      <div id="lastScoreAdjustStatus" style="display:none;margin-top:12px;padding:10px 12px;border-radius:12px;font-weight:850"></div>
+    </div>
+  </div>
+
   <div class="modal" id="starAdjustModal">
     <div class="modal-card" style="width:min(520px,94vw)">
       <div class="modal-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
@@ -3527,6 +3548,125 @@ Noah"
       return {negative:top(neg),positive:top(pos),negativeCount:neg.length,positiveCount:pos.length};
     }
 
+    let pendingLastScoreAdjustStudent=null;
+    let pendingLastScoreRow=null;
+
+    async function openLastScoreAdjustModal(student){
+      pendingLastScoreAdjustStudent=student;
+      pendingLastScoreRow=null;
+
+      const modal=document.getElementById("lastScoreAdjustModal");
+      const subtitle=document.getElementById("lastScoreAdjustSubtitle");
+      const choices=document.getElementById("lastScoreAdjustChoices");
+      const status=document.getElementById("lastScoreAdjustStatus");
+
+      status.style.display="none";
+      choices.innerHTML='<div class="muted" style="grid-column:1/-1">Chargement de la dernière note…</div>';
+      subtitle.textContent=`${student.name}`;
+      modal.classList.add("show");
+
+      try{
+        const cls=currentClass();
+        if(!cls?.currentPeriodId) throw new Error("Aucune période actuelle.");
+
+        const {data,error}=await supabaseClient
+          .from("lesson_scores")
+          .select("id,score,created_at")
+          .eq("student_id",student.id)
+          .eq("period_id",cls.currentPeriodId)
+          .order("created_at",{ascending:false})
+          .limit(1);
+
+        if(error) throw error;
+        const row=data?.[0];
+        if(!row){
+          choices.innerHTML='<div class="muted" style="grid-column:1/-1">Aucune note de fin de cours à corriger pour cet élève.</div>';
+          subtitle.textContent=`${student.name} • aucun cours enregistré`;
+          return;
+        }
+
+        pendingLastScoreRow=row;
+        const currentScore=Number(row.score);
+        subtitle.textContent=`${student.name} • dernière note : ${currentScore}/20`;
+
+        choices.innerHTML=Array.from({length:21},(_,n)=>`
+          <button type="button" class="btn ${n===currentScore?"primary":"outline"} last-score-choice"
+            data-score="${n}" style="padding:10px 6px;font-weight:900">${n}</button>
+        `).join("");
+
+        choices.querySelectorAll(".last-score-choice").forEach(btn=>{
+          btn.onclick=async()=>{
+            const n=Number(btn.dataset.score);
+            if(!Number.isFinite(n) || !pendingLastScoreRow || !pendingLastScoreAdjustStudent) return;
+
+            choices.querySelectorAll("button").forEach(b=>b.disabled=true);
+            status.style.display="block";
+            status.style.background="#eff6ff";
+            status.style.color="#1e40af";
+            status.textContent="⏳ Correction…";
+
+            beginLocalTeacherMutation();
+            try{
+              const {error:scoreError}=await supabaseClient
+                .from("lesson_scores")
+                .update({score:n})
+                .eq("id",pendingLastScoreRow.id);
+              if(scoreError) throw scoreError;
+
+              const {error:studentError}=await supabaseClient
+                .from("students")
+                .update({points:n})
+                .eq("id",pendingLastScoreAdjustStudent.id);
+              if(studentError) throw studentError;
+
+              pendingLastScoreAdjustStudent.points=n;
+
+              const localScores=pendingLastScoreAdjustStudent.periodScores||[];
+              if(localScores.length){
+                const last=localScores[localScores.length-1];
+                if(typeof last==="number") localScores[localScores.length-1]=n;
+                else last.score=n;
+              }
+
+              status.style.background="#dcfce7";
+              status.style.color="#166534";
+              status.textContent=`✅ Dernière note corrigée à ${n}/20. Aucun motif ajouté.`;
+
+              save();
+              render();
+
+              setTimeout(()=>{
+                document.getElementById("lastScoreAdjustModal").classList.remove("show");
+                pendingLastScoreAdjustStudent=null;
+                pendingLastScoreRow=null;
+              },550);
+            }catch(err){
+              console.error("LAST SCORE ADJUST ERROR",err);
+              status.style.background="#fee2e2";
+              status.style.color="#991b1b";
+              status.textContent="❌ Impossible de corriger la dernière note : "+(err?.message||String(err));
+              choices.querySelectorAll("button").forEach(b=>b.disabled=false);
+            }finally{
+              endLocalTeacherMutation();
+            }
+          };
+        });
+      }catch(err){
+        console.error("LAST SCORE LOAD ERROR",err);
+        choices.innerHTML='<div style="grid-column:1/-1;font-weight:850;color:#991b1b">❌ Impossible de charger la dernière note.</div>';
+        status.style.display="block";
+        status.style.background="#fee2e2";
+        status.style.color="#991b1b";
+        status.textContent=err?.message||String(err);
+      }
+    }
+
+    document.getElementById("closeLastScoreAdjustBtn").onclick=()=>{
+      document.getElementById("lastScoreAdjustModal").classList.remove("show");
+      pendingLastScoreAdjustStudent=null;
+      pendingLastScoreRow=null;
+    };
+
     let pendingStarAdjustStudent=null;
 
     function openStarAdjustModal(student){
@@ -3673,7 +3813,7 @@ Noah"
           <div class="stars-line">${Array.from({length:MAX_INDIVIDUAL_STARS}).map((_,i)=>`<span style="opacity:${i<student.stars?1:.2}">⭐</span>`).join("")}<span class="diamond-inline">💎 x${student.diamonds}</span></div>
           <div style="display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:5px">
             <button class="btn outline manual-star-minus" ${student.isAbsent||student.stars<=0?"disabled":""} style="font-size:11px;padding:5px 9px">⭐ Retirer une étoile</button>
-            <button class="btn outline star-adjust-btn" style="font-size:11px;padding:5px 9px">⚙️ Ajuster</button>
+            <button class="btn outline last-score-adjust-btn" style="font-size:11px;padding:5px 9px">⚙️ Ajuster dernière note</button>
           </div>
           <div class="progress"><div class="bar-box"><div class="bar-row"><div class="bar"><div class="fill" style="width:${fillPct}%"></div></div><div style="width:38px;text-align:right;font-size:13px;font-weight:700;color:var(--muted)">${student.progress}/3</div></div></div><div class="lvl">Niv. ${student.level}</div></div>
           <div class="homework"><div>${homeworkDisplayHTML(student,true)}</div><div class="muted" style="font-size:10px">Travail maison</div></div>
@@ -3706,8 +3846,8 @@ Noah"
         card.querySelector(".score-plus").onclick=(e)=>{e.stopPropagation();openReasonPicker(student,"plus");};
         const manualStarBtn=card.querySelector(".manual-star-minus");
         if(manualStarBtn) manualStarBtn.onclick=(e)=>{e.stopPropagation();openStarLossModal(student);};
-        const starAdjustBtn=card.querySelector(".star-adjust-btn");
-        if(starAdjustBtn) starAdjustBtn.onclick=(e)=>{e.stopPropagation();openStarAdjustModal(student);};
+        const lastScoreAdjustBtn=card.querySelector(".last-score-adjust-btn");
+        if(lastScoreAdjustBtn) lastScoreAdjustBtn.onclick=(e)=>{e.stopPropagation();openLastScoreAdjustModal(student);};
 
         grid.appendChild(card);
       });
@@ -4499,7 +4639,7 @@ Noah"
               <div style="margin-top:4px;font-size:14px;font-weight:600">Tendance : ${trend}</div>
               <div style="margin-top:8px;display:flex;gap:7px;flex-wrap:wrap">
                 <button class="btn outline small" id="previewStudentBtn">Voir comme cet élève</button>
-                <button class="btn outline small" id="technicalScoreCorrectionBtn">⚙️ Corriger le score</button>
+                <button class="btn outline small" id="technicalScoreCorrectionBtn">⚙️ Ajuster dernière note</button>
               </div>
             </div>
           </div>
@@ -4536,24 +4676,9 @@ Noah"
       document.getElementById("profileModal").classList.add("show");
       document.getElementById("saveNotesBtn").onclick=()=>addRemark(student.id);
       document.getElementById("previewStudentBtn").onclick=()=>{ document.getElementById("profileModal").classList.remove("show"); openStudentView(student.id); };
-      document.getElementById("technicalScoreCorrectionBtn").onclick=async()=>{
-        const raw=prompt(`Corriger le score de ${student.name} sans motif ni animation :`,String(student.points));
-        if(raw===null) return;
-        const value=Number(String(raw).replace(",","."));
-        if(!Number.isFinite(value) || value<0 || value>20){
-          alert("Entre un score entre 0 et 20.");
-          return;
-        }
-        const btn=document.getElementById("technicalScoreCorrectionBtn");
-        btn.disabled=true; btn.textContent="⏳ Correction…";
-        try{
-          await updateStudentPointsInSupabase(student,value);
-          student.points=value;
-          save(); render(); openProfile(student.id);
-        }catch(err){
-          console.error("TECHNICAL SCORE CORRECTION ERROR",err);
-          alert("❌ Impossible de corriger le score.");
-        }
+      document.getElementById("technicalScoreCorrectionBtn").onclick=()=>{
+        document.getElementById("profileModal").classList.remove("show");
+        openLastScoreAdjustModal(student);
       };
     }
 
@@ -9534,7 +9659,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.10.8</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.10.9</span>.
   </footer>
 
 </body>
