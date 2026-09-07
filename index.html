@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.10.5</title>
+  <title>ZenQuest v5.10.7</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -2260,10 +2260,18 @@ Noah"
     function engagementTrend(values){
       const vals=(values||[]).map(Number).filter(Number.isFinite);
       if(vals.length<2) return {delta:null,arrow:"→",label:"Pas encore assez de recul"};
-      const now=weightedEngagementIndex(vals), before=weightedEngagementIndex(vals.slice(0,-1));
-      const delta=(now===null||before===null)?null:round1(now-before);
-      if(delta===null) return {delta:null,arrow:"→",label:"Pas encore assez de recul"};
-      return delta>=.4?{delta,arrow:"↗",label:"En progression"}:delta<=-.4?{delta,arrow:"↘",label:"En baisse"}:{delta,arrow:"→",label:"Stable"};
+
+      // La tendance doit raconter ce que l'élève vient réellement de faire.
+      // On compare donc le dernier cours au cours précédent.
+      // L'indice pondéré reste utilisé pour la note d'implication, mais plus
+      // pour décider si l'élève est "en hausse" ou "en baisse".
+      const previous=vals[vals.length-2];
+      const latest=vals[vals.length-1];
+      const delta=round1(latest-previous);
+
+      if(delta>0) return {delta,arrow:"↗",label:"En progression"};
+      if(delta<0) return {delta,arrow:"↘",label:"En baisse"};
+      return {delta:0,arrow:"→",label:"Stable"};
     }
     function engagementStreak(student){
       const a=(student?.periodScores||[]).map(x=>Number(typeof x==="number"?x:x.score)).filter(Number.isFinite);
@@ -4474,7 +4482,10 @@ Noah"
               <div style="font-size:32px;font-weight:800">${student.name}</div>
               <div class="muted" style="margin-top:4px">Niv. ${student.level} • ${student.stars}⭐ • 💎 x${student.diamonds} • ${homeworkDisplayHTML(student,true)} • ${student.group==="g1"?"G1":student.group==="g2"?"G2":"—"}</div>
               <div style="margin-top:4px;font-size:14px;font-weight:600">Tendance : ${trend}</div>
-              <div style="margin-top:8px"><button class="btn outline small" id="previewStudentBtn">Voir comme cet élève</button></div>
+              <div style="margin-top:8px;display:flex;gap:7px;flex-wrap:wrap">
+                <button class="btn outline small" id="previewStudentBtn">Voir comme cet élève</button>
+                <button class="btn outline small" id="technicalScoreCorrectionBtn">⚙️ Corriger le score</button>
+              </div>
             </div>
           </div>
         </div>
@@ -4510,6 +4521,25 @@ Noah"
       document.getElementById("profileModal").classList.add("show");
       document.getElementById("saveNotesBtn").onclick=()=>addRemark(student.id);
       document.getElementById("previewStudentBtn").onclick=()=>{ document.getElementById("profileModal").classList.remove("show"); openStudentView(student.id); };
+      document.getElementById("technicalScoreCorrectionBtn").onclick=async()=>{
+        const raw=prompt(`Corriger le score de ${student.name} sans motif ni animation :`,String(student.points));
+        if(raw===null) return;
+        const value=Number(String(raw).replace(",","."));
+        if(!Number.isFinite(value) || value<0 || value>20){
+          alert("Entre un score entre 0 et 20.");
+          return;
+        }
+        const btn=document.getElementById("technicalScoreCorrectionBtn");
+        btn.disabled=true; btn.textContent="⏳ Correction…";
+        try{
+          await updateStudentPointsInSupabase(student,value);
+          student.points=value;
+          save(); render(); openProfile(student.id);
+        }catch(err){
+          console.error("TECHNICAL SCORE CORRECTION ERROR",err);
+          alert("❌ Impossible de corriger le score.");
+        }
+      };
     }
 
     function studentTrend(values){
@@ -8396,6 +8426,18 @@ Noah"
     }
 
     async function loadTeacherSupabaseData(){
+      const transientByStudent=new Map();
+      (state.classes||[]).forEach(c=>(c.students||[]).forEach(s=>{
+        transientByStudent.set(String(s.id),{
+          isAbsent:!!s.isAbsent,
+          isAutoAbsent:!!s.isAutoAbsent,
+          manualPresenceOverride:!!s.manualPresenceOverride,
+          homeworkAddedThisLesson:!!s.homeworkAddedThisLesson,
+          lostStarThisLesson:!!s.lostStarThisLesson,
+          lastAction:s.lastAction||null
+        });
+      }));
+
       const {data:classes,error:classError}=await supabaseClient
         .from("classes")
         .select("*")
@@ -8484,6 +8526,17 @@ Noah"
           currentPeriodName:currentPeriod?.name||"Période en cours",
           currentPeriodCreatedAt:currentPeriod?.created_at||null
         },studentsWithRemarks,classMessages||[]);
+
+        mappedClass.students.forEach(s=>{
+          const old=transientByStudent.get(String(s.id));
+          if(!old) return;
+          s.isAbsent=old.isAbsent;
+          s.isAutoAbsent=old.isAutoAbsent;
+          s.manualPresenceOverride=old.manualPresenceOverride;
+          s.homeworkAddedThisLesson=old.homeworkAddedThisLesson;
+          s.lostStarThisLesson=old.lostStarThisLesson;
+          s.lastAction=old.lastAction;
+        });
 
         mappedClass.periodArchive=(periods||[]).filter(p=>!p.is_current).map(p=>{
           const rankingRows=mappedClass.students.map(s=>{
@@ -9472,7 +9525,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.10.5</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.10.7</span>.
   </footer>
 
 </body>
