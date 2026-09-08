@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.11.6</title>
+  <title>ZenQuest v5.12.0</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -651,6 +651,89 @@
       .quick-student-score{font-size:21px;}
       .quick-student-actions .btn{min-height:34px;font-size:20px;}
     }
+
+
+    /* v5.11.7 — rappel ZenQuest à la maison après 10 s de scores */
+    #summaryContent{position:relative}
+    #zenquestHomeReminder{
+      position:absolute;
+      inset:0;
+      z-index:40;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      border-radius:20px;
+      background:rgba(248,250,252,.96);
+      backdrop-filter:blur(5px);
+      opacity:0;
+      visibility:hidden;
+      pointer-events:none;
+      transform:scale(.985);
+      transition:opacity .3s ease,transform .3s ease,visibility .3s;
+    }
+    #zenquestHomeReminder.show{
+      opacity:1;
+      visibility:visible;
+      transform:scale(1);
+    }
+    .zenquest-home-card{
+      width:min(760px,94%);
+      padding:30px 24px;
+      border-radius:26px;
+      text-align:center;
+      background:linear-gradient(135deg,#ecfdf5,#eff6ff,#fff7ed);
+      border:2px solid #a7f3d0;
+      box-shadow:0 22px 60px rgba(15,23,42,.18);
+      animation:zqHomeReminderIn .55s cubic-bezier(.2,.9,.2,1.15);
+    }
+    @keyframes zqHomeReminderIn{
+      from{transform:translateY(18px) scale(.94);opacity:.2}
+      to{transform:translateY(0) scale(1);opacity:1}
+    }
+    .zenquest-home-house{font-size:clamp(58px,8vw,92px);line-height:1}
+    .zenquest-home-kicker{
+      margin-top:10px;
+      font-size:clamp(15px,2vw,21px);
+      font-weight:1000;
+      letter-spacing:.12em;
+      color:#64748b;
+    }
+    .zenquest-home-title{
+      margin-top:6px;
+      font-size:clamp(30px,4.5vw,56px);
+      line-height:1.05;
+      font-weight:1000;
+      color:#0f766e;
+    }
+        .zenquest-home-qr-wrap{
+      display:flex;
+      justify-content:center;
+      margin:16px auto 7px;
+    }
+    .zenquest-home-qr{
+      width:clamp(150px,18vw,215px);
+      height:clamp(150px,18vw,215px);
+      object-fit:contain;
+      background:white;
+      padding:8px;
+      border-radius:18px;
+      border:3px solid #0f172a;
+      box-shadow:0 12px 28px rgba(15,23,42,.16);
+    }
+    .zenquest-home-scan{
+      font-size:clamp(15px,1.8vw,21px);
+      font-weight:950;
+      color:#475569;
+    }
+.zenquest-home-items{
+      margin-top:17px;
+      font-size:clamp(16px,2.2vw,25px);
+      line-height:1.45;
+      font-weight:900;
+      color:#334155;
+    }
+    .zenquest-home-items span{padding:0 5px;color:#94a3b8}
 
 </style>
 </head>
@@ -1774,8 +1857,11 @@ Noah"
         title="Fermer la projection PDF"
         style="position:absolute;right:12px;top:68px;z-index:1000;width:46px;height:46px;border-radius:50%;font-size:22px;padding:0;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(0,0,0,.45)">✕</button>
       <div id="pdfProjectionToolbar" style="height:58px;display:flex;align-items:center;gap:8px;padding:8px 70px 8px 12px;background:#0f172a;color:white;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;white-space:nowrap">
-        <button class="btn green" id="pdfChooseBtn">📂 Choisir un PDF</button>
+        <button class="btn green" id="pdfChooseBtn">📂 Ouvrir un PDF</button>
+        <button class="btn outline" id="pdfCloudBtn" style="background:white">☁️ Mes fichiers</button>
+        <button class="btn outline" id="pdfCloudUploadBtn" style="background:white">＋ Enregistrer</button>
         <input id="pdfFileInput" type="file" accept="application/pdf,.pdf" style="display:none">
+        <input id="pdfCloudFileInput" type="file" accept="application/pdf,.pdf" style="display:none">
         <b id="pdfFileName">Aucun PDF</b><span style="flex:1"></span>
         <button class="btn outline" id="pdfPrevBtn" style="background:white">⬅️</button>
         <b id="pdfPageIndicator">— / —</b>
@@ -1788,13 +1874,26 @@ Noah"
         
       </div>
       <div id="pdfStage" style="height:calc(100% - 58px);overflow:auto;display:flex;justify-content:flex-start;align-items:flex-start;background:#374151;padding:18px;cursor:grab;user-select:none">
-        <div id="pdfEmptyState" style="color:white;text-align:center;margin:auto"><div style="font-size:72px">📄</div><h2>Projection PDF</h2><p>Choisis ton fichier depuis l’ordinateur.<br>Le fichier reste local.</p><button class="btn green" id="pdfChooseBigBtn">📂 Choisir un PDF</button></div>
+        <div id="pdfEmptyState" style="color:white;text-align:center;margin:auto"><div style="font-size:72px">📄</div><h2>Projection PDF</h2><p>Ouvre un PDF local ou retrouve ceux enregistrés dans ZenQuest.</p><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn green" id="pdfChooseBigBtn">📂 Ouvrir un PDF</button><button class="btn outline" id="pdfCloudBigBtn" style="background:white">☁️ Mes fichiers</button></div></div>
         <canvas id="pdfCanvas" style="display:none;background:white;box-shadow:0 12px 40px #0008"></canvas>
       </div>
       <div id="pdfZenOverlay" style="display:none;position:absolute;inset:58px 0 0;z-index:20;background:#0f172acc;align-items:center;justify-content:center;text-align:center;padding:30px;color:white;backdrop-filter:blur(3px)">
         <div><div id="pdfOverlayEmoji" style="font-size:100px"></div><div id="pdfOverlayTitle" style="font-size:72px;font-weight:950"></div><div id="pdfOverlayText" style="font-size:34px;font-weight:800;white-space:pre-wrap;margin-top:16px"></div><div id="pdfOverlayTimer" style="font-size:105px;font-weight:950;margin-top:22px"></div></div>
       </div>
       <div id="pdfPointToastStack" style="position:absolute;left:50%;top:78px;transform:translateX(-50%);z-index:30;width:min(480px,84vw);display:flex;flex-direction:column;gap:7px;pointer-events:none"></div>
+
+      <div id="pdfCloudDrawer" style="display:none;position:absolute;left:12px;top:66px;bottom:12px;z-index:900;width:min(430px,92vw);background:rgba(255,255,255,.98);border-radius:18px;box-shadow:0 18px 55px rgba(0,0,0,.4);padding:14px;overflow:auto;color:#0f172a">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <div>
+            <div style="font-size:20px;font-weight:1000">☁️ Mes fichiers de projection</div>
+            <div class="muted" style="font-size:11px;margin-top:2px">Synchronisés entre tes appareils.</div>
+          </div>
+          <button class="btn outline small" id="pdfCloudCloseBtn">✕</button>
+        </div>
+        <button class="btn green" id="pdfCloudUploadBigBtn" style="width:100%;margin-top:12px">＋ Enregistrer un PDF</button>
+        <div id="pdfCloudStatus" class="muted" style="font-size:12px;margin-top:9px">Chargement…</div>
+        <div id="pdfCloudList" style="display:flex;flex-direction:column;gap:7px;margin-top:10px"></div>
+      </div>
     </div>
   </div>
 
@@ -5149,9 +5248,22 @@ Noah"
           📱 Vous retrouverez votre score et son évolution dans votre espace élève.
         </div>
         ${scoreGrid}
+        <div id="zenquestHomeReminder" aria-hidden="true">
+          <div class="zenquest-home-card">
+            <div class="zenquest-home-house">🏠</div>
+            <div class="zenquest-home-kicker">ET À LA MAISON…</div>
+            <div class="zenquest-home-title">Consulte ZenQuest chez toi !</div>
+            <div class="zenquest-home-qr-wrap">
+              <img class="zenquest-home-qr" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEIAQAAAACLjVdSAAABkUlEQVR4nO2YwW7EMAhE36zy/788PQCxW6naUwmqN5Eiy5nDGIGZQebN83oH+CD+MeICxcoCjCzM2h3DtC0eGEAYGUVM1u4Ypj0IbOL0jo/XEow9hWk7woCMRVTMUzzmIGRHLPwboofHg4gL6vjKT2WHO3lMQeDKBf946/cUpj0IbaUhsCx/357CtA0hBEgrKyRn5RzXby+IszuiYhCWQp1pENNOfepICWSx5IjwcfnxAjDYKh0WIVEV0Cimf47Q5lWyZjDLxZzmXyI/jO3NtChDdN79sfRHrMrOGGOf51+qXrJGyvHjW6ZOYdqoP7BRmLn6ck9BBjFtQKT+CImuarP5U308piBqPiYc7rZ8nJXjoSlMO+8PL7+SUn15/ilMO/tLORfnTsbC+Mj+ci9l4Zykpt0dw7T3/ohG69Vn5SP77T5fVwoRVCNDHedfXhDeDYjLJKpG0rn+dj1KYVaa7CkejyGutdQm1WUcsRnDtK2/qK4KpYvxPkkdw7QvP/Ly2GaEdzCO67f7fP1JHh/ETMQXF4rO1QT8q1oAAAAASUVORK5CYII=" alt="QR code ZenQuest">
+            </div>
+            <div class="zenquest-home-scan">📱 Scanne le QR code</div>
+            <div class="zenquest-home-items">📚 Ressources <span>•</span> ✏️ Exercices <span>•</span> 📢 Infos de la classe</div>
+          </div>
+        </div>
       `;
       document.getElementById("summaryModal").classList.add("show");
       startEndLessonMessages();
+      startZenQuestHomeReminder();
     }
 
     let endLessonMessageTimer=null;
@@ -5214,6 +5326,28 @@ Noah"
     function stopEndLessonMessages(){
       clearInterval(endLessonMessageTimer);
       endLessonMessageTimer=null;
+    }
+    let zenquestHomeReminderTimers=[];
+    function stopZenQuestHomeReminder(){
+      zenquestHomeReminderTimers.forEach(clearTimeout);
+      zenquestHomeReminderTimers=[];
+      const reminder=document.getElementById("zenquestHomeReminder");
+      if(reminder) reminder.classList.remove("show");
+    }
+    function startZenQuestHomeReminder(){
+      stopZenQuestHomeReminder();
+      const reminder=document.getElementById("zenquestHomeReminder");
+      if(!reminder) return;
+
+      // 6 s : les élèves regardent tranquillement leurs scores.
+      zenquestHomeReminderTimers.push(setTimeout(()=>{
+        reminder.classList.add("show");
+      },6000));
+
+      // 5 s de rappel ZenQuest, puis retour aux scores SANS fermer la page.
+      zenquestHomeReminderTimers.push(setTimeout(()=>{
+        reminder.classList.remove("show");
+      },11000));
     }
 
     async function updateCollectiveProgressInSupabase(cls){
@@ -6900,7 +7034,148 @@ Noah"
       return pdfJsLib;
     }
     function isPdfProjectionOpen(){return document.getElementById("pdfProjectionModal")?.classList.contains("show");}
-    function openPdfProjection(){document.getElementById("pdfProjectionModal").classList.add("show");if(pdfDoc)renderPdfPage();}
+    let projectionFilesCache=[];
+    let projectionFilesRealtimeChannel=null;
+    const PROJECTION_BUCKET="projection-files";
+
+    function projectionStoragePath(file){
+      const safe=(file.name||"document.pdf").replace(/[^\w.\-À-ÿ ]+/g,"_").replace(/\s+/g,"_");
+      return `teacher/${Date.now()}_${uid()}_${safe}`;
+    }
+
+    async function ensureProjectionFilesTable(){
+      // The UI stays usable even if the Supabase table/bucket has not been created yet.
+      // Expected table: projection_files(id,name,storage_path,created_at)
+      return true;
+    }
+
+    function renderProjectionFiles(){
+      const list=document.getElementById("pdfCloudList");
+      const status=document.getElementById("pdfCloudStatus");
+      if(!list||!status)return;
+      status.textContent=projectionFilesCache.length
+        ? `${projectionFilesCache.length} fichier${projectionFilesCache.length>1?"s":""} enregistré${projectionFilesCache.length>1?"s":""} • actualisation en direct`
+        : "Aucun fichier enregistré pour le moment.";
+      list.innerHTML=projectionFilesCache.map(f=>`
+        <div style="padding:10px;border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc">
+          <div style="font-weight:950;overflow-wrap:anywhere">📄 ${escapeHTML(f.name||"PDF")}</div>
+          <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+            <button class="btn green small cloud-project-btn" data-id="${f.id}">▶ Projeter</button>
+            <button class="btn outline small cloud-rename-btn" data-id="${f.id}">✏️ Renommer</button>
+            <button class="btn danger small cloud-delete-btn" data-id="${f.id}">🗑️</button>
+          </div>
+        </div>`).join("");
+
+      list.querySelectorAll(".cloud-project-btn").forEach(b=>b.onclick=()=>openCloudProjectionFile(b.dataset.id));
+      list.querySelectorAll(".cloud-rename-btn").forEach(b=>b.onclick=()=>renameCloudProjectionFile(b.dataset.id));
+      list.querySelectorAll(".cloud-delete-btn").forEach(b=>b.onclick=()=>deleteCloudProjectionFile(b.dataset.id));
+    }
+
+    async function loadProjectionFiles(){
+      const status=document.getElementById("pdfCloudStatus");
+      if(status)status.textContent="⏳ Actualisation…";
+      try{
+        const {data,error}=await supabaseClient.from("projection_files")
+          .select("id,name,storage_path,created_at")
+          .order("created_at",{ascending:false});
+        if(error)throw error;
+        projectionFilesCache=data||[];
+        renderProjectionFiles();
+      }catch(err){
+        console.error("PROJECTION FILES LOAD",err);
+        if(status)status.innerHTML='⚠️ Stockage cloud à activer dans Supabase.<br><span style="font-weight:700">Le projecteur local continue de fonctionner.</span>';
+      }
+    }
+
+    async function uploadProjectionFile(file){
+      if(!file)return;
+      if(file.type!=="application/pdf" && !String(file.name||"").toLowerCase().endsWith(".pdf")){
+        alert("Pour l’instant, enregistre un fichier PDF.");
+        return;
+      }
+      const status=document.getElementById("pdfCloudStatus");
+      if(status)status.textContent="☁️ Envoi du PDF…";
+      try{
+        const path=projectionStoragePath(file);
+        const {error:upErr}=await supabaseClient.storage.from(PROJECTION_BUCKET).upload(path,file,{contentType:"application/pdf",upsert:false});
+        if(upErr)throw upErr;
+        const {error:dbErr}=await supabaseClient.from("projection_files").insert({name:file.name,storage_path:path});
+        if(dbErr){
+          await supabaseClient.storage.from(PROJECTION_BUCKET).remove([path]);
+          throw dbErr;
+        }
+        if(status)status.textContent="✅ PDF enregistré. Il apparaîtra sur les autres appareils.";
+        await loadProjectionFiles();
+      }catch(err){
+        console.error("PROJECTION FILE UPLOAD",err);
+        alert("❌ Impossible d’enregistrer le PDF dans Supabase. Vérifie que le bucket « projection-files » et la table « projection_files » existent et autorisent le compte professeur.");
+        if(status)status.textContent="❌ Enregistrement impossible.";
+      }finally{
+        const input=document.getElementById("pdfCloudFileInput");
+        if(input)input.value="";
+      }
+    }
+
+    async function openCloudProjectionFile(id){
+      const f=projectionFilesCache.find(x=>String(x.id)===String(id));
+      if(!f)return;
+      try{
+        const {data,error}=await supabaseClient.storage.from(PROJECTION_BUCKET).download(f.storage_path);
+        if(error)throw error;
+        const file=new File([data],f.name||"document.pdf",{type:"application/pdf"});
+        await loadLocalPdf(file);
+        document.getElementById("pdfCloudDrawer").style.display="none";
+      }catch(err){
+        console.error("CLOUD PDF OPEN",err);
+        alert("❌ Impossible d’ouvrir ce PDF.");
+      }
+    }
+
+    async function renameCloudProjectionFile(id){
+      const f=projectionFilesCache.find(x=>String(x.id)===String(id));
+      if(!f)return;
+      const name=prompt("Nouveau nom du fichier :",f.name||"");
+      if(!name?.trim())return;
+      const {error}=await supabaseClient.from("projection_files").update({name:name.trim()}).eq("id",f.id);
+      if(error){alert("❌ Impossible de renommer.");return;}
+      await loadProjectionFiles();
+    }
+
+    async function deleteCloudProjectionFile(id){
+      const f=projectionFilesCache.find(x=>String(x.id)===String(id));
+      if(!f||!confirm(`Supprimer « ${f.name} » des fichiers de projection ?`))return;
+      try{
+        const {error:storageError}=await supabaseClient.storage.from(PROJECTION_BUCKET).remove([f.storage_path]);
+        if(storageError)console.warn(storageError);
+        const {error}=await supabaseClient.from("projection_files").delete().eq("id",f.id);
+        if(error)throw error;
+        await loadProjectionFiles();
+      }catch(err){console.error(err);alert("❌ Impossible de supprimer ce fichier.");}
+    }
+
+    function subscribeProjectionFilesRealtime(){
+      if(projectionFilesRealtimeChannel)return;
+      try{
+        projectionFilesRealtimeChannel=supabaseClient.channel("projection-files-live")
+          .on("postgres_changes",{event:"*",schema:"public",table:"projection_files"},()=>loadProjectionFiles())
+          .subscribe();
+      }catch(err){console.warn("Projection files realtime",err);}
+    }
+
+    function toggleProjectionCloudDrawer(force){
+      const d=document.getElementById("pdfCloudDrawer");
+      if(!d)return;
+      const show=force===undefined?d.style.display==="none":!!force;
+      d.style.display=show?"block":"none";
+      if(show)loadProjectionFiles();
+    }
+
+    function openPdfProjection(){
+      document.getElementById("pdfProjectionModal").classList.add("show");
+      subscribeProjectionFilesRealtime();
+      loadProjectionFiles();
+      if(pdfDoc)renderPdfPage();
+    }
     function closePdfProjection(){document.getElementById("pdfProjectionModal").classList.remove("show");hidePdfZenOverlay();}
     async function loadLocalPdf(file){
       if(!file)return;
@@ -9512,6 +9787,12 @@ Noah"
     setupPdfPan();
     document.getElementById("pdfProjectionBtn").onclick=openPdfProjection;
     document.getElementById("pdfChooseBtn").onclick=()=>document.getElementById("pdfFileInput").click();
+    document.getElementById("pdfCloudBtn").onclick=()=>toggleProjectionCloudDrawer();
+    document.getElementById("pdfCloudBigBtn").onclick=()=>toggleProjectionCloudDrawer(true);
+    document.getElementById("pdfCloudCloseBtn").onclick=()=>toggleProjectionCloudDrawer(false);
+    document.getElementById("pdfCloudUploadBtn").onclick=()=>document.getElementById("pdfCloudFileInput").click();
+    document.getElementById("pdfCloudUploadBigBtn").onclick=()=>document.getElementById("pdfCloudFileInput").click();
+    document.getElementById("pdfCloudFileInput").onchange=e=>uploadProjectionFile(e.target.files?.[0]);
     document.getElementById("pdfChooseBigBtn").onclick=()=>document.getElementById("pdfFileInput").click();
     document.getElementById("pdfFileInput").onchange=e=>loadLocalPdf(e.target.files?.[0]);
     document.getElementById("pdfPrevBtn").onclick=()=>{if(pdfDoc&&pdfPageNum>1){pdfPageNum--;renderPdfPage();}};
@@ -9873,7 +10154,7 @@ Noah"
     document.getElementById("confirmClosePeriodBtn").onclick=closePeriod;
     document.getElementById("closeStudentViewBtn").onclick=()=> setAppMode("prof");
     document.getElementById("closeProfileBtn").onclick=()=> document.getElementById("profileModal").classList.remove("show");
-    document.getElementById("closeSummaryBtn").onclick=()=>{ stopEndLessonMessages(); document.getElementById("summaryModal").classList.remove("show"); };
+    document.getElementById("closeSummaryBtn").onclick=()=>{ stopEndLessonMessages(); stopZenQuestHomeReminder(); document.getElementById("summaryModal").classList.remove("show"); };
     document.getElementById("selectModeBtn").onclick=()=>{ state.selectionMode=!state.selectionMode; if(!state.selectionMode) state.selectedStudentIds=[]; save(); render(); };
     document.getElementById("clearSelectionBtn").onclick=()=>{ state.selectedStudentIds=[]; save(); render(); };
     document.getElementById("assignG1Btn").onclick=()=> assignGroup("g1");
@@ -9919,7 +10200,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.11.6</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.12.0</span>.
   </footer>
 
 </body>
