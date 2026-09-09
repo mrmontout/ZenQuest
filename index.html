@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.12.0</title>
+  <title>ZenQuest v5.12.3</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -653,87 +653,132 @@
     }
 
 
-    /* v5.11.7 — rappel ZenQuest à la maison après 10 s de scores */
-    #summaryContent{position:relative}
-    #zenquestHomeReminder{
-      position:absolute;
-      inset:0;
-      z-index:40;
-      display:flex;
+    /* v5.12.3 — QR ZenQuest directement dans l'écran de fin */
+    .end-lesson-with-qr{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:18px;
       align-items:center;
-      justify-content:center;
-      padding:24px;
-      border-radius:20px;
-      background:rgba(248,250,252,.96);
-      backdrop-filter:blur(5px);
-      opacity:0;
-      visibility:hidden;
-      pointer-events:none;
-      transform:scale(.985);
-      transition:opacity .3s ease,transform .3s ease,visibility .3s;
     }
-    #zenquestHomeReminder.show{
-      opacity:1;
-      visibility:visible;
-      transform:scale(1);
-    }
-    .zenquest-home-card{
-      width:min(760px,94%);
-      padding:30px 24px;
-      border-radius:26px;
-      text-align:center;
-      background:linear-gradient(135deg,#ecfdf5,#eff6ff,#fff7ed);
+    .end-lesson-main{min-width:0;text-align:center}
+    .end-lesson-qr-block{
+      position:relative;
+      z-index:3;
+      width:142px;
+      padding:8px 8px 7px;
+      border-radius:18px;
+      background:rgba(255,255,255,.92);
       border:2px solid #a7f3d0;
-      box-shadow:0 22px 60px rgba(15,23,42,.18);
-      animation:zqHomeReminderIn .55s cubic-bezier(.2,.9,.2,1.15);
+      box-shadow:0 7px 20px rgba(15,23,42,.12);
+      text-align:center;
     }
-    @keyframes zqHomeReminderIn{
-      from{transform:translateY(18px) scale(.94);opacity:.2}
-      to{transform:translateY(0) scale(1);opacity:1}
+    .end-lesson-qr{
+      width:104px;
+      height:104px;
+      object-fit:contain;
+      display:block;
+      margin:0 auto;
+      background:white;
+      padding:3px;
+      border-radius:10px;
     }
-    .zenquest-home-house{font-size:clamp(58px,8vw,92px);line-height:1}
-    .zenquest-home-kicker{
-      margin-top:10px;
-      font-size:clamp(15px,2vw,21px);
+    .end-lesson-qr-title{
+      margin-top:4px;
+      font-size:12px;
       font-weight:1000;
-      letter-spacing:.12em;
+      color:#166534;
+      line-height:1.1;
+    }
+    .end-lesson-qr-sub{
+      margin-top:2px;
+      font-size:9px;
+      font-weight:850;
       color:#64748b;
     }
-    .zenquest-home-title{
-      margin-top:6px;
-      font-size:clamp(30px,4.5vw,56px);
-      line-height:1.05;
+    @media(max-width:700px){
+      .end-lesson-with-qr{
+        grid-template-columns:1fr;
+        gap:8px;
+      }
+      .end-lesson-qr-block{
+        width:122px;
+        margin:0 auto;
+        padding:6px;
+      }
+      .end-lesson-qr{
+        width:84px;
+        height:84px;
+      }
+      #endLessonRotatingMessage{
+        min-height:42px!important;
+        font-size:20px!important;
+      }
+    }
+
+    /* v5.12.2 — consigne principale d'accueil fixe et prioritaire */
+    #welcomeMainInstruction{
+      width:min(940px,92%);
+      margin-top:14px;
+      padding:16px 22px 14px;
+      border-radius:22px;
+      background:linear-gradient(135deg,#fff7ed,#ffffff,#ecfdf5);
+      border:3px solid #fb923c;
+      box-shadow:0 12px 34px rgba(15,23,42,.14);
+      text-align:center;
+    }
+    .welcome-main-kicker{
+      font-size:clamp(14px,1.7vw,21px);
+      line-height:1.2;
       font-weight:1000;
-      color:#0f766e;
+      letter-spacing:.08em;
+      color:#9a3412;
     }
-        .zenquest-home-qr-wrap{
-      display:flex;
-      justify-content:center;
-      margin:16px auto 7px;
+    .welcome-main-title{
+      margin-top:5px;
+      font-size:clamp(28px,4vw,50px);
+      line-height:1.04;
+      font-weight:1000;
+      color:#0f172a;
     }
-    .zenquest-home-qr{
-      width:clamp(150px,18vw,215px);
-      height:clamp(150px,18vw,215px);
-      object-fit:contain;
-      background:white;
-      padding:8px;
-      border-radius:18px;
-      border:3px solid #0f172a;
-      box-shadow:0 12px 28px rgba(15,23,42,.16);
-    }
-    .zenquest-home-scan{
-      font-size:clamp(15px,1.8vw,21px);
+    .welcome-main-sub{
+      margin-top:7px;
+      font-size:clamp(18px,2.2vw,28px);
+      line-height:1.15;
       font-weight:950;
       color:#475569;
     }
-.zenquest-home-items{
-      margin-top:17px;
-      font-size:clamp(16px,2.2vw,25px);
-      line-height:1.45;
-      font-weight:900;
-      color:#334155;
+    @media(max-width:700px){
+      #welcomeMainInstruction{
+        width:96%;
+        padding:12px 10px;
+        margin-top:10px;
+      }
+      .welcome-main-title{font-size:30px}
+      .welcome-main-sub{font-size:19px}
     }
-    .zenquest-home-items span{padding:0 5px;color:#94a3b8}
+
+
+    /* v5.12.3 — accueil plus compact verticalement pour garder le chrono visible */
+    #boardDisplay:has(#welcomeMainInstruction[style*="block"]) #boardEmoji{
+      font-size:78px !important;
+      line-height:1 !important;
+    }
+    #boardDisplay:has(#welcomeMainInstruction[style*="block"]) #boardTitle{
+      margin-top:5px !important;
+      line-height:1 !important;
+    }
+    #boardDisplay:has(#welcomeMainInstruction[style*="block"]) #welcomeFixedScores{
+      margin-top:10px !important;
+    }
+    #boardDisplay:has(#welcomeMainInstruction[style*="block"]) #welcomeTicker{
+      margin-top:10px !important;
+      min-height:48px !important;
+    }
+    #boardDisplay:has(#welcomeMainInstruction[style*="block"]) #boardTimer{
+      margin-top:8px !important;
+      font-size:clamp(72px,9vw,108px) !important;
+      line-height:.95 !important;
+    }
 
 </style>
 </head>
@@ -1919,7 +1964,7 @@ Noah"
       <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-top:12px">
         <label style="font-weight:850">Durée
           <div style="display:flex;align-items:center;gap:5px;margin-top:5px">
-            <input id="welcomeMinutesInput" type="number" min="0" max="10" value="2" style="width:58px"> min
+            <input id="welcomeMinutesInput" type="number" min="0" max="10" value="3" style="width:58px"> min
             <input id="welcomeSecondsInput" type="number" min="0" max="59" value="0" style="width:58px"> sec
           </div>
         </label>
@@ -1955,6 +2000,13 @@ Noah"
         <div id="boardEmoji" style="font-size:96px">👋</div>
         <div id="boardTitle" style="font-size:72px;font-weight:950;margin-top:12px">Bonjour !</div>
         <div id="boardText" style="display:none"></div>
+
+        <div id="welcomeMainInstruction" style="display:none">
+          <div class="welcome-main-kicker">📓 EN ATTENDANT LE DÉBUT DU COURS</div>
+          <div class="welcome-main-title">Sors ton cahier et écris la date.</div>
+          <div class="welcome-main-sub">🤫 Installe-toi calmement.</div>
+        </div>
+
         <div id="welcomeFixedScores" style="display:none;margin-top:16px;width:min(1120px,94%);text-align:center">
           <div style="font-size:18px;font-weight:900;opacity:.78;margin-bottom:9px">📊 VOS SCORES ACTUELS</div>
           <div id="welcomeFixedScoresGrid" style="display:flex;flex-wrap:wrap;justify-content:center;gap:7px 9px"></div>
@@ -1962,7 +2014,7 @@ Noah"
         <div id="welcomeTicker" style="display:none;margin-top:22px;min-height:62px;max-width:1050px;width:92%;align-items:center;justify-content:center;text-align:center">
           <div id="welcomeTickerContent" style="font-size:25px;font-weight:900;padding:11px 20px;border-radius:18px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);transition:opacity .28s ease,transform .28s ease"></div>
         </div>
-        <div id="boardTimer" style="font-size:118px;font-weight:950;letter-spacing:3px;margin-top:30px">02:00</div>
+        <div id="boardTimer" style="font-size:118px;font-weight:950;letter-spacing:3px;margin-top:12px">02:00</div>
       </div>
 </div>
   </div>
@@ -4904,7 +4956,7 @@ Noah"
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
           <div class="box"><div style="font-size:18px;font-weight:700;margin-bottom:8px">Progression</div><div style="line-height:1.8;font-size:14px"><div>Score actuel : <strong>${student.points}/20</strong></div><div>Jauge actuelle : <strong>${student.progress}/3</strong></div><div>Série actuelle : <strong>${student.currentStreak}</strong></div><div>Étoiles : <strong>${student.stars}</strong></div><div>Diamants : <strong>${student.diamonds}</strong></div><div>Travail maison : ${homeworkDisplayHTML(student)}</div></div></div>
           <div class="box"><div style="font-size:18px;font-weight:800;margin-bottom:8px">🧭 Motifs d’implication récents</div>
-          ${(()=>{const persisted=zqEventsFromRemarks((student.teacherRemarks||[]).map(r=>({remark:r.text,created_at:r.createdAt||r.date})));const ev=persisted.length?persisted:ensureEngagementEvents(student);const neg=ev.filter(x=>x.type==="minus"),pos=ev.filter(x=>x.type==="plus");const top=a=>{const c={};a.forEach(x=>c[x.label]=(c[x.label]||0)+1);return Object.entries(c).sort((a,b)=>b[1]-a[1])[0]?.[0]||null};return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px"><div style="padding:10px;border-radius:12px;background:#fff7ed"><b>⚠️ Vigilance</b><br>${top(neg)||"Aucun motif enregistré"}</div><div style="padding:10px;border-radius:12px;background:#f0fdf4"><b>✨ Point fort</b><br>${top(pos)||"Aucun motif enregistré"}</div></div>`})()}</div>
+          ${(()=>{const persisted=zqEventsFromRemarks((student.teacherRemarks||[]).map(r=>({remark:r.text,created_at:r.createdAt||r.date})));const ev=persisted.length?persisted:ensureEngagementEvents(student);const neg=ev.filter(x=>x.type==="minus"),pos=ev.filter(x=>x.type==="plus");const top=a=>{const c={};a.forEach(x=>c[x.label]=(c[x.label]||0)+1);return Object.entries(c).sort((a,b)=>b[1]-a[1])[0]?.[0]||null};return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:8px"><div style="padding:10px;border-radius:12px;background:#fff7ed"><b>⚠️ Vigilance</b><br>${top(neg)||"Aucun motif enregistré"}</div><div style="padding:10px;border-radius:12px;background:#f0fdf4"><b>✨ Point fort</b><br>${top(pos)||"Aucun motif enregistré"}</div></div>`})()}</div>
           <div class="box"><div style="font-size:18px;font-weight:700;margin-bottom:8px">Remarques visibles par l’élève / les parents</div>
           <textarea id="notesArea" placeholder="Ex : Travail sérieux aujourd’hui. / Plusieurs bavardages : davantage de concentration est attendue."></textarea>
           <div style="margin-top:10px"><button class="btn primary" id="saveNotesBtn">Ajouter la remarque</button></div>
@@ -5228,9 +5280,18 @@ Noah"
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));justify-content:center;gap:7px">
             ${scoreRows.map(r=>{
               const th=engagementIndexTheme(Number(r.score));
-              return `<div style="display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:7px 9px;border-radius:10px;background:${th.bg};border:1px solid ${th.border};min-width:0">
-                <span style="font-size:18px;font-weight:950;white-space:nowrap">${escapeHTML(r.name)}</span>
-                <strong style="font-size:20px;color:${th.color};white-space:nowrap">${r.score}/20</strong>
+              const starCount=Math.max(0,Number(r.stars||0));
+              const diamondCount=Math.max(0,Number(r.diamonds||0));
+              const maxed=starCount>=MAX_INDIVIDUAL_STARS;
+              const rewardLine=maxed
+                ? `<div style="font-size:13px;font-weight:950;color:#0369a1;margin-top:3px">💎 x${diamondCount}</div>`
+                : `<div style="font-size:13px;font-weight:950;color:#92400e;margin-top:3px">${starCount?`${"⭐".repeat(Math.min(MAX_INDIVIDUAL_STARS,starCount))} ${starCount}/${MAX_INDIVIDUAL_STARS}`:`☆ 0/${MAX_INDIVIDUAL_STARS}`}</div>`;
+
+              return `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 10px;border-radius:12px;background:${th.bg};border:1px solid ${th.border};min-width:0">
+                <span style="font-size:18px;font-weight:950;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis">${escapeHTML(r.name)}</span>
+                <strong style="font-size:22px;color:${th.color};white-space:nowrap;margin-top:2px">${r.score}/20</strong>
+                <div style="font-size:12px;font-weight:900;color:#475569;margin-top:3px">Niv. ${Number(r.level||1)}</div>
+                ${rewardLine}
               </div>`;
             }).join("")}
           </div>
@@ -5238,32 +5299,26 @@ Noah"
 
       document.getElementById("summaryContent").innerHTML=`
         <div id="endLessonCelebration">
-          <div class="end-lesson-inner">
-            <div class="end-lesson-emoji">👋✨</div>
-            <div style="font-size:clamp(38px,5vw,64px);font-weight:1000;color:#166534;letter-spacing:.04em;line-height:1">COURS TERMINÉ</div>
-            <div id="endLessonRotatingMessage">📚 N’oubliez pas de réviser chez vous !</div>
+          <div class="end-lesson-inner end-lesson-with-qr">
+            <div class="end-lesson-main">
+              <div class="end-lesson-emoji">👋✨</div>
+              <div style="font-size:clamp(34px,4.4vw,58px);font-weight:1000;color:#166534;letter-spacing:.04em;line-height:1">COURS TERMINÉ</div>
+              <div id="endLessonRotatingMessage">📚 N’oubliez pas de réviser chez vous !</div>
+            </div>
+            <div class="end-lesson-qr-block">
+              <img class="end-lesson-qr" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEIAQAAAACLjVdSAAABkUlEQVR4nO2YwW7EMAhE36zy/788PQCxW6naUwmqN5Eiy5nDGIGZQebN83oH+CD+MeICxcoCjCzM2h3DtC0eGEAYGUVM1u4Ypj0IbOL0jo/XEow9hWk7woCMRVTMUzzmIGRHLPwboofHg4gL6vjKT2WHO3lMQeDKBf946/cUpj0IbaUhsCx/357CtA0hBEgrKyRn5RzXby+IszuiYhCWQp1pENNOfepICWSx5IjwcfnxAjDYKh0WIVEV0Cimf47Q5lWyZjDLxZzmXyI/jO3NtChDdN79sfRHrMrOGGOf51+qXrJGyvHjW6ZOYdqoP7BRmLn6ck9BBjFtQKT+CImuarP5U308piBqPiYc7rZ8nJXjoSlMO+8PL7+SUn15/ilMO/tLORfnTsbC+Mj+ci9l4Zykpt0dw7T3/ohG69Vn5SP77T5fVwoRVCNDHedfXhDeDYjLJKpG0rn+dj1KYVaa7CkejyGutdQm1WUcsRnDtK2/qK4KpYvxPkkdw7QvP/Ly2GaEdzCO67f7fP1JHh/ETMQXF4rO1QT8q1oAAAAASUVORK5CYII=" alt="QR code ZenQuest">
+              <div class="end-lesson-qr-title">🏠 ZenQuest chez toi</div>
+              <div class="end-lesson-qr-sub">📱 Scanne le QR code</div>
+            </div>
           </div>
         </div>
         <div style="padding:8px 10px;border-radius:12px;background:#eff6ff;border:1px solid #bfdbfe;text-align:center;font-weight:900;margin-bottom:10px">
           📱 Vous retrouverez votre score et son évolution dans votre espace élève.
         </div>
         ${scoreGrid}
-        <div id="zenquestHomeReminder" aria-hidden="true">
-          <div class="zenquest-home-card">
-            <div class="zenquest-home-house">🏠</div>
-            <div class="zenquest-home-kicker">ET À LA MAISON…</div>
-            <div class="zenquest-home-title">Consulte ZenQuest chez toi !</div>
-            <div class="zenquest-home-qr-wrap">
-              <img class="zenquest-home-qr" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEIAQAAAACLjVdSAAABkUlEQVR4nO2YwW7EMAhE36zy/788PQCxW6naUwmqN5Eiy5nDGIGZQebN83oH+CD+MeICxcoCjCzM2h3DtC0eGEAYGUVM1u4Ypj0IbOL0jo/XEow9hWk7woCMRVTMUzzmIGRHLPwboofHg4gL6vjKT2WHO3lMQeDKBf946/cUpj0IbaUhsCx/357CtA0hBEgrKyRn5RzXby+IszuiYhCWQp1pENNOfepICWSx5IjwcfnxAjDYKh0WIVEV0Cimf47Q5lWyZjDLxZzmXyI/jO3NtChDdN79sfRHrMrOGGOf51+qXrJGyvHjW6ZOYdqoP7BRmLn6ck9BBjFtQKT+CImuarP5U308piBqPiYc7rZ8nJXjoSlMO+8PL7+SUn15/ilMO/tLORfnTsbC+Mj+ci9l4Zykpt0dw7T3/ohG69Vn5SP77T5fVwoRVCNDHedfXhDeDYjLJKpG0rn+dj1KYVaa7CkejyGutdQm1WUcsRnDtK2/qK4KpYvxPkkdw7QvP/Ly2GaEdzCO67f7fP1JHh/ETMQXF4rO1QT8q1oAAAAASUVORK5CYII=" alt="QR code ZenQuest">
-            </div>
-            <div class="zenquest-home-scan">📱 Scanne le QR code</div>
-            <div class="zenquest-home-items">📚 Ressources <span>•</span> ✏️ Exercices <span>•</span> 📢 Infos de la classe</div>
-          </div>
-        </div>
       `;
       document.getElementById("summaryModal").classList.add("show");
       startEndLessonMessages();
-      startZenQuestHomeReminder();
     }
 
     let endLessonMessageTimer=null;
@@ -5327,29 +5382,6 @@ Noah"
       clearInterval(endLessonMessageTimer);
       endLessonMessageTimer=null;
     }
-    let zenquestHomeReminderTimers=[];
-    function stopZenQuestHomeReminder(){
-      zenquestHomeReminderTimers.forEach(clearTimeout);
-      zenquestHomeReminderTimers=[];
-      const reminder=document.getElementById("zenquestHomeReminder");
-      if(reminder) reminder.classList.remove("show");
-    }
-    function startZenQuestHomeReminder(){
-      stopZenQuestHomeReminder();
-      const reminder=document.getElementById("zenquestHomeReminder");
-      if(!reminder) return;
-
-      // 6 s : les élèves regardent tranquillement leurs scores.
-      zenquestHomeReminderTimers.push(setTimeout(()=>{
-        reminder.classList.add("show");
-      },6000));
-
-      // 5 s de rappel ZenQuest, puis retour aux scores SANS fermer la page.
-      zenquestHomeReminderTimers.push(setTimeout(()=>{
-        reminder.classList.remove("show");
-      },11000));
-    }
-
     async function updateCollectiveProgressInSupabase(cls){
       const payload={
         collective_stars:Number(cls.collectiveStars||0),
@@ -5667,7 +5699,13 @@ Noah"
           classStarGained:everyonePerfect,
           scoreRows:cls.students
             .filter(s=>!s.isAbsent)
-            .map(s=>({name:s.name,score:Number(s.points||0)}))
+            .map(s=>({
+              name:s.name,
+              score:Number(s.points||0),
+              level:Number(s.level||1),
+              stars:Number(s.stars||0),
+              diamonds:Number(s.diamonds||0)
+            }))
             .sort((a,b)=>a.name.localeCompare(b.name,"fr"))
         };
 
@@ -7358,11 +7396,11 @@ Noah"
     };
 
     const BOARD_DEFAULTS={
-      welcome:{emoji:"👋",title:"Bonjour !",text:"Sortez vos affaires dans le calme.\nÉcrivez la date.\nLe cours va commencer.",minutes:2},
+      welcome:{emoji:"👋",title:"Bonjour !",text:"Sortez vos affaires dans le calme.\nÉcrivez la date.\nLe cours va commencer.",minutes:3},
       work:{emoji:"✏️",title:"Au boulot !",text:"Travaillez dans le calme et le silence.\nNe m’appelez pas pendant ce temps : cherchez, réfléchissez et avancez en autonomie.",minutes:5}
     };
     let boardCurrent={...BOARD_DEFAULTS.welcome};
-    let boardRemaining=120;
+    let boardRemaining=180;
     let boardTimerHandle=null;
     let boardTimerEndAt=null;
     let boardTimerRunning=false;
@@ -7413,6 +7451,15 @@ Noah"
         updateBoardTimer();
       }else{
         resetBoardTimer(false);
+      }
+    }
+
+    function setWelcomeMainInstructionVisible(show){
+      const el=document.getElementById("welcomeMainInstruction");
+      if(el) el.style.display=show?"block":"none";
+      if(!show){
+        const ticker=document.getElementById("welcomeTicker");
+        if(ticker) ticker.style.display="none";
       }
     }
 
@@ -7476,6 +7523,12 @@ Noah"
       };
       openBoard(false);
       setBoardPreset(preset);
+      if(payload.welcome){
+        setWelcomeMainInstructionVisible(true);
+        startWelcomeTicker();
+      }else{
+        setWelcomeMainInstructionVisible(false);
+      }
       if(Number.isFinite(Number(payload.totalSeconds))) setRemoteBoardDuration(Number(payload.totalSeconds));
       if(payload.endAt){
         boardTimerEndAt=Number(payload.endAt);
@@ -7881,6 +7934,7 @@ Noah"
     }
 
     function sendQuickBoardCommand(key){
+      setWelcomeMainInstructionVisible(false);
       const base=BOARD_QUICK_COMMANDS[key];
       if(!base) return;
       const totalSeconds=remoteBoardDurationSeconds(base.minutes||5);
@@ -7900,6 +7954,7 @@ Noah"
     }
 
     function sendCustomBoardCommand(){
+      setWelcomeMainInstructionVisible(false);
       const emoji=(document.getElementById("remoteBoardEmoji").value||"📌").trim()||"📌";
       const title=(document.getElementById("remoteBoardTitle").value||"").trim();
       const text=(document.getElementById("remoteBoardText").value||"").trim();
@@ -9943,6 +9998,7 @@ Noah"
 
     function startWelcomeTicker(){
       stopWelcomeTicker();
+      setWelcomeMainInstructionVisible(true);
       renderWelcomeFixedScores();
 
       welcomeTickerPhase="setup";
@@ -9972,7 +10028,7 @@ Noah"
       startWelcomeTicker();
       const endAt=Date.now()+boardRemaining*1000;
       startBoardTimer(false,endAt);
-      sendBoardCommand({action:"show",...preset,endAt,autoStart:true});
+      sendBoardCommand({action:"show",...preset,endAt,autoStart:true,welcome:true});
     }
 
     document.getElementById("boardBtn").onclick=launchWelcome;
@@ -9987,8 +10043,8 @@ Noah"
         const p=welcomePresets[Number(btn.dataset.i)];
         if(!p)return;
         document.getElementById("welcomeMessageInput").value=p.text||"";
-        document.getElementById("welcomeMinutesInput").value=Math.floor((p.totalSeconds||120)/60);
-        document.getElementById("welcomeSecondsInput").value=(p.totalSeconds||120)%60;
+        document.getElementById("welcomeMinutesInput").value=Math.floor((p.totalSeconds||180)/60);
+        document.getElementById("welcomeSecondsInput").value=(p.totalSeconds||180)%60;
       });
     }
     document.getElementById("welcomeApplyBtn").onclick=()=>{
@@ -10007,7 +10063,7 @@ Noah"
       updateBoardTimer();
 
       // Mirror the edited welcome to the other connected display.
-      sendBoardCommand({action:"show",...p,endAt,autoStart:true});
+      sendBoardCommand({action:"show",...p,endAt,autoStart:true,welcome:true});
 
       startWelcomeTicker();
       document.getElementById("welcomeConfigModal").classList.remove("show");
@@ -10065,6 +10121,7 @@ Noah"
       stopBoardTimer(false);
       stopFlashQuestions(false);
       document.getElementById("boardModal").classList.remove("show");
+      setWelcomeMainInstructionVisible(false);
       deactivateBoardDisplay();
       sendBoardCommand({action:"close"});
     };
@@ -10154,7 +10211,7 @@ Noah"
     document.getElementById("confirmClosePeriodBtn").onclick=closePeriod;
     document.getElementById("closeStudentViewBtn").onclick=()=> setAppMode("prof");
     document.getElementById("closeProfileBtn").onclick=()=> document.getElementById("profileModal").classList.remove("show");
-    document.getElementById("closeSummaryBtn").onclick=()=>{ stopEndLessonMessages(); stopZenQuestHomeReminder(); document.getElementById("summaryModal").classList.remove("show"); };
+    document.getElementById("closeSummaryBtn").onclick=()=>{ stopEndLessonMessages(); document.getElementById("summaryModal").classList.remove("show"); };
     document.getElementById("selectModeBtn").onclick=()=>{ state.selectionMode=!state.selectionMode; if(!state.selectionMode) state.selectedStudentIds=[]; save(); render(); };
     document.getElementById("clearSelectionBtn").onclick=()=>{ state.selectedStudentIds=[]; save(); render(); };
     document.getElementById("assignG1Btn").onclick=()=> assignGroup("g1");
@@ -10200,7 +10257,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.12.0</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.12.3</span>.
   </footer>
 
 </body>
