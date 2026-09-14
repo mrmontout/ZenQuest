@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.12.10</title>
+  <title>ZenQuest v5.12.14</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -940,6 +940,64 @@
       .replica-name{font-size:25px}
     }
 
+
+/* v5.12.11 — vue élève établissement enrichie + mobile */
+.replica-detail-grid{display:grid;grid-template-columns:minmax(210px,.9fr) minmax(300px,1.5fr);gap:10px}
+.replica-index-card2{padding:15px;border-radius:19px;background:#fff7ed;border:2px solid #fdba74}
+.replica-score-card2{padding:15px;border-radius:19px;background:#f8fafc;border:1px solid #dbe4ef}
+.replica-big-value{font-size:34px;font-weight:1000;line-height:1.05;margin-top:5px}
+.replica-index-value2{font-size:34px;font-weight:1000;line-height:1.05;margin-top:5px;color:#c2410c}
+.replica-scale{height:10px;border-radius:999px;margin-top:12px;position:relative;background:linear-gradient(90deg,#fecaca 0 50%,#fed7aa 50% 65%,#fef08a 65% 80%,#bbf7d0 80% 100%)}
+.replica-marker{position:absolute;top:50%;width:18px;height:18px;border-radius:50%;background:#c2410c;border:3px solid white;box-shadow:0 2px 6px #0003;transform:translate(-50%,-50%)}
+.replica-dots{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+.replica-dot{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:1000;border:2px solid #fdba74;background:#fff7ed;color:#c2410c}
+.replica-chiprow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.replica-chip2{padding:8px 11px;border-radius:999px;background:white;border:1px solid #dbe4ef;font-weight:950}
+.replica-objective2{margin-top:10px;padding:12px 14px;border-radius:16px;background:#f8fafc;border:1px solid #dbe4ef}
+.replica-bilan2{margin-top:9px;padding:12px 14px;border-radius:16px;background:#fff7ed;border:1px solid #fdba74;color:#9a3412}
+.replica-event2{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:11px 12px;border-radius:15px;border:1px solid #e2e8f0}
+.replica-event2.plus{background:#f0fdf4;border-color:#bbf7d0}.replica-event2.minus{background:#fff7ed;border-color:#fed7aa}
+.replica-event-badge2{padding:6px 10px;border-radius:999px;color:white;font-weight:1000}
+.replica-parent-hero{padding:16px;border-radius:20px;background:linear-gradient(135deg,#eff6ff,#f0fdfa);border:1px solid #bfdbfe}
+@media(max-width:700px){
+ #establishmentStudentReplicaModal .modal-card{width:100%!important;max-width:none!important;height:100dvh!important;max-height:100dvh!important;border-radius:0!important;margin:0!important;padding:11px!important}
+ #establishmentStudentReplicaModal .modal-header{position:sticky;top:0;z-index:9;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);padding:5px 0 9px}
+ #establishmentStudentReplicaTitle{font-size:18px!important}
+ .replica-shell{padding:7px!important;border-radius:18px!important;margin-top:6px!important}
+ .replica-topbar{display:block!important;padding:12px!important;border-radius:17px!important}
+ .replica-avatar{width:56px!important;height:56px!important;font-size:37px!important;border-radius:16px!important}
+ .replica-name{font-size:23px!important}
+ .replica-score-cluster{grid-template-columns:1fr 1fr!important;margin-top:10px!important;gap:6px!important}
+ .replica-score-card{min-width:0!important;padding:8px 6px!important}.replica-score-card strong{font-size:19px!important}
+ .replica-progress-strip{grid-template-columns:repeat(3,1fr)!important;gap:5px!important}
+ .replica-progress-card{padding:7px 4px!important;border-radius:13px!important}.replica-progress-card .big{font-size:16px!important}
+ .student-replica-tabs{flex-wrap:nowrap!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:7px -7px 9px!important;padding:7px!important}
+ .student-replica-tabs::-webkit-scrollbar{display:none}.student-replica-tab{flex:0 0 auto!important;padding:8px 10px!important;font-size:12px!important}
+ .replica-panel{padding:11px!important;border-radius:16px!important}.replica-section-title{font-size:17px!important}
+ .replica-detail-grid{grid-template-columns:1fr!important}.replica-big-value,.replica-index-value2{font-size:29px!important}
+ .replica-dot{width:36px;height:36px;font-size:13px}.replica-chip2{font-size:12px;padding:7px 9px}
+ .replica-rules-grid{grid-template-columns:1fr!important}
+}
+
+
+@media(max-width:700px){
+  .establishment-main-tabs{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:5px}
+  .establishment-main-tabs::-webkit-scrollbar{display:none}
+  .establishment-main-tab{flex:0 0 auto!important;white-space:nowrap!important}
+  #establishmentApp .estab-help-grid{grid-template-columns:1fr!important}
+}
+
+
+@media(max-width:700px){
+  #replicaParentsPane{font-size:13px}
+  #replicaParentsPane .replica-panel{padding:12px!important}
+  #replicaParentsPane .replica-section-title{font-size:17px!important;margin-bottom:6px!important}
+  #replicaParentsPane > div{gap:8px!important}
+  #replicaParentsPane [style*="font-size:26px"]{font-size:21px!important}
+  #replicaParentsPane [style*="font-size:15px"]{font-size:13px!important}
+  #replicaParentsPane [style*="line-height:1.65"]{line-height:1.5!important}
+}
+
 </style>
 </head>
 <body>
@@ -987,6 +1045,7 @@
       <button class="establishment-main-tab" data-estab-tab="understand">🧭 Comprendre ZenQuest</button>
       <button class="establishment-main-tab" data-estab-tab="progression">⭐ Progression & récompenses</button>
       <button class="establishment-main-tab" data-estab-tab="reading">📊 Lire le suivi</button>
+      <button class="establishment-main-tab" data-estab-tab="security">🔐 Sécurité & données</button>
     </div>
 
     <div id="establishmentTabClasses">
@@ -1001,6 +1060,7 @@
     <div id="establishmentTabUnderstand" style="display:none"></div>
     <div id="establishmentTabProgression" style="display:none"></div>
     <div id="establishmentTabReading" style="display:none"></div>
+    <div id="establishmentTabSecurity" style="display:none"></div>
   </div>
 </div>
 
@@ -10203,6 +10263,67 @@ Noah"
           Une baisse ponctuelle ne suffit pas à tirer une conclusion sur un élève. ZenQuest constitue un outil de suivi complémentaire aux autres éléments disponibles dans l’établissement.
         </div>
       `;
+
+      const security=document.getElementById("establishmentTabSecurity");
+      if(security) security.innerHTML=`
+        <div class="box" style="background:linear-gradient(135deg,#ecfdf5,#eff6ff);border-color:#a7f3d0">
+          <div style="font-size:25px;font-weight:1000">🔐 Sécurité & données</div>
+          <div style="margin-top:7px;line-height:1.55">
+            ZenQuest est actuellement un <strong>outil pédagogique expérimental</strong>, développé pour accompagner le suivi de l’implication des élèves pendant les cours de mathématiques.
+            Son utilisation est limitée aux classes concernées par l’expérimentation et sa conception cherche à <strong>limiter les données collectées et à contrôler leur accès</strong>.
+          </div>
+        </div>
+
+        <div class="estab-help-grid" style="margin-top:10px">
+          <div class="estab-help-card">
+            <h3>🛡️ Des données volontairement limitées</h3>
+            ZenQuest utilise les informations nécessaires au fonctionnement pédagogique : identité de l’élève, classe ou groupe, score, indice d’implication, progression, remarques pédagogiques et éléments liés au suivi en classe.
+            <div style="margin-top:9px;padding:9px 10px;border-radius:12px;background:#f0fdf4;border:1px solid #bbf7d0">
+              👤 <strong>Aucune photographie n’est nécessaire.</strong> Les élèves sont représentés par des avatars.
+            </div>
+            <div class="muted" style="margin-top:7px;font-size:12px">ZenQuest ne demande notamment pas l’adresse personnelle, le numéro de téléphone ou la géolocalisation de l’élève.</div>
+          </div>
+
+          <div class="estab-help-card">
+            <h3>🔑 Un accès individuel</h3>
+            Chaque élève dispose de <strong>son propre identifiant et de son propre mot de passe</strong> pour accéder à son espace personnel.
+            <div style="margin-top:9px;padding:9px 10px;border-radius:12px;background:#eff6ff;border:1px solid #bfdbfe">
+              🔄 En cas de perte ou de problème d’accès, le professeur peut <strong>réinitialiser le mot de passe</strong>.
+            </div>
+          </div>
+
+          <div class="estab-help-card">
+            <h3>👥 Des accès différents selon le rôle</h3>
+            <div style="display:grid;gap:6px">
+              <div><strong>🎓 Élève :</strong> consulte son propre suivi.</div>
+              <div><strong>👨‍🏫 Professeur :</strong> gère le suivi pédagogique de ses classes.</div>
+              <div><strong>🏫 Établissement :</strong> dispose d’un accès spécifique en <strong>lecture seule</strong>.</div>
+            </div>
+          </div>
+
+          <div class="estab-help-card">
+            <h3>🏫 Un accès établissement contrôlé</h3>
+            Les classes visibles sont <strong>explicitement autorisées</strong> pour chaque compte établissement. Un compte peut être désactivé lorsqu’il n’est plus nécessaire.
+            <div style="margin-top:9px;padding:9px 10px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa">
+              🔒 Chaque profil accède uniquement aux informations nécessaires à son rôle.
+            </div>
+          </div>
+
+          <div class="estab-help-card">
+            <h3>🔐 Protection technique des accès</h3>
+            Les échanges avec ZenQuest utilisent des <strong>connexions HTTPS</strong>. Les autorisations ne reposent pas uniquement sur l’interface : des contrôles d’accès sont également appliqués au niveau des services et de la base de données.
+          </div>
+
+          <div class="estab-help-card">
+            <h3>👨‍👩‍👧 Une information accessible aux familles</h3>
+            L’espace élève comporte un <strong>Espace parents</strong> qui explique le fonctionnement du score, de l’indice d’implication, des règles et du suivi.
+            <div style="margin-top:9px;padding:9px 10px;border-radius:12px;background:#fffbeb;border:1px solid #fde68a">
+              📌 <strong>Le score ZenQuest n’est pas une note de mathématiques.</strong>
+            </div>
+          </div>
+        </div>
+
+      `;
     }
 
     function wireEstablishmentMainTabs(){
@@ -10214,6 +10335,7 @@ Noah"
           document.getElementById("establishmentTabUnderstand").style.display=tab==="understand"?"":"none";
           document.getElementById("establishmentTabProgression").style.display=tab==="progression"?"":"none";
           document.getElementById("establishmentTabReading").style.display=tab==="reading"?"":"none";
+          document.getElementById("establishmentTabSecurity").style.display=tab==="security"?"":"none";
         };
       });
     }
@@ -10446,6 +10568,48 @@ Noah"
     }
 
 
+
+    function establishmentReplicaRecentScores(student,period){
+      return establishmentPeriodScores(student,period)
+        .map(s=>{
+          if(typeof s==="number") return s;
+          if(typeof s==="string" && s.trim()!=="" && Number.isFinite(Number(s))) return Number(s);
+          const candidates=[s?.score,s?.points,s?.value,s?.lesson_score,s?.final_score];
+          const found=candidates.find(v=>v!==null && v!==undefined && v!=="" && Number.isFinite(Number(v)));
+          return found===undefined?null:Number(found);
+        })
+        .filter(v=>Number.isFinite(v))
+        .slice(-5);
+    }
+    function establishmentReplicaTrend(scores){
+      if(!scores || scores.length<2) return {text:"Pas encore de tendance",icon:"➖",delta:0};
+      const d=Number(scores[scores.length-1])-Number(scores[scores.length-2]);
+      return d>0?{text:`+${d} En progression`,icon:"↗",delta:d}:d<0?{text:`${d} En baisse`,icon:"↘",delta:d}:{text:"Stable",icon:"→",delta:0};
+    }
+    function establishmentReplicaBilan(avg,scores){
+      if(avg===null) return "Pas encore assez de données pour établir un bilan.";
+      const t=establishmentReplicaTrend(scores);
+      if(avg<10) return t.delta>0?"Indice fragile, mais amélioration encourageante.":"Indice préoccupant : une remobilisation est nécessaire.";
+      if(avg<13) return t.delta>0?"Indice fragile, mais amélioration encourageante.":"Implication encore fragile : des efforts réguliers sont attendus.";
+      if(avg<16) return t.delta>0?"Implication en progrès : poursuivre les efforts.":"Zone de vigilance : l’implication doit encore être consolidée.";
+      if(avg<18) return "Implication satisfaisante et régulière.";
+      if(avg<20) return "Très bonne implication dans les cours.";
+      return "Implication exemplaire.";
+    }
+    function establishmentReplicaObjective(avg){
+      if(avg===null) return "Construire une première série de cours réguliers.";
+      let target,label,emoji;
+      if(avg<13){target=13;label="la zone de vigilance";emoji="🟡";}
+      else if(avg<16){target=16;label="la zone satisfaisante";emoji="🟢";}
+      else if(avg<18){target=18;label="une très bonne implication";emoji="🌟";}
+      else if(avg<20){target=20;label="le niveau exemplaire";emoji="💎";}
+      else return "Maintenir cette excellente régularité 💎";
+      return `Encore ${Math.max(0,target-avg).toFixed(1).replace(".",",")} point(s) pour atteindre ${label} ${emoji}`;
+    }
+    function establishmentReplicaPointEvents(student){
+      return establishmentStudentEvents(student).filter(e=>["plus","minus"].includes(e.type)).sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
+    }
+
     function openEstablishmentStudentReplica(){
       const {classId,studentId}=establishmentDetailSelection||{};
       const cls=(establishmentDashboardData?.classes||[]).find(c=>String(c.id)===String(classId));
@@ -10460,6 +10624,9 @@ Noah"
       const cards=events.filter(e=>["success_card","success_card_legendary"].includes(e.type));
       const merits=events.filter(e=>["merit_special","merit_distinguished"].includes(e.type));
       const visibleRemarks=establishmentRealRemarks(student.remarks||[]);
+      const replicaRecentScores=establishmentReplicaRecentScores(student,currentPeriod);
+      const replicaTrend=establishmentReplicaTrend(replicaRecentScores);
+      const replicaPointEvents=establishmentReplicaPointEvents(student);
 
       document.getElementById("establishmentStudentReplicaTitle").textContent=`👁️ ${student.first_name||"Élève"} — aperçu espace élève`;
       document.getElementById("establishmentStudentReplicaSubtitle").textContent=`${cls.name} • ${currentPeriod?.name||"Période en cours"}`;
@@ -10508,10 +10675,12 @@ Noah"
 
           <div class="student-replica-tabs">
             <button class="student-replica-tab active" data-replica-tab="current">🎮 Période actuelle</button>
-            <button class="student-replica-tab" data-replica-tab="tracking">🧭 Suivi d’implication</button>
+            <button class="student-replica-tab" data-replica-tab="tracking">🧭 Implication</button>
+            <button class="student-replica-tab" data-replica-tab="events">➕➖ Suivi</button>
             <button class="student-replica-tab" data-replica-tab="rules">📜 Règles</button>
             <button class="student-replica-tab" data-replica-tab="history">📚 Anciennes périodes</button>
             <button class="student-replica-tab" data-replica-tab="materials">🎒 Matériel</button>
+            <button class="student-replica-tab" data-replica-tab="parents">👨‍👩‍👧 Parents</button>
           </div>
 
           <div id="replicaCurrentPane">
@@ -10543,21 +10712,36 @@ Noah"
 
           <div id="replicaTrackingPane" style="display:none">
             <div class="replica-panel">
-              <div class="replica-section-title">📈 Mon évolution</div>
-              <div class="muted" style="font-size:12px;margin-top:-2px;margin-bottom:8px">Évolution des scores enregistrés à la fin des séances.</div>
-              ${establishmentGraphSVG(scores)}
+              <div class="muted" style="font-weight:900">${escapeHTML(cls.name)} • ${escapeHTML(currentPeriod?.name||"Période en cours")}</div>
+              <div style="font-size:27px;font-weight:1000;margin:2px 0 12px">${escapeHTML(student.first_name||"Élève")}</div>
+              <div class="replica-detail-grid">
+                <div class="replica-score-card2"><div class="muted" style="font-weight:950">🎯 SCORE ACTUEL</div><div class="replica-big-value">${Number(student.points??15)} / 20</div></div>
+                <div class="replica-index-card2"><div style="font-weight:1000;color:#9a3412">📊 INDICE D’IMPLICATION</div><div class="replica-index-value2">${avg===null?"—":avg.toFixed(1).replace(".",",")+" / 20"}</div></div>
+              </div>
+              <div class="muted" style="margin-top:9px;font-size:12px">L’indice donne une vision plus globale de l’implication sur les cours récents et complète le score actuel.</div>
+              <div class="replica-scale"><span class="replica-marker" style="left:${Math.max(1,Math.min(99,((avg??0)/20)*100))}%"></span></div>
+              <div style="display:flex;justify-content:space-between;font-size:10px;color:#64748b"><span>0</span><span>10</span><span>13</span><span>16</span><span>20</span></div>
+              <div style="margin-top:13px;font-weight:1000">5 DERNIERS COURS</div>
+              <div class="replica-dots">${replicaRecentScores.length?replicaRecentScores.map(v=>`<span class="replica-dot">${Number.isFinite(Number(v))?Number(v):"—"}</span>`).join(""):'<span class="muted">Aucun cours enregistré.</span>'}</div>
+              <div class="replica-chiprow"><span class="replica-chip2">${replicaTrend.icon} ${escapeHTML(replicaTrend.text)}</span><span class="replica-chip2">⭐ ${Number(student.stars||0)}</span><span class="replica-chip2">💎 ${Number(student.diamonds||0)}</span></div>
+              <div class="replica-objective2"><strong>🎯 Prochain objectif :</strong> ${establishmentReplicaObjective(avg)}</div>
+              <div class="replica-bilan2"><strong>💬 Bilan :</strong> ${establishmentReplicaBilan(avg,replicaRecentScores)}</div>
             </div>
+            <div class="replica-panel" style="margin-top:10px"><div class="replica-section-title">📈 Mon évolution</div>${establishmentGraphSVG(scores)}</div>
+          </div>
 
-            <div class="replica-panel" style="margin-top:10px">
-              <div class="replica-section-title">🎯 Ma progression</div>
-              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-                <div class="replica-progress-card"><div class="muted" style="font-size:10px">Niveau</div><div class="big">${Number(student.level||1)}</div></div>
-                <div class="replica-progress-card"><div class="muted" style="font-size:10px">Étoiles</div><div class="big">${Number(student.stars||0)} ⭐</div></div>
-                <div class="replica-progress-card"><div class="muted" style="font-size:10px">Diamants</div><div class="big">${Number(student.diamonds||0)} 💎</div></div>
+          <div id="replicaEventsPane" style="display:none">
+            <div class="replica-panel">
+              <div class="replica-section-title">➕➖ Mon suivi de cours</div>
+              <div class="muted" style="margin-bottom:10px">Les points ajoutés ou retirés par le professeur et la raison indiquée au moment de l’action.</div>
+              <div style="display:grid;gap:8px">
+                ${replicaPointEvents.length?replicaPointEvents.map(e=>{
+                  const plus=e.type==="plus",date=e.date?new Date(e.date).toLocaleDateString("fr-FR"):"";
+                  return `<div class="replica-event2 ${plus?"plus":"minus"}"><div style="display:flex;align-items:center;gap:10px"><span class="replica-event-badge2" style="background:${plus?"#16a34a":"#dc2626"}">${plus?"+1":"−1"}</span><div><strong>${escapeHTML(e.label||(plus?"Point positif":"Point retiré"))}</strong>${date?`<div class="muted" style="font-size:11px">${date}</div>`:""}</div></div><div class="muted" style="font-size:11px">${Number.isFinite(e.scoreAfter)?`Score après : ${e.scoreAfter}/20`:""}</div></div>`;
+                }).join(""):'<div class="replica-empty">Aucun +1 ou −1 enregistré pour le moment.</div>'}
               </div>
             </div>
           </div>
-
 
           <div id="replicaRulesPane" style="display:none">
             <div class="replica-panel">
@@ -10566,7 +10750,7 @@ Noah"
                 Les règles sont les mêmes pour tous les élèves. Le but est de valoriser l’implication, la régularité et une attitude favorable au travail.
               </div>
 
-              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:9px">
+              <div class="replica-rules-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:9px">
                 <div style="padding:13px 14px;border-radius:16px;background:#eff6ff;border:1px solid #bfdbfe">
                   <div style="font-size:18px;font-weight:1000">🎯 Je commence à 15/20</div>
                   <div style="margin-top:5px">Au début de chaque période, mon score ZenQuest repart à <strong>15/20</strong>.</div>
@@ -10673,6 +10857,71 @@ Noah"
             </div>
           </div>
 
+          <div id="replicaParentsPane" style="display:none">
+            <div style="display:grid;gap:12px">
+              <div class="replica-panel" style="border:2px solid #99f6e4;background:linear-gradient(135deg,#f0fdfa,#fffdf5)">
+                <div style="font-size:26px;font-weight:1000">👥 Bienvenue sur ZenQuest</div>
+                <div style="margin-top:12px;line-height:1.65;font-size:15px">
+                  ZenQuest permet de suivre <strong>l’implication de votre enfant en cours de mathématiques</strong> tout au long de l’année.
+                  La note affichée évolue au fil des cours selon son travail, sa participation, son écoute, sa concentration et son attitude.
+                </div>
+                <div style="margin-top:12px;padding:12px 14px;border-radius:16px;background:#fff7ed;border:1px solid #fdba74">
+                  📌 <strong>À retenir :</strong> cette note d’implication est distincte de la moyenne de mathématiques et de la moyenne générale.
+                </div>
+                <div style="margin-top:9px;padding:12px 14px;border-radius:16px;background:#eff6ff;border:1px solid #bfdbfe">
+                  📌 <strong>À noter :</strong> après chaque période de vacances scolaires, la note d’implication repart à <strong>15/20</strong>. Chaque élève commence ainsi la nouvelle période sur une nouvelle base.
+                </div>
+              </div>
+
+              <div class="replica-panel">
+                <div class="replica-section-title">👀 Que regarder ?</div>
+                <div style="display:grid;gap:8px;line-height:1.5">
+                  <div>📈 <strong>L’évolution de la note d’implication</strong> au fil des cours.</div>
+                  <div>💬 <strong>Les remarques et messages du professeur</strong>, lorsqu’il y en a.</div>
+                  <div>⭐ <strong>La progression ZenQuest :</strong> niveaux, étoiles et objectifs.</div>
+                  <div>📚 <strong>Les anciennes périodes</strong> pour observer l’évolution dans le temps.</div>
+                </div>
+              </div>
+
+              <div class="replica-panel" style="border:2px solid #86efac;background:#f0fdf4">
+                <div class="replica-section-title">🟢 Quand tout se passe bien</div>
+                <div style="line-height:1.65">
+                  Lorsque votre enfant <strong>travaille, fait ses devoirs, participe, reste à l’écoute, suit les consignes et respecte les règles de la classe</strong>, il ne peut qu’obtenir une bonne note d’implication.
+                </div>
+                <div style="margin-top:10px;line-height:1.65">
+                  <strong>Cette note est avant tout un indicateur de l’implication de votre enfant dans le cours de mathématiques.</strong>
+                  Une note satisfaisante signifie donc que son investissement en classe est satisfaisant. 👍
+                </div>
+              </div>
+
+              <div class="replica-panel" style="border:2px solid #fdba74;background:#fff7ed">
+                <div class="replica-section-title">🟠 Si la note d’implication devient trop basse</div>
+                <div style="line-height:1.65">
+                  En cas de <strong>manque d’implication répété</strong> (travail insuffisant, manque de participation, d’écoute ou de concentration, devoirs non faits, non-respect des règles ou attitude inadaptée en classe),
+                  <strong>la famille pourra être contactée directement par le professeur via WhatsApp</strong> afin de faire le point et de réagir rapidement.
+                </div>
+              </div>
+
+              <div class="replica-panel">
+                <div class="replica-section-title">❓ Questions fréquentes</div>
+                <div style="display:grid">
+                  <div style="padding:9px 0;border-bottom:1px solid #e2e8f0">
+                    <strong>ZenQuest remplace-t-il Pronote ?</strong>
+                    <div class="muted" style="margin-top:4px">Non. ZenQuest est un outil de suivi de l’implication en classe. <strong>Pour contacter le professeur, merci de passer par Pronote.</strong></div>
+                  </div>
+                  <div style="padding:9px 0;border-bottom:1px solid #e2e8f0">
+                    <strong>Les scores ZenQuest sont-ils des notes de mathématiques ?</strong>
+                    <div class="muted" style="margin-top:4px">Non. Ils évaluent l’implication en classe : travail, participation, écoute, concentration et attitude. <strong>Ils sont distincts des résultats scolaires.</strong></div>
+                  </div>
+                  <div style="padding:9px 0">
+                    <strong>À quelle fréquence faut-il consulter ZenQuest ?</strong>
+                    <div class="muted" style="margin-top:4px">Régulièrement. Les scores, la progression et les éventuelles remarques sont <strong>actualisés au fil des cours.</strong></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div id="replicaMaterialsPane" style="display:none">
             <div class="replica-panel">
               <div class="replica-section-title">🎒 Mon matériel scolaire</div>
@@ -10689,9 +10938,11 @@ Noah"
           const t=btn.dataset.replicaTab;
           document.getElementById("replicaCurrentPane").style.display=t==="current"?"":"none";
           document.getElementById("replicaTrackingPane").style.display=t==="tracking"?"":"none";
+          document.getElementById("replicaEventsPane").style.display=t==="events"?"":"none";
           document.getElementById("replicaRulesPane").style.display=t==="rules"?"":"none";
           document.getElementById("replicaHistoryPane").style.display=t==="history"?"":"none";
           document.getElementById("replicaMaterialsPane").style.display=t==="materials"?"":"none";
+          document.getElementById("replicaParentsPane").style.display=t==="parents"?"":"none";
         };
       });
 
@@ -11439,7 +11690,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.12.10</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.12.14</span>.
   </footer>
 
 </body>
