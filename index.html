@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.12.3</title>
+  <title>ZenQuest v5.12.10</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -780,6 +780,166 @@
       line-height:.95 !important;
     }
 
+
+    /* v5.12.4 — Accès établissement */
+    .establishment-class-btn.active{background:#0f172a!important;color:white!important;border-color:#0f172a!important}
+    .establishment-student-card{
+      background:white;border:1px solid #e2e8f0;border-radius:18px;padding:14px;
+      box-shadow:0 4px 14px rgba(15,23,42,.06)
+    }
+    .establishment-student-card:hover{box-shadow:0 8px 24px rgba(15,23,42,.10)}
+    .establishment-score{
+      display:inline-flex;align-items:center;justify-content:center;min-width:68px;
+      padding:7px 10px;border-radius:999px;background:#f8fafc;border:1px solid #cbd5e1;
+      font-size:20px;font-weight:1000
+    }
+
+
+    /* v5.12.5 — classes autorisées + fiche établissement détaillée */
+    .establishment-class-choice-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+      gap:7px;
+    }
+    .establishment-class-choice{
+      display:flex;align-items:center;gap:8px;
+      padding:9px 11px;border:1px solid #cbd5e1;border-radius:12px;
+      background:white;font-weight:850;
+    }
+    .establishment-class-choice input{width:auto}
+    .establishment-student-card{cursor:pointer}
+    .establishment-student-metrics{
+      display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:12px
+    }
+    .establishment-metric{
+      background:#f8fafc;border-radius:12px;padding:9px;text-align:center;border:1px solid #eef2f7
+    }
+    .establishment-metric .label{font-size:10px;color:#64748b;font-weight:850}
+    .establishment-metric strong{display:block;margin-top:2px;font-size:18px}
+    .establishment-graph-wrap{
+      background:white;border:1px solid #e2e8f0;border-radius:18px;padding:12px;margin-top:12px
+    }
+    .establishment-remark{
+      padding:10px 12px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;margin-top:7px;
+      white-space:pre-wrap;line-height:1.45
+    }
+
+
+    /* v5.12.6 — aide établissement + aperçu espace élève */
+    .establishment-main-tabs{
+      display:flex;gap:7px;flex-wrap:wrap;padding:6px;border-radius:18px;
+      background:#f8fafc;border:1px solid #e2e8f0
+    }
+    .establishment-main-tab{
+      appearance:none;border:1px solid transparent;background:transparent;
+      padding:10px 13px;border-radius:13px;font-weight:950;cursor:pointer;color:#475569
+    }
+    .establishment-main-tab.active{
+      background:#0f172a;color:white;box-shadow:0 4px 12px rgba(15,23,42,.14)
+    }
+    .estab-help-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:10px}
+    .estab-help-card{
+      background:white;border:1px solid #e2e8f0;border-radius:18px;padding:15px;
+      line-height:1.55;box-shadow:0 3px 12px rgba(15,23,42,.04)
+    }
+    .estab-help-card h3{margin:0 0 7px;font-size:18px}
+    .estab-help-important{
+      padding:14px 16px;border-radius:16px;background:#fff7ed;border:2px solid #fdba74;
+      font-weight:850;line-height:1.5
+    }
+    .student-replica-tabs{
+      display:flex;gap:7px;flex-wrap:wrap;margin:14px 0
+    }
+    .student-replica-tab{
+      border:1px solid #cbd5e1;background:white;padding:9px 12px;border-radius:999px;
+      font-weight:900;cursor:pointer
+    }
+    .student-replica-tab.active{background:#0f766e;color:white;border-color:#0f766e}
+    .student-replica-hero{
+      padding:18px;border-radius:22px;background:linear-gradient(135deg,#ecfdf5,#eff6ff,#fff7ed);
+      border:1px solid #a7f3d0
+    }
+
+
+    /* v5.12.8 — aperçu élève plus proche de la vraie DA ZenQuest */
+    .replica-shell{
+      background:
+        radial-gradient(circle at 10% 0%,rgba(16,185,129,.12),transparent 26%),
+        radial-gradient(circle at 90% 0%,rgba(59,130,246,.12),transparent 24%),
+        linear-gradient(180deg,#f8fafc 0%,#ffffff 52%,#f8fafc 100%);
+      border:1px solid #dbeafe;
+      border-radius:26px;
+      padding:14px;
+      margin-top:14px;
+    }
+    .replica-topbar{
+      display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;
+      background:linear-gradient(135deg,#0f766e,#2563eb);
+      color:white;border-radius:22px;padding:16px 18px;
+      box-shadow:0 14px 30px rgba(15,118,110,.18);
+    }
+    .replica-topbar .muted{color:rgba(255,255,255,.82)}
+    .replica-identity{display:flex;align-items:center;gap:14px}
+    .replica-avatar{
+      width:74px;height:74px;display:flex;align-items:center;justify-content:center;
+      border-radius:22px;background:rgba(255,255,255,.18);
+      border:1px solid rgba(255,255,255,.30);font-size:48px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.22)
+    }
+    .replica-name{font-size:30px;font-weight:1000;line-height:1}
+    .replica-class-chip{
+      display:inline-flex;align-items:center;gap:6px;margin-top:7px;padding:6px 10px;
+      border-radius:999px;background:rgba(255,255,255,.16);
+      border:1px solid rgba(255,255,255,.22);font-size:12px;font-weight:900
+    }
+    .replica-score-cluster{
+      display:grid;grid-template-columns:repeat(2,minmax(130px,1fr));gap:8px
+    }
+    .replica-score-card{
+      min-width:135px;background:rgba(255,255,255,.95);color:#0f172a;
+      border-radius:17px;padding:10px 12px;text-align:center;
+      box-shadow:0 5px 15px rgba(15,23,42,.12)
+    }
+    .replica-score-card .label{font-size:10px;color:#64748b;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+    .replica-score-card strong{display:block;font-size:24px;margin-top:2px}
+    .replica-progress-strip{
+      margin-top:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px
+    }
+    .replica-progress-card{
+      padding:11px 12px;border-radius:17px;background:white;border:1px solid #e2e8f0;
+      text-align:center;box-shadow:0 4px 14px rgba(15,23,42,.05)
+    }
+    .replica-progress-card .big{font-size:22px;font-weight:1000}
+    .replica-panel{
+      background:white;border:1px solid #e2e8f0;border-radius:20px;padding:15px;
+      box-shadow:0 4px 16px rgba(15,23,42,.05)
+    }
+    .replica-section-title{
+      display:flex;align-items:center;gap:8px;font-size:20px;font-weight:1000;margin-bottom:8px
+    }
+    .student-replica-tabs{
+      position:sticky;top:0;z-index:2;
+      background:rgba(248,250,252,.92);backdrop-filter:blur(10px);
+      padding:8px 0;margin:12px 0;
+    }
+    .student-replica-tab{
+      transition:.15s ease;box-shadow:0 1px 3px rgba(15,23,42,.04)
+    }
+    .student-replica-tab:hover{transform:translateY(-1px)}
+    .student-replica-tab.active{
+      background:linear-gradient(135deg,#0f766e,#14b8a6);
+      color:white;border-color:transparent;box-shadow:0 5px 14px rgba(15,118,110,.18)
+    }
+    .replica-empty{
+      padding:18px;border-radius:16px;background:#f8fafc;border:1px dashed #cbd5e1;
+      text-align:center;color:#64748b;font-weight:800
+    }
+    @media(max-width:700px){
+      .replica-score-cluster{grid-template-columns:1fr 1fr;width:100%}
+      .replica-progress-strip{grid-template-columns:1fr}
+      .replica-name{font-size:25px}
+    }
+
 </style>
 </head>
 <body>
@@ -808,7 +968,43 @@
   </div>
 
 
-    <div id="studentApp" style="display:none">
+    
+<div id="establishmentApp" style="display:none">
+  <div style="max-width:1280px;margin:0 auto;padding:18px">
+    <div class="panel" style="display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:14px;border:1px solid #bfdbfe;background:#eff6ff">
+      <div>
+        <div style="font-size:30px;font-weight:1000">🏫 Accès établissement</div>
+        <div class="muted" id="establishmentAccessLabel" style="margin-top:4px">Vue globale ZenQuest</div>
+      </div>
+      <div class="row wrap">
+        <span class="toolbar-chip">🔒 Consultation uniquement</span>
+        <button class="btn outline" id="establishmentLogoutBtn">Déconnexion</button>
+      </div>
+    </div>
+
+    <div class="establishment-main-tabs" style="margin-bottom:14px">
+      <button class="establishment-main-tab active" data-estab-tab="classes">🏫 Classes</button>
+      <button class="establishment-main-tab" data-estab-tab="understand">🧭 Comprendre ZenQuest</button>
+      <button class="establishment-main-tab" data-estab-tab="progression">⭐ Progression & récompenses</button>
+      <button class="establishment-main-tab" data-estab-tab="reading">📊 Lire le suivi</button>
+    </div>
+
+    <div id="establishmentTabClasses">
+      <div class="box" style="margin-bottom:14px">
+        <div style="font-weight:950">Suivi de l’implication en classe</div>
+        <div class="muted" style="margin-top:4px">Les indicateurs présentés concernent l’implication de l’élève pendant les cours de mathématiques. Ils ne correspondent pas à ses résultats scolaires.</div>
+      </div>
+      <div id="establishmentClassTabs" class="row wrap" style="margin-bottom:14px"></div>
+      <div id="establishmentDashboardContent"></div>
+    </div>
+
+    <div id="establishmentTabUnderstand" style="display:none"></div>
+    <div id="establishmentTabProgression" style="display:none"></div>
+    <div id="establishmentTabReading" style="display:none"></div>
+  </div>
+</div>
+
+<div id="studentApp" style="display:none">
       <div style="max-width:1100px;margin:0 auto;padding:24px">
         <div class="topbar" style="margin-bottom:16px">
           <div><div class="pill" id="studentClassPill">Classe</div></div>
@@ -1061,6 +1257,7 @@ Noah"
         <button class="btn outline teacher-tool-launch" data-target="waitingModeBtn">🌙 Mode attente</button>
         <button class="btn outline teacher-tool-launch" data-target="studentCodesBtn">🔑 Codes élèves</button>
         <button class="btn outline teacher-tool-launch" data-target="studentConnectionsBtn">👁️ Connexions élèves</button>
+        <button class="btn outline teacher-tool-launch" data-target="establishmentAccessBtn">🏫 Accès établissement</button>
         <button class="btn outline teacher-tool-launch" data-target="classMessagesBtn">📢 Message classe</button>
       </div>
       <div style="display:none">
@@ -1069,7 +1266,7 @@ Noah"
         <button id="resourcesBtn"></button><button id="announcementsBtn" style="display:none"></button>
         <button id="classRolesBtn"></button><button id="waitingModeBtn"></button>
         <button id="studentCodesBtn"></button><button id="studentConnectionsBtn"></button>
-        <button id="classMessagesBtn"></button>
+        <button id="establishmentAccessBtn"></button><button id="classMessagesBtn"></button>
       </div>
     </div>
   </div>
@@ -1601,6 +1798,87 @@ Noah"
         <button class="btn green" id="confirmHomeworkBatchBtn">✓ Valider ce devoir</button>
       </div>
       <div id="homeworkBatchStatus" style="display:none;margin-top:10px;padding:10px 12px;border-radius:12px;font-weight:850"></div>
+    </div>
+  </div>
+
+
+  <div class="modal" id="establishmentAccessModal">
+    <div class="modal-card" style="width:min(860px,95vw);max-height:92vh;overflow:auto">
+      <div class="modal-header">
+        <div>
+          <h2 style="margin:0">🏫 Accès établissement</h2>
+          <div class="muted" style="margin-top:4px">Crée et gère des accès en lecture seule pour la direction, la vie scolaire ou d’autres personnels autorisés.</div>
+        </div>
+        <button class="btn outline" id="closeEstablishmentAccessBtn">Fermer</button>
+      </div>
+
+      <div class="box" style="margin-top:14px;border:1px solid #bfdbfe;background:#eff6ff">
+        <div style="font-weight:950">🔒 Lecture seule</div>
+        <div class="muted" style="margin-top:5px;line-height:1.5">
+          Ces comptes pourront consulter les classes, les élèves, les scores, l’évolution et les remarques.
+          Ils ne pourront pas modifier les points ni les données pédagogiques.
+        </div>
+      </div>
+
+      <div class="box" style="margin-top:14px">
+        <div style="font-size:18px;font-weight:950">Créer un nouvel accès</div>
+        <div class="row wrap" style="margin-top:10px">
+          <input id="establishmentLabelInput" placeholder="Nom affiché — ex. Accès établissement" value="Accès établissement" style="flex:1;min-width:220px">
+          <input id="establishmentUsernameInput" placeholder="Identifiant — ex. etablissement" value="etablissement" style="flex:1;min-width:180px">
+        </div>
+        <div class="row wrap" style="margin-top:10px">
+          <input id="establishmentPasswordInput" type="text" placeholder="Mot de passe" style="flex:1;min-width:220px">
+          <button class="btn outline" id="generateEstablishmentPasswordBtn">🎲 Générer</button>
+          <button class="btn green" id="createEstablishmentAccessBtn">＋ Créer l’accès</button>
+        </div>
+
+        <div style="margin-top:14px">
+          <div style="font-weight:950;margin-bottom:7px">Classes accessibles</div>
+          <div class="muted" style="font-size:12px;margin-bottom:8px">Coche uniquement les classes que ce compte doit pouvoir consulter.</div>
+          <div id="establishmentCreateClassChoices" class="establishment-class-choice-grid"></div>
+        </div>
+
+        <div id="establishmentCreateStatus" style="display:none;margin-top:10px;padding:10px 12px;border-radius:12px;font-weight:850"></div>
+      </div>
+
+      <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="font-size:18px;font-weight:950">Accès existants</div>
+        <button class="btn outline" id="refreshEstablishmentAccessBtn">↻ Actualiser</button>
+      </div>
+      <div id="establishmentAccessList" style="display:grid;gap:10px;margin-top:10px">
+        <div class="muted">Chargement…</div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal" id="establishmentStudentDetailModal">
+    <div class="modal-card" style="width:min(930px,96vw);max-height:94vh;overflow:auto">
+      <div class="modal-header">
+        <div>
+          <h2 id="establishmentStudentDetailTitle" style="margin:0">Suivi élève</h2>
+          <div id="establishmentStudentDetailSubtitle" class="muted" style="margin-top:4px"></div>
+        </div>
+        <button class="btn outline" id="closeEstablishmentStudentDetailBtn">Fermer</button>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:10px">
+        <button class="btn primary" id="openEstablishmentStudentReplicaBtn">👁️ Voir l’espace de l’élève</button>
+      </div>
+      <div id="establishmentStudentDetailContent"></div>
+    </div>
+  </div>
+
+
+  <div class="modal" id="establishmentStudentReplicaModal">
+    <div class="modal-card" style="width:min(1060px,97vw);max-height:95vh;overflow:auto">
+      <div class="modal-header">
+        <div>
+          <h2 id="establishmentStudentReplicaTitle" style="margin:0">👁️ Aperçu espace élève</h2>
+          <div class="muted" id="establishmentStudentReplicaSubtitle" style="margin-top:4px"></div>
+        </div>
+        <button class="btn outline" id="closeEstablishmentStudentReplicaBtn">Fermer</button>
+      </div>
+      <div id="establishmentStudentReplicaContent"></div>
     </div>
   </div>
 
@@ -9564,6 +9842,862 @@ Noah"
         });
     }
 
+
+    function randomEstablishmentPassword(){
+      const words=["Awara","Wassai","Maripa","Jaguar","Toucan","Balata","Roura","Crique","Savane","Kapok"];
+      const word=words[Math.floor(Math.random()*words.length)];
+      const n=String(Math.floor(1000+Math.random()*9000));
+      return `${word}-${n}-973`;
+    }
+
+    function establishmentDateLabel(value){
+      if(!value) return "Jamais";
+      const d=new Date(value);
+      if(Number.isNaN(d.getTime())) return "Jamais";
+      return d.toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+    }
+
+
+    function establishmentRealRemarks(remarks){
+      return (remarks||[]).filter(r=>{
+        const t=String(r?.remark||"").trim();
+        if(!t) return false;
+        // Les ZQEVENT sont des événements techniques (matériel, rôles, cartes, etc.),
+        // pas des appréciations destinées à la direction.
+        return !/^ZQEVENT[|\\]/i.test(t);
+      });
+    }
+
+    function establishmentTeacherClasses(){
+      return (state.classes||[]).slice().sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"fr"));
+    }
+
+    function renderEstablishmentCreateClassChoices(selectedIds=null){
+      const box=document.getElementById("establishmentCreateClassChoices");
+      if(!box) return;
+      const selected=selectedIds ? new Set([...selectedIds].map(String)) : new Set(establishmentTeacherClasses().map(c=>String(c.id)));
+      box.innerHTML=establishmentTeacherClasses().map(c=>`
+        <label class="establishment-class-choice">
+          <input type="checkbox" class="establishment-create-class-check" value="${escapeHTML(c.id)}" ${selected.has(String(c.id))?"checked":""}>
+          <span>${escapeHTML(c.name)}</span>
+        </label>
+      `).join("");
+    }
+
+    function selectedEstablishmentCreateClassIds(){
+      return [...document.querySelectorAll(".establishment-create-class-check:checked")].map(el=>el.value);
+    }
+
+    async function saveEstablishmentAccessClasses(accessId,classIds){
+      if(!accessId) return;
+      const ids=[...new Set((classIds||[]).map(String))];
+
+      const {error:deleteError}=await supabaseClient
+        .from("establishment_access_classes")
+        .delete()
+        .eq("access_id",accessId);
+      if(deleteError) throw deleteError;
+
+      if(ids.length){
+        const {error:insertError}=await supabaseClient
+          .from("establishment_access_classes")
+          .insert(ids.map(classId=>({access_id:accessId,class_id:classId})));
+        if(insertError) throw insertError;
+      }
+    }
+
+    function establishmentGraphSVG(scores,width=760,height=250){
+      const vals=(scores||[]).map(x=>Number(x.score)).filter(Number.isFinite);
+      if(!vals.length) return '<div class="muted" style="padding:18px;text-align:center">Aucun score enregistré pour cette période.</div>';
+
+      const w=width,h=height,padL=40,padR=18,padT=18,padB=34;
+      const plotW=w-padL-padR, plotH=h-padT-padB;
+      const x=(i)=>padL+(vals.length===1?plotW/2:i*plotW/(vals.length-1));
+      const y=(v)=>padT+(20-v)*(plotH/20);
+      const points=vals.map((v,i)=>`${x(i)},${y(v)}`).join(" ");
+      const grid=[0,5,10,15,20].map(v=>`
+        <line x1="${padL}" y1="${y(v)}" x2="${w-padR}" y2="${y(v)}" stroke="#e2e8f0" stroke-width="1"/>
+        <text x="${padL-8}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="#64748b">${v}</text>
+      `).join("");
+      const dots=vals.map((v,i)=>`<circle cx="${x(i)}" cy="${y(v)}" r="4.5" fill="#0f766e"><title>Séance ${i+1} : ${v}/20</title></circle>`).join("");
+      return `
+        <svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Évolution des scores d'implication">
+          ${grid}
+          <polyline fill="none" stroke="#0f766e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" points="${points}"/>
+          ${dots}
+          <text x="${w/2}" y="${h-6}" text-anchor="middle" font-size="11" fill="#64748b">Séances de la période</text>
+        </svg>
+      `;
+    }
+
+    async function openEstablishmentAccess(){
+      document.getElementById("establishmentAccessModal").classList.add("show");
+      const p=document.getElementById("establishmentPasswordInput");
+      if(p && !p.value) p.value=randomEstablishmentPassword();
+      renderEstablishmentCreateClassChoices();
+      await loadEstablishmentAccesses();
+    }
+
+    async function loadEstablishmentAccesses(){
+      const box=document.getElementById("establishmentAccessList");
+      if(!box) return;
+      box.innerHTML='<div class="muted">Chargement…</div>';
+
+      const {data,error}=await supabaseClient
+        .from("establishment_accesses")
+        .select("id,label,username,auth_password,is_active,created_at,last_login_at")
+        .order("created_at",{ascending:false});
+
+      if(error){
+        box.innerHTML=`<div style="font-weight:900;color:#b91c1c">⚠️ ${escapeHTML(error.message)}</div>`;
+        return;
+      }
+
+      if(!data?.length){
+        box.innerHTML='<div class="muted">Aucun accès établissement pour le moment.</div>';
+        return;
+      }
+
+      const accessIds=data.map(a=>a.id);
+      const {data:links,error:linksError}=await supabaseClient
+        .from("establishment_access_classes")
+        .select("access_id,class_id")
+        .in("access_id",accessIds);
+      if(linksError){
+        box.innerHTML=`<div style="font-weight:900;color:#b91c1c">⚠️ ${escapeHTML(linksError.message)}</div>`;
+        return;
+      }
+
+      const classes=establishmentTeacherClasses();
+
+      box.innerHTML=data.map(a=>{
+        const allowed=new Set((links||[]).filter(x=>String(x.access_id)===String(a.id)).map(x=>String(x.class_id)));
+        return `
+        <div class="box" style="margin:0">
+          <div class="row wrap" style="justify-content:space-between;align-items:flex-start">
+            <div style="min-width:240px;flex:1">
+              <div style="font-size:18px;font-weight:950">${escapeHTML(a.label||"Accès établissement")}</div>
+              <div style="margin-top:6px"><strong>Identifiant :</strong> ${escapeHTML(a.username||"")}</div>
+              <div><strong>Mot de passe :</strong> ${escapeHTML(a.auth_password||"—")}</div>
+              <div class="muted" style="margin-top:6px">Dernière connexion : ${escapeHTML(establishmentDateLabel(a.last_login_at))}</div>
+            </div>
+            <div style="display:grid;gap:7px;min-width:160px">
+              <span class="toolbar-chip" style="text-align:center">${a.is_active?"✅ Actif":"⛔ Désactivé"}</span>
+              <button class="btn outline copy-establishment-btn" data-id="${escapeHTML(a.id)}">📋 Copier les codes</button>
+              <button class="btn outline toggle-establishment-btn" data-id="${escapeHTML(a.id)}" data-active="${a.is_active?"1":"0"}">${a.is_active?"⛔ Désactiver":"✅ Réactiver"}</button>
+            </div>
+          </div>
+
+          <div style="margin-top:14px;padding-top:12px;border-top:1px solid #e2e8f0">
+            <div style="font-weight:950;margin-bottom:7px">Classes visibles</div>
+            <div class="establishment-class-choice-grid">
+              ${classes.map(c=>`
+                <label class="establishment-class-choice">
+                  <input type="checkbox" class="existing-establishment-class-check"
+                    data-access-id="${escapeHTML(a.id)}"
+                    value="${escapeHTML(c.id)}"
+                    ${allowed.has(String(c.id))?"checked":""}>
+                  <span>${escapeHTML(c.name)}</span>
+                </label>
+              `).join("")}
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:9px">
+              <button class="btn primary small save-establishment-classes-btn" data-id="${escapeHTML(a.id)}">💾 Enregistrer les classes</button>
+            </div>
+          </div>
+        </div>
+      `}).join("");
+
+      box.querySelectorAll(".copy-establishment-btn").forEach(btn=>btn.onclick=()=>{
+        const a=data.find(x=>String(x.id)===String(btn.dataset.id));
+        if(!a) return;
+        const txt=`ZenQuest — ${a.label}\nIdentifiant : ${a.username}\nMot de passe : ${a.auth_password||""}\nhttps://mrmontout.github.io/ZenQuest/`;
+        navigator.clipboard?.writeText(txt);
+        const old=btn.textContent; btn.textContent="✅ Copié"; setTimeout(()=>btn.textContent=old,1200);
+      });
+
+      box.querySelectorAll(".toggle-establishment-btn").forEach(btn=>btn.onclick=async()=>{
+        const next=btn.dataset.active!=="1";
+        btn.disabled=true;
+        const {error}=await supabaseClient
+          .from("establishment_accesses")
+          .update({is_active:next})
+          .eq("id",btn.dataset.id);
+        if(error) alert("❌ "+error.message);
+        await loadEstablishmentAccesses();
+      });
+
+      box.querySelectorAll(".save-establishment-classes-btn").forEach(btn=>btn.onclick=async()=>{
+        const accessId=btn.dataset.id;
+        const selected=[...box.querySelectorAll(`.existing-establishment-class-check[data-access-id="${accessId}"]:checked`)].map(x=>x.value);
+        const old=btn.textContent;
+        btn.disabled=true; btn.textContent="⏳";
+        try{
+          await saveEstablishmentAccessClasses(accessId,selected);
+          btn.textContent="✅ Enregistré";
+          setTimeout(()=>{btn.textContent=old;btn.disabled=false;},1200);
+        }catch(err){
+          btn.disabled=false; btn.textContent=old;
+          alert("❌ Impossible d’enregistrer les classes\n\n"+(err?.message||String(err)));
+        }
+      });
+    }
+
+    async function createEstablishmentAccess(){
+      const label=(document.getElementById("establishmentLabelInput").value||"Accès établissement").trim()||"Accès établissement";
+      const username=(document.getElementById("establishmentUsernameInput").value||"").trim().toLowerCase();
+      const password=(document.getElementById("establishmentPasswordInput").value||"").trim();
+      const classIds=selectedEstablishmentCreateClassIds();
+      const status=document.getElementById("establishmentCreateStatus");
+      const btn=document.getElementById("createEstablishmentAccessBtn");
+
+      if(!username || !password){
+        status.style.display="block";
+        status.style.background="#fef2f2"; status.style.color="#991b1b";
+        status.textContent="Renseigne un identifiant et un mot de passe.";
+        return;
+      }
+      if(!classIds.length){
+        status.style.display="block";
+        status.style.background="#fef2f2"; status.style.color="#991b1b";
+        status.textContent="Choisis au moins une classe accessible.";
+        return;
+      }
+
+      btn.disabled=true;
+      status.style.display="block";
+      status.style.background="#eff6ff"; status.style.color="#1e3a8a";
+      status.textContent="Création de l’accès…";
+
+      try{
+        const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
+        if(sessionError || !session) throw new Error("Session professeur introuvable.");
+
+        const response=await fetch(
+          "https://afterlxyowjgeoeiijec.supabase.co/functions/v1/create-establishment-access",
+          {
+            method:"POST",
+            headers:{
+              "Content-Type":"application/json",
+              "Authorization":`Bearer ${session.access_token}`,
+              "apikey":"sb_publishable_YIt7fyla9Uf0dOhPJYAOOA_PBfyCWqw"
+            },
+            body:JSON.stringify({label,username,password})
+          }
+        );
+
+        let result={};
+        try{ result=await response.json(); }catch{}
+        if(!response.ok) throw new Error(result.error||`Erreur HTTP ${response.status}`);
+
+        const newAccessId=result?.access?.id;
+        if(!newAccessId) throw new Error("Compte créé, mais identifiant d’accès introuvable.");
+        await saveEstablishmentAccessClasses(newAccessId,classIds);
+
+        status.style.background="#ecfdf5"; status.style.color="#166534";
+        status.innerHTML=`✅ Accès créé — <strong>${escapeHTML(username)}</strong> • ${classIds.length} classe${classIds.length>1?"s":""}`;
+        document.getElementById("establishmentPasswordInput").value=randomEstablishmentPassword();
+        renderEstablishmentCreateClassChoices();
+        await loadEstablishmentAccesses();
+      }catch(err){
+        status.style.background="#fef2f2"; status.style.color="#991b1b";
+        status.textContent="❌ "+(err?.message||String(err));
+      }finally{
+        btn.disabled=false;
+      }
+    }
+
+
+    function renderEstablishmentHelpTabs(){
+      const understand=document.getElementById("establishmentTabUnderstand");
+      const progression=document.getElementById("establishmentTabProgression");
+      const reading=document.getElementById("establishmentTabReading");
+
+      if(understand) understand.innerHTML=`
+        <div class="box">
+          <div style="font-size:25px;font-weight:1000">🧭 Comprendre ZenQuest</div>
+          <div class="muted" style="margin-top:5px">Une présentation rapide du fonctionnement général.</div>
+        </div>
+        <div class="estab-help-grid" style="margin-top:10px">
+          <div class="estab-help-card">
+            <h3>🌱 À quoi sert ZenQuest ?</h3>
+            ZenQuest est un outil de suivi de <strong>l’implication en classe</strong>. Il vise à rendre visibles la régularité, l’investissement, l’écoute, la concentration, le travail fourni et les attitudes favorables au travail.
+          </div>
+          <div class="estab-help-card">
+            <h3>🎯 Un suivi continu</h3>
+            Chaque élève commence la période avec un <strong>score de 15/20</strong>. Ce score peut évoluer au fil des cours selon son implication. L’objectif est d’observer une dynamique dans le temps, et pas uniquement un comportement ponctuel.
+          </div>
+          <div class="estab-help-card">
+            <h3>✨ Valoriser aussi le positif</h3>
+            ZenQuest ne sert pas seulement à signaler des difficultés. Les efforts, les progrès, la régularité et certaines réussites peuvent être valorisés par des niveaux, des étoiles, des Cartes Réussite ou des distinctions.
+          </div>
+          <div class="estab-help-card">
+            <h3>👁️ L’espace élève</h3>
+            Chaque élève dispose d’un espace personnel où il peut consulter sa progression, ses réussites, ses remarques, ses anciennes périodes et certaines informations mises à disposition par le professeur. L’Accès établissement peut afficher une <strong>réplique en lecture seule</strong> de cet espace.
+          </div>
+        </div>
+        <div class="estab-help-important" style="margin-top:12px">
+          ⚠️ <strong>Le score ZenQuest n’est pas une note de mathématiques.</strong><br>
+          Il ne mesure ni le niveau scolaire de l’élève, ni sa maîtrise des notions mathématiques, ni sa moyenne générale.
+        </div>
+      `;
+
+      if(progression) progression.innerHTML=`
+        <div class="box">
+          <div style="font-size:25px;font-weight:1000">⭐ Progression & récompenses</div>
+          <div class="muted" style="margin-top:5px">Les principaux mécanismes visibles par les élèves.</div>
+        </div>
+        <div class="estab-help-grid" style="margin-top:10px">
+          <div class="estab-help-card">
+            <h3>🎯 Les points</h3>
+            L’élève commence chaque période à <strong>15/20</strong>. Pendant le cours, son score peut augmenter ou diminuer en fonction de son implication et de son attitude de travail.
+          </div>
+          <div class="estab-help-card">
+            <h3>➕ La fin du cours</h3>
+            Un élève présent qui termine le cours sans avoir perdu de point reçoit automatiquement <strong>+1 point</strong>, dans la limite de 20/20. Une absence reste neutre.
+          </div>
+          <div class="estab-help-card">
+            <h3>⭐ Étoiles, niveaux et diamants</h3>
+            Plusieurs séances réussies sans perte de point font progresser l’élève. Il peut gagner des étoiles, monter de niveau puis obtenir des diamants. Cette progression représente avant tout sa <strong>régularité</strong>.
+          </div>
+          <div class="estab-help-card">
+            <h3>🤝 Progression collective</h3>
+            La classe et les groupes peuvent également progresser ensemble. Des étoiles collectives, stickers et diamants permettent de valoriser une dynamique positive commune.
+          </div>
+          <div class="estab-help-card">
+            <h3>🏆 Cartes Réussite</h3>
+            Le professeur peut attribuer des <strong>Cartes Réussite</strong>, comparables à des bons points, pour valoriser une réussite, un effort, une progression ou une attitude particulièrement positive.
+          </div>
+          <div class="estab-help-card">
+            <h3>🌟 Élèves méritants</h3>
+            En fin de période, une <strong>Mention spéciale</strong> ou le statut d’<strong>Élève distingué</strong> peut être attribué manuellement par le professeur. Ces distinctions ne correspondent pas automatiquement au classement des meilleurs scores.
+          </div>
+        </div>
+      `;
+
+      if(reading) reading.innerHTML=`
+        <div class="box">
+          <div style="font-size:25px;font-weight:1000">📊 Lire le suivi</div>
+          <div class="muted" style="margin-top:5px">Comment interpréter les informations présentées dans l’Accès établissement.</div>
+        </div>
+        <div class="estab-help-grid" style="margin-top:10px">
+          <div class="estab-help-card">
+            <h3>🎯 Score actuel</h3>
+            Il correspond à la situation de l’élève <strong>à cet instant</strong>. Il peut évoluer d’un cours à l’autre et ne résume donc pas, à lui seul, toute la période.
+          </div>
+          <div class="estab-help-card">
+            <h3>📌 Indice d’implication</h3>
+            L’indice donne une vision plus représentative de l’implication observée au cours de la période. Il permet de distinguer le niveau actuel d’une tendance plus globale.
+          </div>
+          <div class="estab-help-card">
+            <h3>📈 Graphique</h3>
+            Le graphique représente les scores enregistrés à la fin des séances. Il permet notamment de repérer une progression, une stabilité ou une période de difficulté.
+          </div>
+          <div class="estab-help-card">
+            <h3>💬 Remarques du professeur</h3>
+            Les remarques apportent un complément qualitatif aux indicateurs chiffrés. Elles servent à contextualiser une situation qui ne peut pas toujours être comprise à partir du score seul.
+          </div>
+        </div>
+        <div class="estab-help-important" style="margin-top:12px;background:#eff6ff;border-color:#93c5fd">
+          ℹ️ <strong>Un indicateur doit toujours être replacé dans son contexte.</strong><br>
+          Une baisse ponctuelle ne suffit pas à tirer une conclusion sur un élève. ZenQuest constitue un outil de suivi complémentaire aux autres éléments disponibles dans l’établissement.
+        </div>
+      `;
+    }
+
+    function wireEstablishmentMainTabs(){
+      document.querySelectorAll(".establishment-main-tab").forEach(btn=>{
+        btn.onclick=()=>{
+          document.querySelectorAll(".establishment-main-tab").forEach(b=>b.classList.toggle("active",b===btn));
+          const tab=btn.dataset.estabTab;
+          document.getElementById("establishmentTabClasses").style.display=tab==="classes"?"":"none";
+          document.getElementById("establishmentTabUnderstand").style.display=tab==="understand"?"":"none";
+          document.getElementById("establishmentTabProgression").style.display=tab==="progression"?"":"none";
+          document.getElementById("establishmentTabReading").style.display=tab==="reading"?"":"none";
+        };
+      });
+    }
+
+    function establishmentStudentEvents(student){
+      return (student?.remarks||[]).map(r=>{
+        const e=parseZQEventRemark(r.remark||"");
+        return e?{...e,date:r.created_at||null,id:r.id}:null;
+      }).filter(Boolean);
+    }
+
+    function establishmentStudentReplicaData(student){
+      const fake={
+        id:student.id,
+        name:student.first_name||"Élève",
+        avatar:student.avatar||"🙂",
+        teacherRemarks:(student.remarks||[]).map(r=>({
+          id:r.id,
+          text:r.remark,
+          createdAt:r.created_at,
+          date:r.created_at
+        }))
+      };
+      return fake;
+    }
+
+    function normalizeEstablishmentDashboard(data){
+      const classes=(data?.classes||[]).map(c=>({
+        ...c,
+        students:(c.students||[]).map(s=>({
+          ...s,
+          remarks:s.remarks||[],
+          scores:s.scores||[]
+        })),
+        periods:c.periods||[]
+      }));
+      return {...data,classes};
+    }
+
+    let establishmentDashboardData=null;
+    let establishmentCurrentClassId=null;
+
+    async function loadEstablishmentDashboard(){
+      const content=document.getElementById("establishmentDashboardContent");
+      content.innerHTML='<div class="box">Chargement…</div>';
+
+      const {data,error}=await supabaseClient.rpc("get_establishment_dashboard");
+      if(error) throw error;
+
+      establishmentDashboardData=normalizeEstablishmentDashboard(data||{});
+      renderEstablishmentHelpTabs();
+      wireEstablishmentMainTabs();
+      const classes=establishmentDashboardData.classes||[];
+      if(!establishmentCurrentClassId || !classes.some(c=>c.id===establishmentCurrentClassId)){
+        establishmentCurrentClassId=classes[0]?.id||null;
+      }
+      document.getElementById("establishmentAccessLabel").textContent=
+        `${establishmentDashboardData.access?.label||"Accès établissement"} • consultation uniquement`;
+      renderEstablishmentDashboard();
+    }
+
+    function establishmentPeriodScores(student,period){
+      return (student?.scores||[])
+        .filter(x=>!period || String(x.period_id)===String(period.id))
+        .slice()
+        .sort((a,b)=>String(a.created_at||"").localeCompare(String(b.created_at||"")));
+    }
+
+    function establishmentPeriodAverage(student,period){
+      const vals=establishmentPeriodScores(student,period).map(x=>Number(x.score)).filter(Number.isFinite);
+      return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+    }
+
+    function renderEstablishmentDashboard(){
+      const tabs=document.getElementById("establishmentClassTabs");
+      const content=document.getElementById("establishmentDashboardContent");
+      const classes=establishmentDashboardData?.classes||[];
+
+      if(!classes.length){
+        tabs.innerHTML="";
+        content.innerHTML=`
+          <div class="box" style="text-align:center;padding:28px">
+            <div style="font-size:34px">🏫</div>
+            <div style="font-size:20px;font-weight:950;margin-top:8px">Aucune classe autorisée</div>
+            <div class="muted" style="margin-top:6px">Le professeur doit attribuer au moins une classe à cet accès.</div>
+          </div>`;
+        return;
+      }
+
+      tabs.innerHTML=classes.map(c=>`
+        <button class="btn outline establishment-class-btn ${String(c.id)===String(establishmentCurrentClassId)?"active":""}" data-class-id="${escapeHTML(c.id)}">${escapeHTML(c.name)}</button>
+      `).join("");
+      tabs.querySelectorAll(".establishment-class-btn").forEach(btn=>btn.onclick=()=>{
+        establishmentCurrentClassId=btn.dataset.classId;
+        renderEstablishmentDashboard();
+      });
+
+      const cls=classes.find(c=>String(c.id)===String(establishmentCurrentClassId))||classes[0];
+      const currentPeriod=(cls.periods||[]).find(p=>p.is_current)||(cls.periods||[]).slice(-1)[0]||null;
+
+      const cards=(cls.students||[]).map(s=>{
+        const avg=establishmentPeriodAverage(s,currentPeriod);
+        return `
+          <button type="button" class="establishment-student-card establishment-open-student"
+            data-student-id="${escapeHTML(s.id)}"
+            style="width:100%;text-align:left;color:inherit;font:inherit">
+            <div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px">
+              <div class="row" style="gap:10px;align-items:center">
+                <div style="font-size:38px">${escapeHTML(s.avatar||"🙂")}</div>
+                <div>
+                  <div style="font-size:18px;font-weight:1000">${escapeHTML(s.first_name||"Élève")}</div>
+                  <div class="muted" style="font-size:12px;margin-top:2px">${s.group_name==="g1"?"Groupe 1":s.group_name==="g2"?"Groupe 2":"Classe entière"}</div>
+                </div>
+              </div>
+              <div style="font-size:12px;font-weight:900;color:#0f766e">Voir le suivi ›</div>
+            </div>
+
+            <div class="establishment-student-metrics">
+              <div class="establishment-metric">
+                <div class="label">Score actuel</div>
+                <strong>${Number(s.points??15)}/20</strong>
+              </div>
+              <div class="establishment-metric">
+                <div class="label">Indice d’implication</div>
+                <strong>${avg===null?"—":avg.toFixed(1)+"/20"}</strong>
+              </div>
+            </div>
+
+            <div class="muted" style="font-size:11px;margin-top:9px;text-align:center">
+              Niv. ${Number(s.level||1)} • ${Number(s.stars||0)}⭐ • ${Number(s.diamonds||0)}💎
+            </div>
+          </button>
+        `;
+      }).join("");
+
+      content.innerHTML=`
+        <div class="panel" style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
+            <div>
+              <div style="font-size:26px;font-weight:1000">${escapeHTML(cls.name)}</div>
+              <div class="muted" style="margin-top:4px">${escapeHTML(currentPeriod?.name||"Période en cours")} • ${(cls.students||[]).length} élève${(cls.students||[]).length>1?"s":""}</div>
+            </div>
+            <div class="row wrap">
+              <span class="toolbar-chip">⭐ Classe : ${Number(cls.collective_stars||0)}</span>
+              <span class="toolbar-chip">💎 Classe : ${Number(cls.collective_diamonds||0)}</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px">${cards}</div>
+      `;
+
+      content.querySelectorAll(".establishment-open-student").forEach(btn=>btn.onclick=()=>{
+        openEstablishmentStudentDetail(cls.id,btn.dataset.studentId);
+      });
+    }
+
+    let establishmentDetailSelection={classId:null,studentId:null};
+
+    function openEstablishmentStudentDetail(classId,studentId){
+      establishmentDetailSelection={classId,studentId};
+      const cls=(establishmentDashboardData?.classes||[]).find(c=>String(c.id)===String(classId));
+      const student=cls?.students?.find(s=>String(s.id)===String(studentId));
+      if(!cls || !student) return;
+
+      const currentPeriod=(cls.periods||[]).find(p=>p.is_current)||(cls.periods||[]).slice(-1)[0]||null;
+      const periodScores=establishmentPeriodScores(student,currentPeriod);
+      const vals=periodScores.map(x=>Number(x.score)).filter(Number.isFinite);
+      const avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null;
+      const remarks=establishmentRealRemarks(student.remarks||[]);
+
+      document.getElementById("establishmentStudentDetailTitle").textContent=`${student.avatar||"🙂"} ${student.first_name||"Élève"}`;
+      document.getElementById("establishmentStudentDetailSubtitle").textContent=
+        `${cls.name} • ${currentPeriod?.name||"Période en cours"} • consultation uniquement`;
+
+      const scoreRows=periodScores.length
+        ? periodScores.map((x,i)=>`
+            <div style="display:flex;justify-content:space-between;gap:12px;padding:8px 10px;border-bottom:1px solid #eef2f7">
+              <span>Séance ${i+1}${x.created_at?` • ${new Date(x.created_at).toLocaleDateString("fr-FR")}`:""}</span>
+              <strong>${Number(x.score)}/20</strong>
+            </div>`).join("")
+        : '<div class="muted">Aucune séance enregistrée pour cette période.</div>';
+
+      document.getElementById("establishmentStudentDetailContent").innerHTML=`
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px">
+          <div class="establishment-metric"><div class="label">Score actuel</div><strong>${Number(student.points??15)}/20</strong></div>
+          <div class="establishment-metric"><div class="label">Indice d’implication</div><strong>${avg===null?"—":avg.toFixed(1)+"/20"}</strong></div>
+          <div class="establishment-metric"><div class="label">Niveau</div><strong>${Number(student.level||1)}</strong></div>
+          <div class="establishment-metric"><div class="label">Progression</div><strong>${Number(student.stars||0)}⭐ ${Number(student.diamonds||0)}💎</strong></div>
+        </div>
+
+        <div class="establishment-graph-wrap">
+          <div style="font-size:18px;font-weight:950;margin-bottom:4px">📈 Évolution de l’implication</div>
+          <div class="muted" style="font-size:12px">Score enregistré à la fin de chaque séance de la période.</div>
+          ${establishmentGraphSVG(periodScores)}
+        </div>
+
+        <div class="box" style="margin-top:12px">
+          <div style="font-size:18px;font-weight:950">💬 Remarques du professeur</div>
+          ${remarks.length
+            ? remarks.map(r=>`<div class="establishment-remark">
+                <div>${escapeHTML(r.remark||"")}</div>
+                ${r.created_at?`<div class="muted" style="font-size:10px;margin-top:5px">${new Date(r.created_at).toLocaleDateString("fr-FR")}</div>`:""}
+              </div>`).join("")
+            : '<div class="muted" style="margin-top:8px">Aucune remarque pédagogique pour cette période.</div>'}
+        </div>
+
+        <details class="box" style="margin-top:12px">
+          <summary style="cursor:pointer;font-size:17px;font-weight:950">📋 Détail des scores de la période</summary>
+          <div style="margin-top:8px">${scoreRows}</div>
+        </details>
+
+        <div class="box" style="margin-top:12px">
+          <div style="font-size:18px;font-weight:950">📚 Anciennes périodes</div>
+          <div style="display:grid;gap:7px;margin-top:8px">
+            ${(cls.periods||[]).filter(p=>!p.is_current).length
+              ? (cls.periods||[]).filter(p=>!p.is_current).map(p=>{
+                  const pav=establishmentPeriodAverage(student,p);
+                  const count=establishmentPeriodScores(student,p).length;
+                  return `<div style="display:flex;justify-content:space-between;gap:10px;padding:9px 11px;border:1px solid #e2e8f0;border-radius:12px">
+                    <strong>${escapeHTML(p.name||"Période")}</strong>
+                    <span>${pav===null?"—":pav.toFixed(1)+"/20"} • ${count} séance${count>1?"s":""}</span>
+                  </div>`;
+                }).join("")
+              : '<div class="muted">Aucune ancienne période.</div>'}
+          </div>
+        </div>
+      `;
+
+      document.getElementById("establishmentStudentDetailModal").classList.add("show");
+    }
+
+
+    function openEstablishmentStudentReplica(){
+      const {classId,studentId}=establishmentDetailSelection||{};
+      const cls=(establishmentDashboardData?.classes||[]).find(c=>String(c.id)===String(classId));
+      const student=cls?.students?.find(s=>String(s.id)===String(studentId));
+      if(!cls || !student) return;
+
+      const currentPeriod=(cls.periods||[]).find(p=>p.is_current)||(cls.periods||[]).slice(-1)[0]||null;
+      const scores=establishmentPeriodScores(student,currentPeriod);
+      const avg=establishmentPeriodAverage(student,currentPeriod);
+      const fake=establishmentStudentReplicaData(student);
+      const events=establishmentStudentEvents(student);
+      const cards=events.filter(e=>["success_card","success_card_legendary"].includes(e.type));
+      const merits=events.filter(e=>["merit_special","merit_distinguished"].includes(e.type));
+      const visibleRemarks=establishmentRealRemarks(student.remarks||[]);
+
+      document.getElementById("establishmentStudentReplicaTitle").textContent=`👁️ ${student.first_name||"Élève"} — aperçu espace élève`;
+      document.getElementById("establishmentStudentReplicaSubtitle").textContent=`${cls.name} • ${currentPeriod?.name||"Période en cours"}`;
+
+      document.getElementById("establishmentStudentReplicaContent").innerHTML=`
+        <div class="replica-shell">
+          <div class="replica-topbar">
+            <div class="replica-identity">
+              <div class="replica-avatar">${escapeHTML(student.avatar||"🙂")}</div>
+              <div>
+                <div class="replica-name">${escapeHTML(student.first_name||"Élève")}</div>
+                <div class="replica-class-chip">
+                  🎓 ${escapeHTML(cls.name)}
+                  <span>•</span>
+                  <span>${student.group_name==="g1"?"Groupe 1":student.group_name==="g2"?"Groupe 2":"Classe entière"}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="replica-score-cluster">
+              <div class="replica-score-card">
+                <div class="label">Score actuel</div>
+                <strong>${Number(student.points??15)}/20</strong>
+              </div>
+              <div class="replica-score-card">
+                <div class="label">Indice d’implication</div>
+                <strong>${avg===null?"—":avg.toFixed(1)+"/20"}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="replica-progress-strip">
+            <div class="replica-progress-card">
+              <div class="muted" style="font-size:11px;font-weight:900">NIVEAU</div>
+              <div class="big">🧭 ${Number(student.level||1)}</div>
+            </div>
+            <div class="replica-progress-card">
+              <div class="muted" style="font-size:11px;font-weight:900">ÉTOILES</div>
+              <div class="big">⭐ ${Number(student.stars||0)}</div>
+            </div>
+            <div class="replica-progress-card">
+              <div class="muted" style="font-size:11px;font-weight:900">DIAMANTS</div>
+              <div class="big">💎 ${Number(student.diamonds||0)}</div>
+            </div>
+          </div>
+
+          <div class="student-replica-tabs">
+            <button class="student-replica-tab active" data-replica-tab="current">🎮 Période actuelle</button>
+            <button class="student-replica-tab" data-replica-tab="tracking">🧭 Suivi d’implication</button>
+            <button class="student-replica-tab" data-replica-tab="rules">📜 Règles</button>
+            <button class="student-replica-tab" data-replica-tab="history">📚 Anciennes périodes</button>
+            <button class="student-replica-tab" data-replica-tab="materials">🎒 Matériel</button>
+          </div>
+
+          <div id="replicaCurrentPane">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px">
+              <div class="replica-panel">
+                <div class="replica-section-title">🏆 Mes Cartes Réussite</div>
+                <div>${successCardCollectionHTML(fake,true)}</div>
+              </div>
+
+              <div class="replica-panel">
+                <div class="replica-section-title">🌟 Mes distinctions</div>
+                <div style="display:grid;gap:7px">
+                  ${merits.length?merits.map(m=>`
+                    <div style="padding:11px 12px;border-radius:14px;background:${m.type==="merit_distinguished"?"linear-gradient(135deg,#fffbeb,#fef3c7)":"linear-gradient(135deg,#f0fdf4,#dcfce7)"};border:1px solid ${m.type==="merit_distinguished"?"#fbbf24":"#86efac"};font-weight:950">
+                      ${m.type==="merit_distinguished"?"🏆 Élève distingué":"🌟 Mention spéciale"}${m.label?`<div style="font-size:12px;margin-top:4px;font-weight:800">${escapeHTML(m.label)}</div>`:""}
+                    </div>`).join("")
+                  :'<div class="replica-empty">Aucune distinction pour le moment.</div>'}
+                </div>
+              </div>
+            </div>
+
+            <div class="replica-panel" style="margin-top:10px">
+              <div class="replica-section-title">💬 Remarques du professeur</div>
+              ${visibleRemarks.length
+                ? visibleRemarks.map(r=>`<div class="establishment-remark">${escapeHTML(r.remark||"")}</div>`).join("")
+                : '<div class="replica-empty">Aucune remarque pour le moment.</div>'}
+            </div>
+          </div>
+
+          <div id="replicaTrackingPane" style="display:none">
+            <div class="replica-panel">
+              <div class="replica-section-title">📈 Mon évolution</div>
+              <div class="muted" style="font-size:12px;margin-top:-2px;margin-bottom:8px">Évolution des scores enregistrés à la fin des séances.</div>
+              ${establishmentGraphSVG(scores)}
+            </div>
+
+            <div class="replica-panel" style="margin-top:10px">
+              <div class="replica-section-title">🎯 Ma progression</div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+                <div class="replica-progress-card"><div class="muted" style="font-size:10px">Niveau</div><div class="big">${Number(student.level||1)}</div></div>
+                <div class="replica-progress-card"><div class="muted" style="font-size:10px">Étoiles</div><div class="big">${Number(student.stars||0)} ⭐</div></div>
+                <div class="replica-progress-card"><div class="muted" style="font-size:10px">Diamants</div><div class="big">${Number(student.diamonds||0)} 💎</div></div>
+              </div>
+            </div>
+          </div>
+
+
+          <div id="replicaRulesPane" style="display:none">
+            <div class="replica-panel">
+              <div class="replica-section-title">📜 Comment fonctionne mon score ?</div>
+              <div class="muted" style="margin-bottom:12px">
+                Les règles sont les mêmes pour tous les élèves. Le but est de valoriser l’implication, la régularité et une attitude favorable au travail.
+              </div>
+
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:9px">
+                <div style="padding:13px 14px;border-radius:16px;background:#eff6ff;border:1px solid #bfdbfe">
+                  <div style="font-size:18px;font-weight:1000">🎯 Je commence à 15/20</div>
+                  <div style="margin-top:5px">Au début de chaque période, mon score ZenQuest repart à <strong>15/20</strong>.</div>
+                </div>
+
+                <div style="padding:13px 14px;border-radius:16px;background:#f0fdf4;border:1px solid #bbf7d0">
+                  <div style="font-size:18px;font-weight:1000">➕ Je peux gagner des points</div>
+                  <div style="margin-top:5px">Je peux gagner un point lorsque mon implication est particulièrement positive : participation, effort, travail fourni, aide pertinente ou attitude sérieuse.</div>
+                </div>
+
+                <div style="padding:13px 14px;border-radius:16px;background:#fff7ed;border:1px solid #fdba74">
+                  <div style="font-size:18px;font-weight:1000">➖ Je peux perdre des points</div>
+                  <div style="margin-top:5px">Un point peut être retiré si mon comportement gêne mon travail ou celui de la classe : bavardages répétés, manque d’écoute, refus de travail, agitation ou consigne non respectée.</div>
+                </div>
+
+                <div style="padding:13px 14px;border-radius:16px;background:#ecfdf5;border:1px solid #a7f3d0">
+                  <div style="font-size:18px;font-weight:1000">✅ Finir le cours sans perdre de point</div>
+                  <div style="margin-top:5px">Si je suis présent et que je termine le cours sans avoir perdu de point, je gagne automatiquement <strong>+1 point</strong>, dans la limite de 20/20.</div>
+                </div>
+
+                <div style="padding:13px 14px;border-radius:16px;background:#faf5ff;border:1px solid #ddd6fe">
+                  <div style="font-size:18px;font-weight:1000">⭐ Être régulier me fait progresser</div>
+                  <div style="margin-top:5px">Plusieurs cours réussis à la suite me permettent de gagner des étoiles, d’augmenter de niveau puis d’obtenir des diamants.</div>
+                </div>
+
+                <div style="padding:13px 14px;border-radius:16px;background:#fffbeb;border:1px solid #fde68a">
+                  <div style="font-size:18px;font-weight:1000">🏆 Mes réussites peuvent être valorisées</div>
+                  <div style="margin-top:5px">Le professeur peut aussi me remettre une <strong>Carte Réussite</strong>, comparable à un bon point, pour valoriser un effort, une progression, une réussite ou une attitude particulièrement positive.</div>
+                </div>
+              </div>
+
+              <div style="margin-top:12px">
+                <div class="replica-section-title">🧘 Les règles pour bien travailler en classe</div>
+                <div class="muted" style="margin-bottom:10px">
+                  Ces règles font partie du fonctionnement quotidien du cours et permettent à chacun de travailler dans de bonnes conditions.
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:9px">
+                  <div style="padding:14px;border-radius:17px;background:#f0fdfa;border:1px solid #99f6e4">
+                    <div style="font-size:28px">🤫</div>
+                    <div style="font-size:18px;font-weight:1000;margin-top:4px">Calme & silence</div>
+                    <div style="margin-top:5px">Quand le professeur ou un camarade parle, <strong>j’écoute et je ne parle pas en même temps</strong>. Le calme permet à toute la classe de comprendre et de travailler.</div>
+                  </div>
+
+                  <div style="padding:14px;border-radius:17px;background:#eff6ff;border:1px solid #bfdbfe">
+                    <div style="font-size:28px">✋</div>
+                    <div style="font-size:18px;font-weight:1000;margin-top:4px">Je lève la main</div>
+                    <div style="margin-top:5px">Pour poser une question, répondre ou demander quelque chose, <strong>je lève la main et j’attends qu’on me donne la parole</strong>.</div>
+                  </div>
+
+                  <div style="padding:14px;border-radius:17px;background:#fff7ed;border:1px solid #fed7aa">
+                    <div style="font-size:28px">⏳</div>
+                    <div style="font-size:18px;font-weight:1000;margin-top:4px">Patience</div>
+                    <div style="margin-top:5px">Le professeur ne peut pas répondre à tout le monde en même temps. <strong>J’attends mon tour calmement</strong> et je continue ce que je peux faire en attendant.</div>
+                  </div>
+
+                  <div style="padding:14px;border-radius:17px;background:#faf5ff;border:1px solid #ddd6fe">
+                    <div style="font-size:28px">👂</div>
+                    <div style="font-size:18px;font-weight:1000;margin-top:4px">J’écoute les consignes</div>
+                    <div style="margin-top:5px">Je reste attentif pendant les explications et les consignes afin de savoir ce que je dois faire <strong>sans perturber le cours</strong>.</div>
+                  </div>
+                </div>
+
+                <div style="margin-top:10px;padding:13px 14px;border-radius:16px;background:#ecfdf5;border:1px solid #a7f3d0;font-weight:850">
+                  🌱 Respecter ces règles, rester concentré et adopter une attitude calme font pleinement partie de <strong>l’implication évaluée dans ZenQuest</strong>.
+                </div>
+              </div>
+
+              <div style="margin-top:12px;padding:14px 15px;border-radius:17px;background:#0f172a;color:white">
+                <div style="font-size:18px;font-weight:1000">💡 À retenir</div>
+                <div style="margin-top:5px;line-height:1.55">
+                  ZenQuest ne récompense pas seulement les élèves qui participent beaucoup. 
+                  <strong>Écouter, se concentrer, travailler sérieusement, respecter les consignes et rester impliqué pendant tout le cours comptent aussi.</strong>
+                </div>
+              </div>
+
+              <div style="margin-top:10px;padding:13px 14px;border-radius:16px;background:#f8fafc;border:1px solid #e2e8f0">
+                <strong>📌 Ce score n’est pas une note de mathématiques.</strong>
+                <div class="muted" style="margin-top:4px">
+                  Il sert à suivre mon implication pendant les cours. Il ne mesure pas mon niveau scolaire ni ma maîtrise des notions de mathématiques.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="replicaHistoryPane" style="display:none">
+            <div class="replica-panel">
+              <div class="replica-section-title">📚 Mes anciennes périodes</div>
+              <div style="display:grid;gap:8px">
+                ${(cls.periods||[]).filter(p=>!p.is_current).length
+                  ? (cls.periods||[]).filter(p=>!p.is_current).map(p=>{
+                      const pav=establishmentPeriodAverage(student,p);
+                      const count=establishmentPeriodScores(student,p).length;
+                      return `<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 13px;border:1px solid #e2e8f0;border-radius:15px;background:#f8fafc">
+                        <div>
+                          <strong>${escapeHTML(p.name||"Période")}</strong>
+                          <div class="muted" style="font-size:11px;margin-top:2px">${count} séance${count>1?"s":""} enregistrée${count>1?"s":""}</div>
+                        </div>
+                        <span style="font-size:18px;font-weight:1000">${pav===null?"—":pav.toFixed(1)+"/20"}</span>
+                      </div>`;
+                    }).join("")
+                  : '<div class="replica-empty">Aucune ancienne période.</div>'}
+              </div>
+            </div>
+          </div>
+
+          <div id="replicaMaterialsPane" style="display:none">
+            <div class="replica-panel">
+              <div class="replica-section-title">🎒 Mon matériel scolaire</div>
+              <div class="muted" style="margin-bottom:10px">Matériel suivi dans ZenQuest pour les cours de mathématiques.</div>
+              ${schoolMaterialsStudentHTML(fake.teacherRemarks||[])}
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.querySelectorAll("#establishmentStudentReplicaContent .student-replica-tab").forEach(btn=>{
+        btn.onclick=()=>{
+          document.querySelectorAll("#establishmentStudentReplicaContent .student-replica-tab").forEach(b=>b.classList.toggle("active",b===btn));
+          const t=btn.dataset.replicaTab;
+          document.getElementById("replicaCurrentPane").style.display=t==="current"?"":"none";
+          document.getElementById("replicaTrackingPane").style.display=t==="tracking"?"":"none";
+          document.getElementById("replicaRulesPane").style.display=t==="rules"?"":"none";
+          document.getElementById("replicaHistoryPane").style.display=t==="history"?"":"none";
+          document.getElementById("replicaMaterialsPane").style.display=t==="materials"?"":"none";
+        };
+      });
+
+      document.getElementById("establishmentStudentReplicaModal").classList.add("show");
+    }
+
     async function routeAuthenticatedUser(session){
       if(!session?.user) return showLogin();
 
@@ -9571,17 +10705,48 @@ Noah"
         .from("profiles")
         .select("id,role,display_name")
         .eq("id",session.user.id)
-        .single();
+        .maybeSingle();
 
-      if(error || !profile){
+      if((error && error.code!=="PGRST116")){
         await supabaseClient.auth.signOut();
         showLogin("Profil ZenQuest introuvable.");
         return;
       }
 
+      if(!profile){
+        const {data:establishmentAccess,error:establishmentError}=await supabaseClient
+          .from("establishment_accesses")
+          .select("id,label,is_active")
+          .eq("user_id",session.user.id)
+          .maybeSingle();
+
+        if(!establishmentError && establishmentAccess?.is_active){
+          stopTeacherRealtime();
+          stopBoardRemoteChannel();
+          document.getElementById("mainApp").style.display="none";
+          document.getElementById("studentApp").style.display="none";
+          document.getElementById("authScreen").style.display="none";
+          document.getElementById("establishmentApp").style.display="block";
+          try{
+            await loadEstablishmentDashboard();
+          }catch(err){
+            document.getElementById("establishmentDashboardContent").innerHTML=`
+              <div class="box"><strong>⚠️ Impossible de charger l’accès établissement</strong><div style="margin-top:8px">${escapeHTML(err?.message||"Erreur inconnue")}</div></div>`;
+          }
+          return;
+        }
+
+        await supabaseClient.auth.signOut();
+        showLogin("Profil ZenQuest introuvable.");
+        return;
+      }
+
+      document.getElementById("establishmentApp").style.display="none";
+
       if(profile.role==="teacher"){
         cachedTeacherUserId=session?.user?.id||cachedTeacherUserId;
         document.getElementById("studentApp").style.display="none";
+        document.getElementById("establishmentApp").style.display="none";
         document.getElementById("authScreen").style.display="none";
         document.getElementById("mainApp").style.display="block";
         try{
@@ -9603,6 +10768,7 @@ Noah"
         stopTeacherRealtime();
         stopBoardRemoteChannel();
         document.getElementById("mainApp").style.display="none";
+        document.getElementById("establishmentApp").style.display="none";
         document.getElementById("authScreen").style.display="none";
         document.getElementById("studentApp").style.display="block";
         try{
@@ -9775,12 +10941,28 @@ Noah"
     document.getElementById("logoutBtn").onclick=logout;
     document.getElementById("studentCodesBtn").onclick=openStudentCodes;
     document.getElementById("studentConnectionsBtn").onclick=openStudentConnections;
+    document.getElementById("establishmentAccessBtn").onclick=openEstablishmentAccess;
+    document.getElementById("closeEstablishmentAccessBtn").onclick=()=>document.getElementById("establishmentAccessModal").classList.remove("show");
+    document.getElementById("refreshEstablishmentAccessBtn").onclick=loadEstablishmentAccesses;
+    document.getElementById("generateEstablishmentPasswordBtn").onclick=()=>document.getElementById("establishmentPasswordInput").value=randomEstablishmentPassword();
+    document.getElementById("createEstablishmentAccessBtn").onclick=createEstablishmentAccess;
     document.getElementById("closeStudentConnectionsBtn").onclick=()=>document.getElementById("studentConnectionsModal").classList.remove("show");
     document.getElementById("refreshStudentConnectionsBtn").onclick=loadStudentConnections;
     document.getElementById("closeStudentCodesBtn").onclick=()=>document.getElementById("studentCodesModal").classList.remove("show");
     document.getElementById("copyStudentCodesBtn").onclick=copyStudentCodes;
     document.getElementById("downloadStudentCodesBtn").onclick=downloadStudentCodes;
     document.getElementById("studentLogoutBtn").onclick=async()=>{await supabaseClient.auth.signOut();};
+    document.getElementById("establishmentLogoutBtn").onclick=async()=>{await supabaseClient.auth.signOut();};
+    document.getElementById("closeEstablishmentStudentDetailBtn").onclick=()=>document.getElementById("establishmentStudentDetailModal").classList.remove("show");
+    document.getElementById("openEstablishmentStudentReplicaBtn").onclick=()=>{
+      try{
+        openEstablishmentStudentReplica();
+      }catch(err){
+        console.error("ESTABLISHMENT STUDENT REPLICA ERROR",err);
+        alert("⚠️ Impossible d’ouvrir l’aperçu élève.\n\n"+(err?.message||String(err)));
+      }
+    };
+    document.getElementById("closeEstablishmentStudentReplicaBtn").onclick=()=>document.getElementById("establishmentStudentReplicaModal").classList.remove("show");
     document.getElementById("testMayaSupabaseBtn")?.addEventListener("click",openMayaSupabaseTest);
     document.getElementById("closeMayaSupabaseTestBtn").onclick=()=>document.getElementById("mayaSupabaseTestModal").classList.remove("show");
     document.getElementById("runMayaSupabaseTestBtn").onclick=runMayaSupabaseTest;
@@ -10257,7 +11439,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.12.3</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.12.10</span>.
   </footer>
 
 </body>
