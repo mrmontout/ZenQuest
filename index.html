@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.12.16</title>
+  <title>ZenQuest v5.13.12</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -998,9 +998,35 @@
   #replicaParentsPane [style*="line-height:1.65"]{line-height:1.5!important}
 }
 
+
+    /* v5.13.0 — mini EDT + rappels */
+    #zqCurrentCourseBar{display:flex;margin:0 0 14px;padding:14px 16px;border:2px solid #bfdbfe;background:#eff6ff;border-radius:18px;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;box-shadow:0 5px 16px rgba(15,23,42,.06)}
+    #zqCurrentCourseBar.zq-now{border-color:#86efac;background:#f0fdf4}
+    #zqCurrentCourseBar.zq-done{border-color:#e2e8f0;background:#f8fafc}
+    #zqCurrentCourseTitle{font-size:17px;font-weight:1000}
+    #zqCurrentCourseSub{font-size:14px}
+    .zq-schedule-list{display:grid;gap:7px}
+    .zq-slot{display:grid;grid-template-columns:90px 1fr auto;gap:9px;align-items:center;padding:9px 10px;border:1px solid #e2e8f0;border-radius:13px;background:#fff}
+    .zq-reminder-row{display:flex;gap:9px;align-items:center;justify-content:space-between;padding:10px;border:1px solid #fed7aa;background:#fff7ed;border-radius:13px}
+    #zqReminderProjection{position:fixed!important;right:18px;top:18px;z-index:2147483647!important;display:none;width:min(430px,calc(100vw - 36px));pointer-events:none}
+    #zqReminderProjection.show{display:block}
+    .zq-reminder-card{width:100%;background:#fff;border:3px solid #fb923c;border-radius:20px;padding:16px 18px;text-align:left;box-shadow:0 18px 55px rgba(15,23,42,.28);pointer-events:auto}
+    #zqReminderProjection .zq-reminder-bell{font-size:30px}
+    @media(max-width:700px){#zqReminderProjection{right:10px;top:10px;width:calc(100vw - 20px)}.zq-quick-rem-grid{grid-template-columns:1fr!important}}
+    @media(max-width:700px){
+      .zq-slot{grid-template-columns:76px 1fr}.zq-slot .zq-slot-actions{grid-column:1/-1}
+      .zq-reminder-row{align-items:flex-start;flex-direction:column}
+    }
+
+
+    #zqTeacherEventToastStack{position:fixed;right:18px;top:155px;z-index:2147483000;width:min(420px,calc(100vw - 36px));display:grid;gap:9px;pointer-events:none}
+    .zq-teacher-event-toast{padding:10px 14px;border-radius:14px;color:white;font-size:17px;font-weight:950;line-height:1.25;box-shadow:0 12px 35px rgba(0,0,0,.28);opacity:0;transform:translateY(8px);transition:opacity .18s ease,transform .18s ease}
+    @media(max-width:700px){#zqTeacherEventToastStack{right:10px;top:145px;width:calc(100vw - 20px)}}
+
 </style>
 </head>
 <body>
+<div id="zqTeacherEventToastStack"></div>
 <!-- ZenQuest v5.9.0 — contrôle technique avant mise en production école.
      Vérifications: portée classe des ressources/messages/rôles, syntaxe JS,
      IDs statiques, flux Supabase/Storage, navigation prof et notifications. -->
@@ -1105,6 +1131,25 @@
           <button class="btn outline" id="logoutBtn">🔒 Déconnexion</button>
         </div>
       </div>
+    </div>
+<div id="zqCurrentCourseBar">
+      <div><strong id="zqCurrentCourseTitle">🗓️ Prochain cours</strong><div id="zqCurrentCourseSub" class="muted" style="margin-top:3px">Chargement de l’emploi du temps…</div></div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn green" id="zqGoCurrentCourseBtn">▶ Aller au cours</button><button class="btn outline" id="zqDismissCourseBtn">✕</button></div>
+    </div>
+    
+    <div id="zqQuickReminderPanel" style="margin:0 0 14px;padding:13px 15px;border:2px solid #fed7aa;background:#fff7ed;border-radius:18px">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+        <div><strong style="font-size:17px">🔔 À ne pas oublier</strong></div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn outline" id="zqTestReminderPopup">🧪 Tester le pop-up</button><button class="btn outline" id="zqQuickReminderSeeAll">Voir les rappels</button></div>
+      </div>
+      <div style="display:grid;grid-template-columns:minmax(180px,1fr) 150px 220px auto;gap:8px;align-items:end;margin-top:10px" class="zq-quick-rem-grid">
+        <label>Rappel<input id="zqQuickReminderText" placeholder="Ex. Donner les exercices 4 et 5"></label>
+        <label>Classe<select id="zqQuickReminderClass"></select></label>
+        <label>Quand<select id="zqQuickReminderMode"><option value="next10">10 min avant la fin du prochain cours</option><option value="next5">5 min avant la fin du prochain cours</option><option value="exact">Date/heure précises</option></select></label>
+        <button class="btn green" id="zqQuickReminderAdd">＋ Ajouter</button>
+      </div>
+      <div id="zqQuickReminderExact" style="display:none;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;max-width:430px"><label>Date<input id="zqQuickReminderDate" type="date"></label><label>Heure<input id="zqQuickReminderTime" type="time"></label></div>
+      <div id="zqQuickReminderUpcoming" class="muted" style="margin-top:8px;font-weight:750"></div>
     </div>
 <div id="supabaseTeacherStatus" class="panel" style="margin-bottom:12px;border:1px solid #a7f3d0;background:#ecfdf5;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
       <div>
@@ -1319,6 +1364,8 @@ Noah"
         <button class="btn outline teacher-tool-launch" data-target="studentConnectionsBtn">👁️ Connexions élèves</button>
         <button class="btn outline teacher-tool-launch" data-target="establishmentAccessBtn">🏫 Accès établissement</button>
         <button class="btn outline teacher-tool-launch" data-target="classMessagesBtn">📢 Message classe</button>
+        <button class="btn outline teacher-tool-launch" data-target="zqScheduleBtn">🗓️ Mes créneaux</button>
+        <button class="btn outline teacher-tool-launch" data-target="zqRemindersBtn">🔔 À ne pas oublier</button>
       </div>
       <div style="display:none">
         <button id="teacherRulesBtn"></button><button id="openHistoryBtn"></button>
@@ -1326,8 +1373,65 @@ Noah"
         <button id="resourcesBtn"></button><button id="announcementsBtn" style="display:none"></button>
         <button id="classRolesBtn"></button><button id="waitingModeBtn"></button>
         <button id="studentCodesBtn"></button><button id="studentConnectionsBtn"></button>
-        <button id="establishmentAccessBtn"></button><button id="classMessagesBtn"></button>
+        <button id="establishmentAccessBtn"></button><button id="classMessagesBtn"></button><button id="zqScheduleBtn"></button><button id="zqRemindersBtn"></button>
       </div>
+    </div>
+  </div>
+
+  
+  <div class="modal" id="zqScheduleModal" style="z-index:3700000">
+    <div class="modal-card" style="width:min(920px,95vw);max-height:90vh;overflow:auto">
+      <div class="modal-header"><div><h2 style="margin:0">🗓️ Mes créneaux</h2><div class="muted">ZenQuest les utilise uniquement pour te proposer le bon cours et calculer les rappels.</div></div><button class="btn outline" id="zqScheduleClose">Fermer</button></div>
+      <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-top:14px;padding:12px;border-radius:14px;background:#f8fafc">
+        <label style="font-weight:850">Cette semaine est une semaine
+          <select id="zqCurrentQ" style="margin-top:5px"><option>Q1</option><option>Q2</option></select>
+        </label>
+        <button class="btn outline" id="zqSaveQBtn">💾 Enregistrer Q1/Q2</button>
+        <span class="muted">ZenQuest alternera automatiquement les semaines suivantes.</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;margin-top:15px"><strong>Créneaux enregistrés</strong><div><button class="btn outline" id="zqSeedScheduleBtn">✨ Charger mon EDT actuel</button> <button class="btn green" id="zqAddSlotBtn">＋ Ajouter</button></div></div>
+      <div id="zqScheduleList" class="zq-schedule-list" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="zqSlotModal" style="z-index:3710000">
+    <div class="modal-card" style="width:min(560px,94vw)">
+      <div class="modal-header"><h2 style="margin:0">🗓️ Créneau</h2><button class="btn outline" id="zqSlotClose">✕</button></div>
+      <input type="hidden" id="zqSlotId">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
+        <label>Jour<select id="zqSlotDay"><option value="1">Lundi</option><option value="2">Mardi</option><option value="3">Mercredi</option><option value="4">Jeudi</option><option value="5">Vendredi</option></select></label>
+        <label>Classe<select id="zqSlotClass"></select></label>
+        <label>Début<input id="zqSlotStart" type="time"></label>
+        <label>Fin<input id="zqSlotEnd" type="time"></label>
+        <label>Groupe<select id="zqSlotView"><option value="all">Classe entière</option><option value="g1">Groupe 1</option><option value="g2">Groupe 2</option></select></label>
+        <label>Semaine<select id="zqSlotCycle"><option value="ALL">Toutes les semaines</option><option value="Q1">Q1 uniquement</option><option value="Q2">Q2 uniquement</option></select></label>
+      </div>
+      <button class="btn green" id="zqSlotSave" style="width:100%;margin-top:14px">💾 Enregistrer</button>
+    </div>
+  </div>
+
+  <div class="modal" id="zqRemindersModal" style="z-index:3700000">
+    <div class="modal-card" style="width:min(820px,95vw);max-height:90vh;overflow:auto">
+      <div class="modal-header"><div><h2 style="margin:0">🔔 À ne pas oublier</h2><div class="muted">Tes rappels de cours. Ils peuvent apparaître par-dessus l’accueil ou une projection.</div></div><button class="btn outline" id="zqRemindersClose">Fermer</button></div>
+      <div style="padding:13px;border:1px solid #fed7aa;background:#fff7ed;border-radius:15px;margin-top:14px">
+        <label style="font-weight:900">Rappel<input id="zqReminderText" placeholder="Ex. Donner les exercices 7 et 8" style="width:100%;margin-top:5px"></label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px">
+          <label>Classe<select id="zqReminderClass"></select></label>
+          <label>Quand<select id="zqReminderMode"><option value="next10">Prochain cours · 10 min avant la fin</option><option value="next5">Prochain cours · 5 min avant la fin</option><option value="exact">Date et heure précises</option></select></label>
+        </div>
+        <div id="zqReminderExactWrap" style="display:none;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px"><label>Date<input id="zqReminderDate" type="date"></label><label>Heure<input id="zqReminderTime" type="time"></label></div>
+        <button class="btn green" id="zqReminderCreate" style="width:100%;margin-top:11px">＋ Ajouter le rappel</button>
+      </div>
+      <div style="font-weight:950;margin-top:16px">À venir</div><div id="zqReminderList" style="display:grid;gap:7px;margin-top:8px"></div>
+    </div>
+  </div>
+
+  <div id="zqReminderProjection">
+    <div class="zq-reminder-card">
+      <div style="display:flex;gap:10px;align-items:flex-start"><div class="zq-reminder-bell">🔔</div><div style="flex:1"><div style="font-size:14px;font-weight:1000;color:#c2410c;letter-spacing:.06em">À NE PAS OUBLIER</div>
+      <div id="zqReminderProjectionText" style="font-size:20px;font-weight:1000;line-height:1.2;margin-top:4px"></div>
+      <div id="zqReminderProjectionClass" style="font-size:14px;font-weight:850;color:#64748b;margin-top:5px"></div></div></div>
+      <div style="display:flex;justify-content:flex-end;gap:7px;flex-wrap:wrap;margin-top:12px"><button class="btn green" id="zqReminderLater">Fermer</button><button id="zqReminderDone" style="display:none"></button></div>
     </div>
   </div>
 
@@ -4027,7 +4131,7 @@ Noah"
       modal.classList.add("show");
     }
 
-    async function confirmReasonSelection(code,label){
+    async function confirmReasonSelection(code,label,amount=1){
       const action=pendingReasonAction;
       if(!action) return;
       const {student,type}=action;
@@ -4045,8 +4149,13 @@ Noah"
         box.innerHTML=`
           <div style="margin-top:4px;padding:12px;border:1px solid #cbd5e1;border-radius:14px;background:#fff">
             <label for="customReasonInput" style="display:block;font-size:12px;font-weight:900;color:#475569;margin-bottom:7px">✍️ Motif personnalisé</label>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <input id="customReasonInput" type="text" maxlength="120" placeholder="Ex. : se lève sans autorisation…" style="flex:1;min-width:210px;padding:11px 12px;border:1px solid #cbd5e1;border-radius:11px;font:inherit">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
+              <input id="customReasonInput" type="text" maxlength="120" placeholder="Ex. : téléphone qui sonne en classe…" style="flex:1;min-width:210px;padding:11px 12px;border:1px solid #cbd5e1;border-radius:11px;font:inherit">
+              <label style="font-size:12px;font-weight:900;color:#475569">Nombre de points
+                <select id="customReasonPoints" style="display:block;margin-top:4px;padding:10px 12px;border:1px solid #cbd5e1;border-radius:11px;font:inherit">
+                  <option value="1">1 point</option><option value="2">2 points</option><option value="3">3 points</option><option value="4">4 points</option><option value="5">5 points</option>
+                </select>
+              </label>
               <button type="button" id="customReasonConfirmBtn" class="btn primary">Valider</button>
             </div>
           </div>`;
@@ -4056,8 +4165,9 @@ Noah"
         const submit=()=>{
           const custom=(input?.value||"").trim();
           if(!custom){ input?.focus(); return; }
+          const amount=Math.max(1,Math.min(5,Number(document.getElementById("customReasonPoints")?.value||1)));
           box.remove();
-          confirmReasonSelection("custom",custom);
+          confirmReasonSelection("custom",custom,amount);
         };
         confirm.onclick=submit;
         input.onkeydown=(ev)=>{ if(ev.key==="Enter"){ev.preventDefault();submit();} };
@@ -4065,7 +4175,8 @@ Noah"
         return;
       }
       const prev=Number(student.points||0);
-      const next=Math.max(0,Math.min(MAX_POINTS,prev+(type==="minus"?-1:1)));
+      const delta=Math.max(1,Math.min(5,Number(amount)||1));
+      const next=Math.max(0,Math.min(MAX_POINTS,prev+(type==="minus"?-delta:delta)));
       if(next===prev){ document.getElementById("reasonPickerModal").classList.remove("show"); return; }
 
       const buttons=[...document.querySelectorAll("#reasonPickerGrid button")];
@@ -4076,8 +4187,9 @@ Noah"
 
         if(type==="minus"){
           student.lostThisLesson=true;
-          student.pointsLostThisLesson+=1;
-          student.totalPointsLost+=1;
+          const actualLoss=Math.max(0,prev-next);
+          student.pointsLostThisLesson+=actualLoss;
+          student.totalPointsLost+=actualLoss;
           let thresholdStarLost=false;
           if(prev>=10&&next<10&&student.stars>0&&!student.lostStarThisLesson){
             const nextStars=Math.max(0,student.stars-1);
@@ -4092,13 +4204,17 @@ Noah"
 
         // Visual feedback is tied to the successful point action, not to motif storage.
         // This guarantees both +1 and −1 appear, even if teacher_remarks is slow.
-        showPdfPointToast(student.name,type,label,prev,next);
+        const pointToastEventId=uid();
+        const actualDelta=Math.abs(next-prev);
+        const toastLabel=actualDelta>1?`${label} · ${type==="minus"?"−":"+"}${actualDelta} points`:label;
+        showPdfPointToast(student.name,type,toastLabel,prev,next);
+        showTeacherEventToast(student.name,type,toastLabel,prev,next,pointToastEventId);
         sendBoardCommand({
           action:"point_toast",
-          eventId:uid(),
+          eventId:pointToastEventId,
           studentName:student.name,
           type,
-          label,
+          label:toastLabel,
           prevScore:prev,
           nextScore:next
         });
@@ -4452,10 +4568,12 @@ Noah"
           student.isAutoAbsent=false;
           student.manualPresenceOverride=false;
           setLessonAttendanceOverride(currentClass().id,student.id,nextAbsent);
+          const attendanceToastEventId=uid();
           showBoardAttendanceToast(student.name,nextAbsent);
+          showTeacherEventToast(student.name,"attendance",nextAbsent?"absent":"present",null,null,attendanceToastEventId);
           sendBoardCommand({
             action:"attendance_update",
-            eventId:uid(),
+            eventId:attendanceToastEventId,
             studentId:student.id,
             studentName:student.name,
             isAbsent:nextAbsent
@@ -7630,6 +7748,28 @@ Noah"
       const tick=()=>{if(!end){t.textContent="";return}const r=Math.max(0,Math.ceil((end-Date.now())/1000));t.textContent=`${String(Math.floor(r/60)).padStart(2,"0")}:${String(r%60).padStart(2,"0")}`;if(r<=0)hidePdfZenOverlay()};tick();if(end)pdfOverlayTick=setInterval(tick,250);return true;
     }
     function hidePdfZenOverlay(){clearInterval(pdfOverlayTick);pdfOverlayTick=null;const e=document.getElementById("pdfZenOverlay");if(e)e.style.display="none";}
+
+    const zqTeacherToastIds=new Set();
+    function showTeacherEventToast(name,type,label,prevScore=null,nextScore=null,eventId=null){
+      const studentApp=document.getElementById("studentApp");
+      const establishmentApp=document.getElementById("establishmentApp");
+      if((studentApp && getComputedStyle(studentApp).display!=="none") ||
+         (establishmentApp && getComputedStyle(establishmentApp).display!=="none")) return;
+      if(eventId && zqTeacherToastIds.has(eventId)) return;
+      if(eventId){zqTeacherToastIds.add(eventId);setTimeout(()=>zqTeacherToastIds.delete(eventId),12000);}
+      const stack=document.getElementById("zqTeacherEventToastStack");if(!stack)return;
+      const isMinus=type==="minus",isAttendance=type==="attendance",isAbsent=label==="absent";
+      const item=document.createElement("div");item.className="zq-teacher-event-toast";
+      item.style.border=`2px solid ${isMinus?"#fecaca":isAttendance&&isAbsent?"#cbd5e1":"#bbf7d0"}`;
+      item.style.background=isMinus?"#dc2626":isAttendance&&isAbsent?"#475569":"#16a34a";
+      const icon=isMinus?"−1":type==="plus"?"＋1":type==="homework"?"🌱":type==="success_legendary"?"👑":type==="success"?"🏆":isAttendance?(isAbsent?"📝":"✅"):"📌";
+      const detail=isAttendance?(isAbsent?"Absent(e) • appel enregistré":"Présent(e) • appel corrigé"):(label||"");
+      item.innerHTML=`<div style="display:flex;align-items:center;gap:12px"><span style="display:inline-flex;align-items:center;justify-content:center;min-width:48px;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.18);font-size:19px">${icon}</span><div style="min-width:0;flex:1"><div>${escapeHTML(name||"Élève")}</div>${(Number.isFinite(Number(prevScore))&&Number.isFinite(Number(nextScore))&&(type==="minus"||type==="plus"))?`<div style="font-size:24px;font-weight:1000;margin-top:2px"><span style="opacity:.75">${Number(prevScore)}/20</span> → <span style="font-size:29px">${Number(nextScore)}/20</span></div>`:""}${detail?`<div style="font-size:13px;font-weight:800;opacity:.94;margin-top:2px">${escapeHTML(detail)}</div>`:""}</div></div>`;
+      stack.appendChild(item);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{item.style.opacity="1";item.style.transform="translateY(0)";}));
+      setTimeout(()=>{item.style.opacity="0";item.style.transform="translateY(8px)";setTimeout(()=>item.remove(),220);},3200);
+    }
+
     function showBoardAttendanceToast(name,isAbsent){
       if(!canShowBoardPresentation()) return;
       const stack=isPdfProjectionOpen()
@@ -8189,14 +8329,15 @@ Noah"
         save();
         render();
         showBoardAttendanceToast(student.name,isAbsent);
+        showTeacherEventToast(student.name,"attendance",isAbsent?"absent":"present",null,null,payload.eventId);
       }else if(payload.action==="point_toast"){
-        if(!canShowBoardPresentation()) return;
         if(payload.eventId && receivedPointToastIds.has(payload.eventId)) return;
         if(payload.eventId){
           receivedPointToastIds.add(payload.eventId);
           setTimeout(()=>receivedPointToastIds.delete(payload.eventId),15000);
         }
-        showPdfPointToast(payload.studentName||"Élève",payload.type,payload.label||"",payload.prevScore,payload.nextScore);
+        showTeacherEventToast(payload.studentName||"Élève",payload.type,payload.label||"",payload.prevScore,payload.nextScore,payload.eventId);
+        if(canShowBoardPresentation()) showPdfPointToast(payload.studentName||"Élève",payload.type,payload.label||"",payload.prevScore,payload.nextScore);
       }else if(payload.action==="start"){
         if(!canShowBoardPresentation()) return;
         if(!document.getElementById("boardModal").classList.contains("show") && !isPdfProjectionOpen()) openBoard(false);
@@ -9605,6 +9746,7 @@ Noah"
       }
 
       state.classes=mapped;
+      setTimeout(()=>zqLoadScheduleAndReminders().catch(()=>{}),0);
       if(!state.classes.length){
         state.currentClassId=null;
       }else if(!state.classes.some(c=>c.id===state.currentClassId)){
@@ -11107,6 +11249,291 @@ Noah"
       });
     }
 
+
+    // v5.13.0 — Emploi du temps professeur + rappels
+    let zqScheduleSlots=[], zqReminders=[], zqScheduleSettings=null, zqActiveReminder=null, zqCourseBannerDismissKey="";
+    const ZQ_DAYS=["","Lundi","Mardi","Mercredi","Jeudi","Vendredi"];
+    function zqClassName(id){return state.classes.find(c=>String(c.id)===String(id))?.name||"Classe";}
+    function zqViewLabel(v){return v==="g1"?"Groupe 1":v==="g2"?"Groupe 2":"Classe entière";}
+    function zqMonday(d=new Date()){const x=new Date(d);const day=(x.getDay()+6)%7;x.setHours(0,0,0,0);x.setDate(x.getDate()-day);return x;}
+    function zqDateKey(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`;}
+    function zqCycleForDate(d){
+      if(!zqScheduleSettings?.q_anchor_monday)return "Q1";
+      const anchor=new Date(zqScheduleSettings.q_anchor_monday+"T00:00:00");
+      const weeks=Math.round((zqMonday(d)-zqMonday(anchor))/(7*86400000));
+      const base=zqScheduleSettings.q_anchor_value||"Q1";
+      return Math.abs(weeks)%2===0?base:(base==="Q1"?"Q2":"Q1");
+    }
+    function zqTimeMinutes(t){const [a,b]=String(t).slice(0,5).split(":").map(Number);return a*60+b;}
+    function zqSlotApplies(slot,d){
+      const wd=d.getDay(); if(wd<1||wd>5||Number(slot.weekday)!==wd)return false;
+      return slot.week_cycle==="ALL"||slot.week_cycle===zqCycleForDate(d);
+    }
+    function zqSlotDates(slot,day){
+      const start=new Date(day),end=new Date(day); const [sh,sm]=slot.start_time.slice(0,5).split(":").map(Number),[eh,em]=slot.end_time.slice(0,5).split(":").map(Number);
+      start.setHours(sh,sm,0,0);end.setHours(eh,em,0,0);return {start,end};
+    }
+    function zqCurrentSlot(now=new Date()){
+      return zqScheduleSlots.find(s=>{if(!zqSlotApplies(s,now))return false;const x=zqSlotDates(s,now);return now>=x.start&&now<x.end;})||null;
+    }
+    function zqNextSlotForClass(classId,now=new Date()){
+      const candidates=[];
+      for(let add=0;add<21;add++){const d=new Date(now);d.setDate(d.getDate()+add);d.setHours(0,0,0,0);
+        for(const s of zqScheduleSlots){if(String(s.class_id)!==String(classId)||!zqSlotApplies(s,d))continue;const x=zqSlotDates(s,d);if(x.end>now)candidates.push({...s,_start:x.start,_end:x.end});}}
+      return candidates.sort((a,b)=>a._start-b._start)[0]||null;
+    }
+    async function zqLoadScheduleAndReminders(){
+      const {data:{user}}=await supabaseClient.auth.getUser(); if(!user)return;
+      const [slotsRes,setRes,remRes]=await Promise.all([
+        supabaseClient.from("teacher_schedule_slots").select("*").eq("teacher_id",user.id).order("weekday").order("start_time"),
+        supabaseClient.from("teacher_schedule_settings").select("*").eq("teacher_id",user.id).maybeSingle(),
+        supabaseClient.from("teacher_reminders").select("*").eq("teacher_id",user.id).eq("is_done",false).order("trigger_at")
+      ]);
+      if(slotsRes.error)throw new Error("Migration EDT manquante ou inaccessible : "+slotsRes.error.message);
+      zqScheduleSlots=slotsRes.data||[];zqScheduleSettings=setRes.data||null;zqReminders=remRes.data||[];
+      zqRenderCourseBanner();zqRenderReminderList();zqRenderQuickReminderPanel();zqCheckReminders();
+    }
+    function zqNextSlotGlobal(now=new Date()){
+      const candidates=[];
+      for(let add=0;add<21;add++){
+        const d=new Date(now);d.setDate(d.getDate()+add);d.setHours(0,0,0,0);
+        for(const s of zqScheduleSlots){
+          if(!zqSlotApplies(s,d))continue;
+          const x=zqSlotDates(s,d);
+          if(x.start>now)candidates.push({...s,_start:x.start,_end:x.end});
+        }
+      }
+      return candidates.sort((a,b)=>a._start-b._start)[0]||null;
+    }
+    function zqRelativeCourseDay(d,now=new Date()){
+      const a=new Date(now);a.setHours(0,0,0,0);const b=new Date(d);b.setHours(0,0,0,0);
+      const diff=Math.round((b-a)/86400000);
+      if(diff===0)return "Aujourd’hui";if(diff===1)return "Demain";
+      return d.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"short"});
+    }
+    function zqCountdown(ms){
+      if(ms<=0)return "";
+      const mins=Math.ceil(ms/60000),days=Math.floor(mins/1440),hours=Math.floor((mins%1440)/60),m=mins%60;
+      if(days>0)return `dans ${days} j${days>1?"ours":""}${hours?` ${hours} h`:""}`;
+      if(hours>0)return `dans ${hours} h${m?` ${m} min`:""}`;
+      return `dans ${mins} min`;
+    }
+    function zqRenderCourseBanner(){
+      const bar=document.getElementById("zqCurrentCourseBar");if(!bar)return;
+      const title=document.getElementById("zqCurrentCourseTitle"),sub=document.getElementById("zqCurrentCourseSub"),btn=document.getElementById("zqGoCurrentCourseBtn"),dismiss=document.getElementById("zqDismissCourseBtn");
+      bar.classList.remove("zq-now","zq-done");bar.style.display="flex";dismiss.style.display="none";
+      if(!zqScheduleSlots.length){
+        title.textContent="🗓️ Prochain cours";
+        sub.textContent="Aucun créneau enregistré · Outils → Mes créneaux";
+        btn.style.display="none";delete bar.dataset.slotId;return;
+      }
+      const now=new Date(),current=zqCurrentSlot(now);
+      if(current){
+        const x=zqSlotDates(current,now);
+        title.textContent=`🟢 COURS EN COURS · ${zqClassName(current.class_id)} · ${zqViewLabel(current.view_mode)}`;
+        sub.textContent=`${x.start.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}–${x.end.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})} · encore ${zqCountdown(x.end-now).replace("dans ","")}`;
+        bar.dataset.slotId=current.id;bar.classList.add("zq-now");btn.style.display="inline-flex";btn.textContent="▶ Aller à la classe";return;
+      }
+      const next=zqNextSlotGlobal(now);
+      if(next){
+        const todayEnd=new Date(now);todayEnd.setHours(23,59,59,999);
+        const noMoreToday=next._start>todayEnd;
+        title.textContent=noMoreToday&&now.getHours()>=12?`🌙 Cours terminés pour aujourd’hui`:`🗓️ PROCHAIN COURS · ${zqClassName(next.class_id)} · ${zqViewLabel(next.view_mode)}`;
+        const detail=`${zqRelativeCourseDay(next._start,now)} · ${next._start.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}–${next._end.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})} · ${zqCountdown(next._start-now)}`;
+        sub.textContent=(noMoreToday&&now.getHours()>=12?`Prochain : ${zqClassName(next.class_id)} · ${zqViewLabel(next.view_mode)} · `:"")+detail;
+        bar.dataset.slotId=next.id;bar.classList.toggle("zq-done",noMoreToday&&now.getHours()>=12);btn.style.display="inline-flex";btn.textContent="▶ Aller à la classe";return;
+      }
+      title.textContent="🗓️ Prochain cours";sub.textContent="Aucun prochain cours trouvé dans les 3 semaines.";btn.style.display="none";delete bar.dataset.slotId;
+    }
+    async function zqGoToSlot(slot){
+      if(!slot)return;state.currentClassId=slot.class_id;latestUserSelectedClassId=slot.class_id;classSelectionRevision++;state.viewMode=slot.view_mode||"all";state.appMode="prof";save();render();startBoardRemoteChannel();
+    }
+    function zqFillClassSelects(){
+      const opts=state.classes.map(c=>`<option value="${c.id}">${escapeHTML(c.name)}</option>`).join("");
+      ["zqSlotClass","zqReminderClass"].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML=opts;});
+    }
+    function zqRenderScheduleList(){
+      const box=document.getElementById("zqScheduleList");if(!box)return;
+      box.innerHTML=zqScheduleSlots.length?zqScheduleSlots.map(s=>`<div class="zq-slot"><strong>${ZQ_DAYS[s.weekday]}<br>${String(s.start_time).slice(0,5)}–${String(s.end_time).slice(0,5)}</strong><div><strong>${escapeHTML(zqClassName(s.class_id))}</strong> · ${zqViewLabel(s.view_mode)} <span class="pill">${s.week_cycle}</span></div><div class="zq-slot-actions"><button class="btn outline zq-edit-slot" data-id="${s.id}">Modifier</button> <button class="btn danger zq-del-slot" data-id="${s.id}">Suppr.</button></div></div>`).join(""):`<div class="muted" style="padding:16px;text-align:center">Aucun créneau. Tu peux charger ton EDT actuel puis tout modifier.</div>`;
+      box.querySelectorAll(".zq-edit-slot").forEach(b=>b.onclick=()=>zqOpenSlot(zqScheduleSlots.find(s=>s.id===b.dataset.id)));
+      box.querySelectorAll(".zq-del-slot").forEach(b=>{
+        // Le clic est géré globalement par délégation (v5.13.12).
+        // Cela reste fiable même si la liste des créneaux est re-rendue.
+        b.type="button";
+      });
+    }
+
+    async function zqDeleteScheduleSlotById(id,button=null){
+      if(!id)return;
+      const original=button?.textContent||"Suppr.";
+      if(button){button.disabled=true;button.textContent="Suppression…";}
+      try{
+        const {data:{user},error:userError}=await supabaseClient.auth.getUser();
+        if(userError||!user) throw new Error("Session professeur introuvable.");
+
+        // D'abord retirer les rappels attachés au créneau, puis supprimer le créneau.
+        const linked=await supabaseClient.from("teacher_reminders")
+          .delete().eq("teacher_id",user.id).eq("schedule_slot_id",id);
+        if(linked.error) throw linked.error;
+
+        const del=await supabaseClient.from("teacher_schedule_slots")
+          .delete().eq("teacher_id",user.id).eq("id",id).select("id");
+        if(del.error) throw del.error;
+        if(!del.data?.length) throw new Error("Aucune ligne supprimée par Supabase.");
+
+        zqScheduleSlots=zqScheduleSlots.filter(s=>String(s.id)!==String(id));
+        zqReminders=zqReminders.filter(r=>String(r.schedule_slot_id)!==String(id));
+        zqRenderScheduleList();
+        zqRenderCourseBanner();
+        zqRenderReminderList();
+        zqRenderQuickReminderPanel();
+      }catch(err){
+        console.error("[ZenQuest] suppression créneau",err);
+        alert("❌ Suppression impossible : "+(err?.message||String(err)));
+        if(button){button.disabled=false;button.textContent=original;}
+      }
+    }
+
+    // Délégation globale : fonctionne même après un re-render de la liste.
+    document.addEventListener("click",async(ev)=>{
+      const btn=ev.target.closest?.(".zq-del-slot");
+      if(!btn)return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      const id=btn.dataset.id;
+      if(!id)return alert("❌ Identifiant du créneau introuvable.");
+      // Suppression directe : le bouton lui-même est déjà explicite "Suppr."
+      await zqDeleteScheduleSlotById(id,btn);
+    });
+
+    function zqOpenSlot(s=null){
+      zqFillClassSelects();document.getElementById("zqSlotId").value=s?.id||"";document.getElementById("zqSlotDay").value=s?.weekday||1;document.getElementById("zqSlotClass").value=s?.class_id||state.currentClassId||state.classes[0]?.id||"";
+      document.getElementById("zqSlotStart").value=String(s?.start_time||"08:00").slice(0,5);document.getElementById("zqSlotEnd").value=String(s?.end_time||"09:00").slice(0,5);document.getElementById("zqSlotView").value=s?.view_mode||"all";document.getElementById("zqSlotCycle").value=s?.week_cycle||"ALL";document.getElementById("zqSlotModal").classList.add("show");
+    }
+    async function zqSaveSlot(){
+      const {data:{user}}=await supabaseClient.auth.getUser();const id=document.getElementById("zqSlotId").value;
+      const row={teacher_id:user.id,class_id:document.getElementById("zqSlotClass").value,weekday:Number(document.getElementById("zqSlotDay").value),start_time:document.getElementById("zqSlotStart").value,end_time:document.getElementById("zqSlotEnd").value,view_mode:document.getElementById("zqSlotView").value,week_cycle:document.getElementById("zqSlotCycle").value};
+      if(!row.start_time||!row.end_time||row.end_time<=row.start_time)return alert("Vérifie les horaires.");
+      const q=id?supabaseClient.from("teacher_schedule_slots").update(row).eq("id",id):supabaseClient.from("teacher_schedule_slots").insert(row);const {error}=await q;if(error)return alert("❌ "+error.message);
+      document.getElementById("zqSlotModal").classList.remove("show");await zqLoadScheduleAndReminders();zqRenderScheduleList();
+    }
+    function zqFindClass(pattern){const p=pattern.toLowerCase().replace(/\s/g,"");return state.classes.find(c=>c.name.toLowerCase().replace(/\s/g,"").includes(p))?.id||null;}
+    async function zqSeedSchedule(){
+      if(zqScheduleSlots.length&&!confirm("Des créneaux existent déjà. Ajouter quand même l’EDT prérempli ?"))return;
+      const A=zqFindClass("5a"),B=zqFindClass("6b"),C=zqFindClass("6c"),C5=zqFindClass("5c");
+      if(!A||!B||!C||!C5)return alert("Je dois retrouver les classes 5A, 5C, 6B et 6C dans ZenQuest.");
+      const {data:{user}}=await supabaseClient.auth.getUser();const r=(class_id,weekday,start_time,end_time,view_mode="all",week_cycle="ALL")=>({teacher_id:user.id,class_id,weekday,start_time,end_time,view_mode,week_cycle});
+      const rows=[
+        r(C5,1,"07:30","09:00","g1"),r(C,1,"09:30","10:30","g2"),r(A,1,"10:30","11:30"),r(B,1,"13:00","14:00"),r(C,1,"14:00","15:00"),
+        r(A,2,"09:00","10:30","g2"),r(B,2,"10:30","11:30"),r(C,2,"14:00","15:00"),r(B,2,"15:00","16:00","g2","Q1"),r(B,2,"15:00","16:00","g1","Q2"),r(C,2,"16:00","17:00","g1"),
+        r(B,3,"07:30","08:30"),r(C,3,"08:30","09:00","g2","Q1"),r(B,3,"08:30","09:00","g1","Q2"),r(A,3,"11:00","12:30","g1"),
+        r(A,4,"09:30","10:30"),r(B,4,"10:30","11:30","g1"),r(B,4,"11:30","12:30","g2"),
+        r(C5,5,"08:30","09:30"),r(C,5,"11:30","12:30")
+      ];
+      const {error}=await supabaseClient.from("teacher_schedule_slots").insert(rows);if(error)return alert("❌ "+error.message);await zqLoadScheduleAndReminders();zqRenderScheduleList();alert("✅ EDT chargé. Tu peux maintenant modifier chaque créneau.");
+    }
+    async function zqSaveCurrentQ(){
+      const {data:{user}}=await supabaseClient.auth.getUser();const row={teacher_id:user.id,q_anchor_monday:zqDateKey(zqMonday()),q_anchor_value:document.getElementById("zqCurrentQ").value,updated_at:new Date().toISOString()};
+      const {error}=await supabaseClient.from("teacher_schedule_settings").upsert(row,{onConflict:"teacher_id"});if(error)return alert("❌ "+error.message);await zqLoadScheduleAndReminders();alert("✅ Alternance Q1/Q2 enregistrée.");
+    }
+    function zqRenderReminderList(){
+      const box=document.getElementById("zqReminderList");if(!box)return;
+      box.innerHTML=zqReminders.length?zqReminders.map(r=>`<div class="zq-reminder-row"><div><strong>${escapeHTML(r.text)}</strong><div class="muted">${escapeHTML(zqClassName(r.class_id))} · ${new Date(r.trigger_at).toLocaleString("fr-FR",{weekday:"short",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}</div></div><div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn green zq-rem-done" data-id="${r.id}">✓ Fait</button><button class="btn danger zq-rem-delete" data-id="${r.id}">🗑 Supprimer</button></div></div>`).join(""):`<div class="muted" style="padding:14px;text-align:center">Rien à ne pas oublier 🎉</div>`;
+      box.querySelectorAll(".zq-rem-done").forEach(b=>b.onclick=()=>zqCompleteReminder(b.dataset.id));
+      box.querySelectorAll(".zq-rem-delete").forEach(b=>b.onclick=()=>zqDeleteReminder(b.dataset.id));
+    }
+
+    function zqRenderQuickReminderPanel(){
+      const sel=document.getElementById("zqQuickReminderClass");
+      if(sel){
+        const current=zqCurrentSlot();
+        const old=sel.value;
+        sel.innerHTML=state.classes.map(c=>`<option value="${c.id}">${escapeHTML(c.name)}</option>`).join("");
+        sel.value=(current?.class_id||old||state.currentClassId||state.classes[0]?.id||"");
+      }
+      const info=document.getElementById("zqQuickReminderUpcoming");
+      if(info){
+        const next=zqReminders[0];
+        info.innerHTML=next?`<span>Prochain rappel : <strong>${escapeHTML(next.text)}</strong> · ${escapeHTML(zqClassName(next.class_id))} · ${new Date(next.trigger_at).toLocaleString("fr-FR",{weekday:"short",hour:"2-digit",minute:"2-digit"})}</span> <button class="btn danger" id="zqQuickDeleteReminder" style="padding:5px 8px;margin-left:6px">🗑</button>`:"Aucun rappel en attente.";
+        const del=document.getElementById("zqQuickDeleteReminder");if(del)del.onclick=()=>zqDeleteReminder(next.id);
+      }
+    }
+    function zqTestReminderPopup(){
+      zqActiveReminder={id:"__test__",text:"Ceci est un test du rappel ZenQuest",class_id:state.currentClassId||state.classes[0]?.id||null,_test:true};
+      document.getElementById("zqReminderProjectionText").textContent=zqActiveReminder.text;
+      document.getElementById("zqReminderProjectionClass").textContent=zqClassName(zqActiveReminder.class_id);
+      document.getElementById("zqReminderProjection").classList.add("show");
+    }
+
+    async function zqCreateQuickReminder(){
+      const text=document.getElementById("zqQuickReminderText").value.trim(),classId=document.getElementById("zqQuickReminderClass").value,mode=document.getElementById("zqQuickReminderMode").value;
+      if(!text)return alert("Écris le rappel.");
+      let trigger,slotId=null;
+      if(mode==="exact"){
+        const d=document.getElementById("zqQuickReminderDate").value,t=document.getElementById("zqQuickReminderTime").value;
+        if(!d||!t)return alert("Choisis la date et l’heure.");
+        trigger=new Date(`${d}T${t}:00`);
+      }else{
+        const slot=zqNextSlotForClass(classId);if(!slot)return alert("Aucun prochain cours trouvé pour cette classe dans ton EDT.");
+        slotId=slot.id;trigger=new Date(slot._end.getTime()-(mode==="next5"?5:10)*60000);
+      }
+      const {data:{user}}=await supabaseClient.auth.getUser();
+      const {error}=await supabaseClient.from("teacher_reminders").insert({teacher_id:user.id,class_id:classId,schedule_slot_id:slotId,text,trigger_at:trigger.toISOString()});
+      if(error)return alert("❌ "+error.message);
+      document.getElementById("zqQuickReminderText").value="";
+      await zqLoadScheduleAndReminders();zqRenderQuickReminderPanel();
+    }
+
+    async function zqCreateReminder(){
+      const text=document.getElementById("zqReminderText").value.trim(),classId=document.getElementById("zqReminderClass").value,mode=document.getElementById("zqReminderMode").value;if(!text)return alert("Écris le rappel.");
+      let trigger,slotId=null;
+      if(mode==="exact"){const d=document.getElementById("zqReminderDate").value,t=document.getElementById("zqReminderTime").value;if(!d||!t)return alert("Choisis la date et l’heure.");trigger=new Date(`${d}T${t}:00`);}
+      else{const slot=zqNextSlotForClass(classId);if(!slot)return alert("Aucun prochain cours trouvé pour cette classe dans ton EDT.");slotId=slot.id;trigger=new Date(slot._end.getTime()-(mode==="next5"?5:10)*60000);}
+      const {data:{user}}=await supabaseClient.auth.getUser();const {error}=await supabaseClient.from("teacher_reminders").insert({teacher_id:user.id,class_id:classId,schedule_slot_id:slotId,text,trigger_at:trigger.toISOString()});if(error)return alert("❌ "+error.message);
+      document.getElementById("zqReminderText").value="";await zqLoadScheduleAndReminders();zqRenderReminderList();
+    }
+    async function zqDeleteReminder(id){
+      const {error}=await supabaseClient.from("teacher_reminders").delete().eq("id",id);
+      if(error)return alert("❌ Impossible de supprimer le rappel : "+error.message);
+      if(zqActiveReminder?.id===id){
+        document.getElementById("zqReminderProjection").classList.remove("show");
+        zqActiveReminder=null;
+      }
+      await zqLoadScheduleAndReminders();
+      zqRenderReminderList();
+      zqRenderQuickReminderPanel();
+    }
+
+    async function zqCompleteReminder(id){
+      if(id==="__test__"){document.getElementById("zqReminderProjection").classList.remove("show");zqActiveReminder=null;return;}
+      const {error}=await supabaseClient.from("teacher_reminders").update({is_done:true,done_at:new Date().toISOString()}).eq("id",id);if(error)return alert(error.message);
+      if(zqActiveReminder?.id===id){document.getElementById("zqReminderProjection").classList.remove("show");zqActiveReminder=null;}await zqLoadScheduleAndReminders();
+    }
+    async function zqSnoozeReminder(){
+      if(!zqActiveReminder)return;
+      const id=zqActiveReminder.id;
+      if(id==="__test__"){document.getElementById("zqReminderProjection").classList.remove("show");zqActiveReminder=null;return;}
+      const {error}=await supabaseClient.from("teacher_reminders").update({displayed_at:new Date().toISOString()}).eq("id",id);
+      if(error)return alert("❌ "+error.message);
+      document.getElementById("zqReminderProjection").classList.remove("show");
+      zqActiveReminder=null;
+      await zqLoadScheduleAndReminders();
+    }
+    async function zqCheckReminders(){
+      if(zqActiveReminder)return;const now=Date.now();const r=zqReminders.find(x=>!x.displayed_at&&new Date(x.trigger_at).getTime()<=now);if(!r)return;
+      zqActiveReminder=r;
+      document.getElementById("zqReminderProjectionText").textContent=r.text;
+      document.getElementById("zqReminderProjectionClass").textContent=zqClassName(r.class_id);
+      document.getElementById("zqReminderProjection").classList.add("show");
+
+    }
+    async function zqOpenSchedule(){
+      try{await zqLoadScheduleAndReminders();zqFillClassSelects();zqRenderScheduleList();document.getElementById("zqCurrentQ").value=zqCycleForDate(new Date());document.getElementById("zqScheduleModal").classList.add("show");}catch(e){alert("❌ "+e.message);}
+    }
+    async function zqOpenReminders(){
+      try{await zqLoadScheduleAndReminders();zqFillClassSelects();zqRenderReminderList();document.getElementById("zqRemindersModal").classList.add("show");}catch(e){alert("❌ "+e.message);}
+    }
+
     function render(){
       setTimeout(()=>{
         refreshAveragesModal();
@@ -11677,6 +12104,35 @@ Noah"
     document.getElementById("viewG1Btn").onclick=()=>setTeacherGroupView("g1",true);
     document.getElementById("viewG2Btn").onclick=()=>setTeacherGroupView("g2",true);
 
+
+    // v5.13.6: le rappel doit être au-dessus de TOUT, y compris Projection/PDF/Accueil.
+    // Le déplacer directement sous <body> évite les stacking contexts des vues internes.
+    const zqReminderProjectionNode=document.getElementById("zqReminderProjection");
+    if(zqReminderProjectionNode && zqReminderProjectionNode.parentElement!==document.body){
+      document.body.appendChild(zqReminderProjectionNode);
+    }
+
+    document.getElementById("zqQuickReminderAdd").onclick=zqCreateQuickReminder;
+    document.getElementById("zqTestReminderPopup").onclick=zqTestReminderPopup;
+    document.getElementById("zqQuickReminderSeeAll").onclick=zqOpenReminders;
+    document.getElementById("zqQuickReminderMode").onchange=e=>document.getElementById("zqQuickReminderExact").style.display=e.target.value==="exact"?"grid":"none";
+    document.getElementById("zqScheduleBtn").onclick=zqOpenSchedule;
+    document.getElementById("zqRemindersBtn").onclick=zqOpenReminders;
+    document.getElementById("zqScheduleClose").onclick=()=>document.getElementById("zqScheduleModal").classList.remove("show");
+    document.getElementById("zqRemindersClose").onclick=()=>document.getElementById("zqRemindersModal").classList.remove("show");
+    document.getElementById("zqSlotClose").onclick=()=>document.getElementById("zqSlotModal").classList.remove("show");
+    document.getElementById("zqAddSlotBtn").onclick=()=>zqOpenSlot();
+    document.getElementById("zqSlotSave").onclick=zqSaveSlot;
+    document.getElementById("zqSeedScheduleBtn").onclick=zqSeedSchedule;
+    document.getElementById("zqSaveQBtn").onclick=zqSaveCurrentQ;
+    document.getElementById("zqReminderCreate").onclick=zqCreateReminder;
+    document.getElementById("zqReminderMode").onchange=e=>document.getElementById("zqReminderExactWrap").style.display=e.target.value==="exact"?"grid":"none";
+    document.getElementById("zqReminderDone").onclick=()=>zqActiveReminder&&zqCompleteReminder(zqActiveReminder.id);
+    document.getElementById("zqReminderLater").onclick=zqSnoozeReminder;
+    document.getElementById("zqGoCurrentCourseBtn").onclick=()=>{const id=document.getElementById("zqCurrentCourseBar").dataset.slotId;zqGoToSlot(zqScheduleSlots.find(s=>s.id===id));};
+    document.getElementById("zqDismissCourseBtn").style.display="none";
+    setInterval(()=>{zqRenderCourseBanner();zqCheckReminders();},15000);
+
     initAuth();
   
     // Navigation prof : panneau des outils secondaires
@@ -11698,7 +12154,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.12.16</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.13.12</span>.
   </footer>
 
 </body>
