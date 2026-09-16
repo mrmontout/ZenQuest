@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.13.12</title>
+  <title>ZenQuest v5.13.14b</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -1140,16 +1140,9 @@
     <div id="zqQuickReminderPanel" style="margin:0 0 14px;padding:13px 15px;border:2px solid #fed7aa;background:#fff7ed;border-radius:18px">
       <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
         <div><strong style="font-size:17px">🔔 À ne pas oublier</strong></div>
-        <div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn outline" id="zqTestReminderPopup">🧪 Tester le pop-up</button><button class="btn outline" id="zqQuickReminderSeeAll">Voir les rappels</button></div>
+        <button type="button" class="btn outline" id="zqQuickReminderSeeAll">Gérer les rappels</button>
       </div>
-      <div style="display:grid;grid-template-columns:minmax(180px,1fr) 150px 220px auto;gap:8px;align-items:end;margin-top:10px" class="zq-quick-rem-grid">
-        <label>Rappel<input id="zqQuickReminderText" placeholder="Ex. Donner les exercices 4 et 5"></label>
-        <label>Classe<select id="zqQuickReminderClass"></select></label>
-        <label>Quand<select id="zqQuickReminderMode"><option value="next10">10 min avant la fin du prochain cours</option><option value="next5">5 min avant la fin du prochain cours</option><option value="exact">Date/heure précises</option></select></label>
-        <button class="btn green" id="zqQuickReminderAdd">＋ Ajouter</button>
-      </div>
-      <div id="zqQuickReminderExact" style="display:none;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;max-width:430px"><label>Date<input id="zqQuickReminderDate" type="date"></label><label>Heure<input id="zqQuickReminderTime" type="time"></label></div>
-      <div id="zqQuickReminderUpcoming" class="muted" style="margin-top:8px;font-weight:750"></div>
+      <div id="zqQuickReminderUpcoming" class="muted" style="margin-top:8px;font-weight:750">Aucun rappel en attente.</div>
     </div>
 <div id="supabaseTeacherStatus" class="panel" style="margin-bottom:12px;border:1px solid #a7f3d0;background:#ecfdf5;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
       <div>
@@ -4207,7 +4200,6 @@ Noah"
         const pointToastEventId=uid();
         const actualDelta=Math.abs(next-prev);
         const toastLabel=actualDelta>1?`${label} · ${type==="minus"?"−":"+"}${actualDelta} points`:label;
-        showPdfPointToast(student.name,type,toastLabel,prev,next);
         showTeacherEventToast(student.name,type,toastLabel,prev,next,pointToastEventId);
         sendBoardCommand({
           action:"point_toast",
@@ -4569,7 +4561,6 @@ Noah"
           student.manualPresenceOverride=false;
           setLessonAttendanceOverride(currentClass().id,student.id,nextAbsent);
           const attendanceToastEventId=uid();
-          showBoardAttendanceToast(student.name,nextAbsent);
           showTeacherEventToast(student.name,"attendance",nextAbsent?"absent":"present",null,null,attendanceToastEventId);
           sendBoardCommand({
             action:"attendance_update",
@@ -7751,10 +7742,8 @@ Noah"
 
     const zqTeacherToastIds=new Set();
     function showTeacherEventToast(name,type,label,prevScore=null,nextScore=null,eventId=null){
-      const studentApp=document.getElementById("studentApp");
-      const establishmentApp=document.getElementById("establishmentApp");
-      if((studentApp && getComputedStyle(studentApp).display!=="none") ||
-         (establishmentApp && getComputedStyle(establishmentApp).display!=="none")) return;
+      // Popup global professeur : indépendant de la vue active.
+      // Il reste au-dessus de l’interface normale, de l’Accueil et de Projection.
       if(eventId && zqTeacherToastIds.has(eventId)) return;
       if(eventId){zqTeacherToastIds.add(eventId);setTimeout(()=>zqTeacherToastIds.delete(eventId),12000);}
       const stack=document.getElementById("zqTeacherEventToastStack");if(!stack)return;
@@ -8328,7 +8317,6 @@ Noah"
         student.homeworkAddedThisLesson=false;
         save();
         render();
-        showBoardAttendanceToast(student.name,isAbsent);
         showTeacherEventToast(student.name,"attendance",isAbsent?"absent":"present",null,null,payload.eventId);
       }else if(payload.action==="point_toast"){
         if(payload.eventId && receivedPointToastIds.has(payload.eventId)) return;
@@ -8337,7 +8325,6 @@ Noah"
           setTimeout(()=>receivedPointToastIds.delete(payload.eventId),15000);
         }
         showTeacherEventToast(payload.studentName||"Élève",payload.type,payload.label||"",payload.prevScore,payload.nextScore,payload.eventId);
-        if(canShowBoardPresentation()) showPdfPointToast(payload.studentName||"Élève",payload.type,payload.label||"",payload.prevScore,payload.nextScore);
       }else if(payload.action==="start"){
         if(!canShowBoardPresentation()) return;
         if(!document.getElementById("boardModal").classList.contains("show") && !isPdfProjectionOpen()) openBoard(false);
@@ -11444,20 +11431,18 @@ Noah"
     }
 
     function zqRenderQuickReminderPanel(){
-      const sel=document.getElementById("zqQuickReminderClass");
-      if(sel){
-        const current=zqCurrentSlot();
-        const old=sel.value;
-        sel.innerHTML=state.classes.map(c=>`<option value="${c.id}">${escapeHTML(c.name)}</option>`).join("");
-        sel.value=(current?.class_id||old||state.currentClassId||state.classes[0]?.id||"");
-      }
       const info=document.getElementById("zqQuickReminderUpcoming");
-      if(info){
-        const next=zqReminders[0];
-        info.innerHTML=next?`<span>Prochain rappel : <strong>${escapeHTML(next.text)}</strong> · ${escapeHTML(zqClassName(next.class_id))} · ${new Date(next.trigger_at).toLocaleString("fr-FR",{weekday:"short",hour:"2-digit",minute:"2-digit"})}</span> <button class="btn danger" id="zqQuickDeleteReminder" style="padding:5px 8px;margin-left:6px">🗑</button>`:"Aucun rappel en attente.";
-        const del=document.getElementById("zqQuickDeleteReminder");if(del)del.onclick=()=>zqDeleteReminder(next.id);
+      if(!info)return;
+      const next=zqReminders[0];
+      if(!next){
+        info.textContent="Aucun rappel en attente.";
+        return;
       }
+      info.innerHTML=`<span>Prochain rappel : <strong>${escapeHTML(next.text)}</strong> · ${escapeHTML(zqClassName(next.class_id))} · ${new Date(next.trigger_at).toLocaleString("fr-FR",{weekday:"short",hour:"2-digit",minute:"2-digit"})}</span> <button type="button" class="btn danger" id="zqQuickDeleteReminder" style="padding:5px 8px;margin-left:6px">🗑</button>`;
+      const del=document.getElementById("zqQuickDeleteReminder");
+      if(del)del.onclick=()=>zqDeleteReminder(next.id);
     }
+
     function zqTestReminderPopup(){
       zqActiveReminder={id:"__test__",text:"Ceci est un test du rappel ZenQuest",class_id:state.currentClassId||state.classes[0]?.id||null,_test:true};
       document.getElementById("zqReminderProjectionText").textContent=zqActiveReminder.text;
@@ -12111,11 +12096,7 @@ Noah"
     if(zqReminderProjectionNode && zqReminderProjectionNode.parentElement!==document.body){
       document.body.appendChild(zqReminderProjectionNode);
     }
-
-    document.getElementById("zqQuickReminderAdd").onclick=zqCreateQuickReminder;
-    document.getElementById("zqTestReminderPopup").onclick=zqTestReminderPopup;
     document.getElementById("zqQuickReminderSeeAll").onclick=zqOpenReminders;
-    document.getElementById("zqQuickReminderMode").onchange=e=>document.getElementById("zqQuickReminderExact").style.display=e.target.value==="exact"?"grid":"none";
     document.getElementById("zqScheduleBtn").onclick=zqOpenSchedule;
     document.getElementById("zqRemindersBtn").onclick=zqOpenReminders;
     document.getElementById("zqScheduleClose").onclick=()=>document.getElementById("zqScheduleModal").classList.remove("show");
@@ -12154,7 +12135,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.13.12</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.13.14b</span>.
   </footer>
 
 </body>
