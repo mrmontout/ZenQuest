@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.13.16gb</title>
+  <title>ZenQuest v5.13.17b</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -9838,8 +9838,12 @@ Noah"
       }
 
       function bindStudentChallengeAnswerButtons(root=document){root.querySelectorAll(".zq-student-challenge-answer").forEach(btn=>btn.onclick=submitStudentChallengeAnswer);}
+      const zqChallengeSubmitting=new Set();
       async function submitStudentChallengeAnswer(ev){
         const btn=ev.currentTarget;
+        const lockKey=String(btn?.dataset?.challengeId||"");
+        if(!lockKey || zqChallengeSubmitting.has(lockKey)) return;
+        zqChallengeSubmitting.add(lockKey);
         ev?.preventDefault?.();
         ev?.stopPropagation?.();
         const challengeId=btn.dataset.challengeId,choice=Number(btn.dataset.choice);
@@ -9862,9 +9866,17 @@ Noah"
           }
           if(!result || typeof result!=="object") throw new Error("Réponse du serveur inattendue.");
 
-          if(result.correct===true || result.status==="won" || result.status==="already_won"){
-            live.style.background="#dcfce7";live.style.color="#166534";live.textContent="🎉 Bonne réponse ! Ton trésor est prêt.";
+          if(result.status==="won" && result.correct===true){
+            allButtons.forEach(x=>x.disabled=true);
+            card?.querySelector(".zq-student-challenge-choices")?.remove();
+            live.style.background="#dcfce7";live.style.color="#166534";live.textContent="🎉 Bonne réponse ! Défi terminé.";
+            document.getElementById("studentChallengeQcmModal")?.classList.remove("show");
             showStudentTreasureOverlay(result);
+          }else if(result.status==="already_won"){
+            allButtons.forEach(x=>x.disabled=true);
+            card?.querySelector(".zq-student-challenge-choices")?.remove();
+            live.style.background="#dcfce7";live.style.color="#166534";
+            live.textContent="✅ Ce défi a déjà été réussi. Le trésor a déjà été attribué.";
           }else if(Number(result.attempts_left)>0){
             allButtons.forEach(x=>x.disabled=false);
             live.style.background="#fff7ed";live.style.color="#9a3412";
@@ -9881,6 +9893,7 @@ Noah"
           live.innerHTML=`❌ Le défi n’a pas pu être validé.<div style="font-size:11px;margin-top:4px;font-weight:800">${escapeHTML(e?.message||String(e))}</div>`;
         }
       
+        zqChallengeSubmitting.delete(lockKey);
       }
       function openStudentChallengeQcm(id){
         const c=(homeworkChallenges||[]).find(x=>String(x.id)===String(id));if(!c)return;
@@ -12640,7 +12653,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.13.16gb</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.13.17b</span>.
   </footer>
 
 </body>
