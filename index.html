@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.13.17bb</title>
+  <title>ZenQuest v5.13.18bb</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -2001,7 +2001,16 @@ Noah"
     </div>
   </div>
 
-  <div class="modal" id="studentChallengeQcmModal" style="z-index:3200000"><div class="modal-card" style="width:min(900px,96vw);max-height:92vh;overflow:auto"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px"><div id="studentChallengeQcmTitle" style="font-size:21px;font-weight:1000">🎁 Défi ZenQuest</div><button type="button" class="btn outline" id="closeStudentChallengeQcmBtn">Fermer</button></div><div id="studentChallengeQcmBody"></div></div></div>
+  <div class="modal" id="studentCardDetailModal" style="z-index:3210000">
+  <div class="modal-card" style="width:min(520px,94vw);max-height:90vh;overflow:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+      <div id="studentCardDetailTitle" style="font-size:21px;font-weight:1000">🎴 Carte ZenQuest</div>
+      <button type="button" class="btn outline" id="closeStudentCardDetailBtn">Fermer</button>
+    </div>
+    <div id="studentCardDetailBody" style="margin-top:14px"></div>
+  </div>
+</div>
+<div class="modal" id="studentChallengeQcmModal" style="z-index:3200000"><div class="modal-card" style="width:min(900px,96vw);max-height:92vh;overflow:auto"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px"><div id="studentChallengeQcmTitle" style="font-size:21px;font-weight:1000">🎁 Défi ZenQuest</div><button type="button" class="btn outline" id="closeStudentChallengeQcmBtn">Fermer</button></div><div id="studentChallengeQcmBody"></div></div></div>
 <div class="modal" id="studentTreasureModal" style="z-index:3300000">
     <div class="modal-card" style="width:min(520px,94vw);text-align:center;background:linear-gradient(145deg,#fffbeb,#ffffff)">
       <div id="studentTreasureContent"></div>
@@ -9559,7 +9568,7 @@ Noah"
             </div>
             <div style="margin-top:14px;font-weight:1000">🎴 Cartes « Travail accompli »</div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-              ${studentHomeworkDone?Array.from({length:studentHomeworkDone},(_,i)=>`<div title="Travail vérifié en classe" style="width:94px;min-height:112px;padding:9px;border-radius:14px;background:white;border:2px solid #86efac;box-shadow:0 3px 9px rgba(15,23,42,.08);text-align:center"><div style="font-size:30px">${["✏️","📚","✅","🎯","🔥"][i%5]}</div><div style="font-size:12px;font-weight:1000;margin-top:5px">${["TRAVAIL ACCOMPLI","MISSION FAITE","DEVOIR VALIDÉ","RÉGULARITÉ","TRAVAIL SÉRIEUX"][i%5]}</div><div class="muted" style="font-size:10px;margin-top:4px">Vérifié en classe</div></div>`).join(""):'<span class="muted">Ta première carte apparaîtra quand le professeur vérifiera un devoir réalisé.</span>'}
+              ${studentHomeworkDone?Array.from({length:studentHomeworkDone},(_,i)=>`<button type="button" class="zq-open-card-detail" data-card-kind="homework" data-card-emoji="${["✏️","📚","✅","🎯","🔥"][i%5]}" data-card-name="${["TRAVAIL ACCOMPLI","MISSION FAITE","DEVOIR VALIDÉ","RÉGULARITÉ","TRAVAIL SÉRIEUX"][i%5]}" data-card-rarity="normal" title="Travail vérifié en classe" style="width:94px;min-height:112px;padding:9px;border-radius:14px;background:white;border:2px solid #86efac;box-shadow:0 3px 9px rgba(15,23,42,.08);text-align:center;cursor:pointer;color:inherit;touch-action:manipulation"><div style="font-size:30px">${["✏️","📚","✅","🎯","🔥"][i%5]}</div><div style="font-size:12px;font-weight:1000;margin-top:5px">${["TRAVAIL ACCOMPLI","MISSION FAITE","DEVOIR VALIDÉ","RÉGULARITÉ","TRAVAIL SÉRIEUX"][i%5]}</div><div class="muted" style="font-size:10px;margin-top:4px">Vérifié en classe</div><div style="font-size:9px;font-weight:900;color:#0f766e;margin-top:4px">Voir ›</div></button>`).join(""):'<span class="muted">Ta première carte apparaîtra quand le professeur vérifiera un devoir réalisé.</span>'}
             </div>
             <div style="margin-top:18px;font-size:18px;font-weight:1000">🎁 Mes Trésors ZenQuest</div>
             <div class="muted" style="margin-top:3px">Tu retrouves ici tout ce que tu as gagné dans les défis.</div>
@@ -9569,7 +9578,7 @@ Noah"
                 const emoji=isCard?(c.card_emoji||"🎴"):c.reward_type==="point"?"💚":"⭐";
                 const label=isCard?(c.card_name||"Carte ZenQuest"):c.reward_type==="point"?"+1 POINT":"+1 PROGRESSION";
                 const sub=isCard?(c.card_rarity==="rare"?"✨ CARTE RARE":"🎴 CARTE"):"🎁 TRÉSOR";
-                return `<div style="width:104px;min-height:120px;padding:10px;border-radius:15px;background:${c.card_rarity==="rare"?"linear-gradient(135deg,#fef3c7,#fff7ed)":"white"};border:2px solid ${c.card_rarity==="rare"?"#f59e0b":"#cbd5e1"};box-shadow:0 3px 9px rgba(15,23,42,.08);text-align:center"><div style="font-size:34px">${escapeHTML(emoji)}</div><div style="font-size:12px;font-weight:1000;margin-top:5px">${escapeHTML(String(label).toUpperCase())}</div><div style="font-size:10px;font-weight:900;margin-top:5px;color:${c.card_rarity==="rare"?"#b45309":"#64748b"}">${sub}</div></div>`;
+                return `<button type="button" class="zq-open-card-detail" data-card-kind="treasure" data-card-emoji="${escapeHTML(emoji)}" data-card-name="${escapeHTML(label)}" data-card-rarity="${escapeHTML(c.card_rarity||"normal")}" data-card-reward="${escapeHTML(c.reward_type||"card")}" style="width:104px;min-height:120px;padding:10px;border-radius:15px;background:${c.card_rarity==="rare"?"linear-gradient(135deg,#fef3c7,#fff7ed)":"white"};border:2px solid ${c.card_rarity==="rare"?"#f59e0b":"#cbd5e1"};box-shadow:0 3px 9px rgba(15,23,42,.08);text-align:center;cursor:pointer;color:inherit;touch-action:manipulation"><div style="font-size:34px">${escapeHTML(emoji)}</div><div style="font-size:12px;font-weight:1000;margin-top:5px">${escapeHTML(String(label).toUpperCase())}</div><div style="font-size:10px;font-weight:900;margin-top:5px;color:${c.card_rarity==="rare"?"#b45309":"#64748b"}">${sub}</div><div style="font-size:9px;font-weight:900;color:#0f766e;margin-top:5px">Voir ›</div></button>`;
               }).join(""):'<span class="muted">Aucun trésor gagné pour le moment.</span>'}
             </div>
           </div>
@@ -9829,6 +9838,7 @@ Noah"
         document.body.appendChild(overlay);
         overlay.querySelector("#zqStudentTreasureContinue").onclick=async()=>{
           overlay.remove();
+          document.getElementById("studentChallengeQcmModal")?.classList.remove("show");
           // Refresh student data safely, without a hard page reload / blank navigation.
           try{
             const {data:{session}}=await supabaseClient.auth.getSession();
@@ -9840,60 +9850,83 @@ Noah"
       function bindStudentChallengeAnswerButtons(root=document){root.querySelectorAll(".zq-student-challenge-answer").forEach(btn=>btn.onclick=submitStudentChallengeAnswer);}
       const zqChallengeSubmitting=new Set();
       async function submitStudentChallengeAnswer(ev){
-        const btn=ev.currentTarget;
-        const lockKey=String(btn?.dataset?.challengeId||"");
-        if(!lockKey || zqChallengeSubmitting.has(lockKey)) return;
-        zqChallengeSubmitting.add(lockKey);
         ev?.preventDefault?.();
         ev?.stopPropagation?.();
-        const challengeId=btn.dataset.challengeId,choice=Number(btn.dataset.choice);
+        const btn=ev.currentTarget;
+        const challengeId=String(btn?.dataset?.challengeId||"");
+        const choice=Number(btn?.dataset?.choice);
+        if(!challengeId || zqChallengeSubmitting.has(challengeId)) return;
+
+        zqChallengeSubmitting.add(challengeId);
         const card=btn.closest("#studentChallengeQcmBody") || btn.closest(".student-homework-challenge");
         const allButtons=[...(card?.querySelectorAll(".zq-student-challenge-answer")||[])];
         allButtons.forEach(x=>x.disabled=true);
-        const oldStatus=card?.querySelector(".zq-challenge-live-status");
-        oldStatus?.remove();
+
+        card?.querySelector(".zq-challenge-live-status")?.remove();
         const live=document.createElement("div");
         live.className="zq-challenge-live-status";
-        live.style.cssText="margin-top:9px;padding:9px;border-radius:11px;background:#eff6ff;color:#1e40af;font-weight:900";
+        live.style.cssText="margin-top:10px;padding:10px;border-radius:12px;background:#eff6ff;color:#1e40af;font-weight:900";
         live.textContent="⏳ Vérification de ta réponse…";
         card?.appendChild(live);
+
         try{
-          const rpc=await supabaseClient.rpc("submit_homework_challenge",{p_challenge_id:challengeId,p_chosen_index:choice});
-          if(rpc.error) throw rpc.error;
-          let result=rpc.data;
+          const {data,error}=await supabaseClient.rpc("submit_homework_challenge",{
+            p_challenge_id:challengeId,
+            p_chosen_index:choice
+          });
+          if(error) throw error;
+
+          let result=data;
           if(typeof result==="string"){
-            try{ result=JSON.parse(result); }catch{}
+            try{result=JSON.parse(result)}catch{}
           }
-          if(!result || typeof result!=="object") throw new Error("Réponse du serveur inattendue.");
+          if(!result || typeof result!=="object"){
+            throw new Error("Réponse du serveur inattendue.");
+          }
 
           if(result.status==="won" && result.correct===true){
             allButtons.forEach(x=>x.disabled=true);
             card?.querySelector(".zq-student-challenge-choices")?.remove();
-            live.style.background="#dcfce7";live.style.color="#166534";live.textContent="🎉 Bonne réponse ! Défi terminé.";
+            live.style.background="#dcfce7";
+            live.style.color="#166534";
+            live.textContent="🎉 Bonne réponse ! Défi réussi.";
             document.getElementById("studentChallengeQcmModal")?.classList.remove("show");
             showStudentTreasureOverlay(result);
-          }else if(result.status==="already_won"){
+            return;
+          }
+
+          if(result.status==="already_won"){
             allButtons.forEach(x=>x.disabled=true);
             card?.querySelector(".zq-student-challenge-choices")?.remove();
-            live.style.background="#dcfce7";live.style.color="#166534";
-            live.textContent="✅ Ce défi a déjà été réussi. Le trésor a déjà été attribué.";
-          }else if(Number(result.attempts_left)>0){
-            allButtons.forEach(x=>x.disabled=false);
-            live.style.background="#fff7ed";live.style.color="#9a3412";
-            live.textContent="❌ Pas cette fois ! Il te reste 1 tentative. Relis ton cours ou fais l’exercice avant de réessayer.";
-          }else{
-            card?.querySelector(".zq-student-challenge-choices")?.remove();
-            live.style.background="#fee2e2";live.style.color="#991b1b";
-            live.textContent="❌ Défi terminé. Tu peux évidemment continuer à faire le travail demandé.";
+            live.style.background="#dcfce7";
+            live.style.color="#166534";
+            live.textContent="✅ Ce défi a déjà été réussi. Ton trésor a déjà été attribué.";
+            return;
           }
+
+          const left=Math.max(0,Number(result.attempts_left)||0);
+          if((result.status==="retry" || result.status==="wrong") && left>0){
+            allButtons.forEach(x=>x.disabled=false);
+            live.style.background="#fff7ed";
+            live.style.color="#9a3412";
+            live.textContent=`❌ Mauvaise réponse. Il te reste ${left} tentative${left>1?"s":""}.`;
+            return;
+          }
+
+          allButtons.forEach(x=>x.disabled=true);
+          card?.querySelector(".zq-student-challenge-choices")?.remove();
+          live.style.background="#fee2e2";
+          live.style.color="#991b1b";
+          live.textContent="❌ Défi terminé • 2 essais utilisés.";
         }catch(e){
           console.error("HOMEWORK CHALLENGE SUBMIT ERROR",e);
           allButtons.forEach(x=>x.disabled=false);
-          live.style.background="#fee2e2";live.style.color="#991b1b";
+          live.style.background="#fee2e2";
+          live.style.color="#991b1b";
           live.innerHTML=`❌ Le défi n’a pas pu être validé.<div style="font-size:11px;margin-top:4px;font-weight:800">${escapeHTML(e?.message||String(e))}</div>`;
+        }finally{
+          zqChallengeSubmitting.delete(challengeId);
         }
-      
-        zqChallengeSubmitting.delete(lockKey);
       }
       function openStudentChallengeQcm(id){
         const c=(homeworkChallenges||[]).find(x=>String(x.id)===String(id));if(!c)return;
@@ -9903,6 +9936,42 @@ Noah"
         body.innerHTML=`${c.image_url?`<div style="text-align:center"><img src="${escapeHTML(c.image_url)}" alt="QCM ZenQuest" style="max-width:100%;max-height:62vh;border-radius:15px;border:1px solid #cbd5e1;background:white"></div>`:""}${rw?`<div style="margin-top:10px;padding:10px;border-radius:12px;background:#dcfce7;font-weight:950">🎉 Défi réussi • Trésor déjà ouvert !</div>`:left===0?`<div style="margin-top:10px;padding:10px;border-radius:12px;background:#fee2e2;font-weight:900">❌ Défi terminé • 2 essais utilisés.</div>`:`<div style="font-weight:950;margin-top:12px">Quelle réponse choisis-tu ?</div><div class="zq-student-challenge-choices" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px">${["A","B","C","D"].map((letter,i)=>`<button type="button" class="btn outline zq-student-challenge-answer" data-challenge-id="${escapeHTML(c.id)}" data-choice="${i}" style="font-size:22px;font-weight:1000;padding:14px;min-height:52px;touch-action:manipulation;cursor:pointer">${letter}</button>`).join("")}</div><div class="muted" style="margin-top:8px;font-weight:850">🎯 ${left} tentative${left>1?"s":""} restante${left>1?"s":""} sur 2.</div>`}`;
         document.getElementById("studentChallengeQcmModal").classList.add("show");bindStudentChallengeAnswerButtons(body);
       }
+      function openStudentCardDetail(data){
+        const modal=document.getElementById("studentCardDetailModal");
+        const title=document.getElementById("studentCardDetailTitle");
+        const body=document.getElementById("studentCardDetailBody");
+        const kind=data.kind||"treasure",emoji=data.emoji||"🎴",name=data.name||"Carte ZenQuest";
+        title.textContent=`${emoji} ${name}`;
+        let description="";
+        if(kind==="homework"){
+          description="Cette carte récompense le travail maison accompli et vérifié.";
+        }else if(data.reward==="point"){
+          description="Ce trésor t’a permis de gagner +1 point d’implication.";
+        }else if(data.reward==="progress"){
+          description="Ce trésor t’a permis de gagner +1 progression vers ta prochaine étape ZenQuest.";
+        }else{
+          description=data.rarity==="rare"?"✨ Un trésor rare obtenu en réussissant un défi ZenQuest.":"Un trésor obtenu en réussissant un défi ZenQuest.";
+        }
+        body.innerHTML=`<div style="text-align:center;padding:18px;border-radius:18px;background:${data.rarity==="rare"?"linear-gradient(135deg,#fef3c7,#fff7ed)":"#f8fafc"};border:2px solid ${data.rarity==="rare"?"#f59e0b":"#cbd5e1"}"><div style="font-size:68px">${escapeHTML(emoji)}</div><div style="font-size:25px;font-weight:1000;margin-top:8px">${escapeHTML(name)}</div>${data.rarity==="rare"?'<div style="margin-top:5px;font-weight:1000;color:#b45309">✨ TRÉSOR RARE</div>':""}<div style="margin-top:14px;font-weight:850;line-height:1.45">${escapeHTML(description)}</div></div>`;
+        modal.classList.add("show");
+      }
+      document.querySelectorAll(".zq-open-card-detail").forEach(btn=>btn.onclick=()=>openStudentCardDetail({
+        kind:btn.dataset.cardKind,emoji:btn.dataset.cardEmoji,name:btn.dataset.cardName,
+        rarity:btn.dataset.cardRarity,reward:btn.dataset.cardReward
+      }));
+      document.getElementById("closeStudentCardDetailBtn").onclick=()=>document.getElementById("studentCardDetailModal").classList.remove("show");
+
+      // Existing "Travail maison" success cards: make their card-like elements open a detail popup too.
+      document.querySelectorAll("#studentHomeworkPanel [data-success-card], #studentHomeworkPanel .success-card, .student-homework-card").forEach(card=>{
+        card.style.cursor="pointer";card.style.touchAction="manipulation";
+        card.onclick=()=>openStudentCardDetail({
+          kind:"homework",
+          emoji:card.dataset.emoji||card.querySelector(".emoji")?.textContent||"📚",
+          name:card.dataset.name||card.querySelector(".card-name")?.textContent||card.textContent.trim().split("\\n")[0]||"Travail accompli",
+          rarity:card.dataset.rarity||"normal"
+        });
+      });
+
       document.querySelectorAll(".zq-open-student-challenge").forEach(btn=>btn.onclick=()=>openStudentChallengeQcm(btn.dataset.challengeId));
       const closeQcm=document.getElementById("closeStudentChallengeQcmBtn");if(closeQcm)closeQcm.onclick=()=>document.getElementById("studentChallengeQcmModal").classList.remove("show");
       bindStudentChallengeAnswerButtons(document);
@@ -12653,7 +12722,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.13.17bb</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.13.18bb</span>.
   </footer>
 
 </body>
