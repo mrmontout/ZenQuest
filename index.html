@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.13.14b</title>
+  <title>ZenQuest v5.13.16gb</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -1023,6 +1023,13 @@
     .zq-teacher-event-toast{padding:10px 14px;border-radius:14px;color:white;font-size:17px;font-weight:950;line-height:1.25;box-shadow:0 12px 35px rgba(0,0,0,.28);opacity:0;transform:translateY(8px);transition:opacity .18s ease,transform .18s ease}
     @media(max-width:700px){#zqTeacherEventToastStack{right:10px;top:145px;width:calc(100vw - 20px)}}
 
+
+    @keyframes zqTreasurePop{0%{transform:scale(.72) rotate(-3deg);opacity:0}65%{transform:scale(1.05) rotate(1deg);opacity:1}100%{transform:scale(1) rotate(0);opacity:1}}
+    @keyframes zqTreasureShine{0%,100%{transform:scale(1)}50%{transform:scale(1.16)}}
+    @keyframes zqTreasureConfetti{0%{transform:translateY(-25px) rotate(0);opacity:0}15%{opacity:1}100%{transform:translateY(340px) rotate(540deg);opacity:0}}
+    .zq-treasure-card-anim{animation:zqTreasurePop .55s cubic-bezier(.2,.9,.25,1.25) both}
+    .zq-treasure-icon-anim{display:inline-block;animation:zqTreasureShine .85s ease-in-out 2}
+
 </style>
 </head>
 <body>
@@ -1351,6 +1358,7 @@ Noah"
         <button class="btn outline teacher-tool-launch" data-target="averagesBtn">📊 Indices d’implication</button>
         <button class="btn outline teacher-tool-launch" data-target="classAnalyticsBtn">📈 Analyse classe</button>
         <button class="btn outline teacher-tool-launch" data-target="resourcesBtn">📚 Ressources</button>
+        <button class="btn outline" id="independentChallengeBtn">🎁 Publier un défi</button>
                 <button class="btn outline teacher-tool-launch" data-target="classRolesBtn">🎖️ Rôles</button>
         <button class="btn outline teacher-tool-launch" data-target="waitingModeBtn">🌙 Mode attente</button>
         <button class="btn outline teacher-tool-launch" data-target="studentCodesBtn">🔑 Codes élèves</button>
@@ -1500,6 +1508,22 @@ Noah"
         </div>
         <textarea id="resourceInstruction" placeholder="Consigne facultative" style="width:100%;margin-top:9px;min-height:70px"></textarea>
         <div id="resourceDueWrap" style="margin-top:9px"><label style="font-weight:850">📅 À faire pour : <input type="date" id="resourceDueDate"></label></div>
+        <div id="resourceChallengeWrap" style="display:none;margin-top:10px;padding:14px;border:2px solid #fde68a;border-radius:16px;background:linear-gradient(135deg,#fffbeb,#fff)">
+          <label style="display:flex;gap:9px;align-items:center;font-weight:1000;cursor:pointer">
+            <input type="checkbox" id="resourceChallengeEnabled"> 🎁 Ajouter un défi du week-end
+          </label>
+          <div class="muted" style="margin-top:4px">Facultatif • 2 essais maximum • ZenQuest choisit automatiquement le trésor.</div>
+          <div id="resourceChallengeFields" style="display:none;margin-top:11px">
+            <input id="resourceChallengeQuestion" placeholder="Question • ex. Combien vaut 4,7 × 10 ?" style="width:100%">
+            <div id="resourceChallengeChoices" style="display:grid;gap:7px;margin-top:9px">
+              <label style="display:flex;gap:8px;align-items:center"><input type="radio" name="resourceChallengeCorrect" value="0"><input class="zq-challenge-choice" placeholder="Réponse A" style="flex:1"></label>
+              <label style="display:flex;gap:8px;align-items:center"><input type="radio" name="resourceChallengeCorrect" value="1"><input class="zq-challenge-choice" placeholder="Réponse B" style="flex:1"></label>
+              <label style="display:flex;gap:8px;align-items:center"><input type="radio" name="resourceChallengeCorrect" value="2"><input class="zq-challenge-choice" placeholder="Réponse C" style="flex:1"></label>
+              <label style="display:flex;gap:8px;align-items:center"><input type="radio" name="resourceChallengeCorrect" value="3"><input class="zq-challenge-choice" placeholder="Réponse D (facultative)" style="flex:1"></label>
+            </div>
+            <div style="font-size:12px;font-weight:850;color:#92400e;margin-top:7px">👆 Coche la bonne réponse à gauche. 2 à 4 réponses.</div>
+          </div>
+        </div>
         <div style="margin-top:12px">
           <div style="font-weight:950;margin-bottom:7px">Contenu de la ressource</div>
           <div class="row wrap">
@@ -1926,6 +1950,89 @@ Noah"
         <button class="btn green" id="confirmSuccessCardsBtn">🏆 Attribuer</button>
       </div>
       <div id="successCardsStatus" style="display:none;margin-top:10px;padding:10px 12px;border-radius:12px;font-weight:850"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="independentChallengeStatsModal" style="z-index:3250000">
+    <div class="modal-card" style="width:min(720px,95vw);max-height:90vh;overflow:auto">
+      <div class="modal-header">
+        <div><h2 id="independentChallengeStatsTitle" style="margin:0">📊 Suivi du défi</h2>
+          <div class="muted" id="independentChallengeStatsSummary">Chargement…</div>
+        </div>
+        <button class="btn outline" id="closeIndependentChallengeStatsBtn">Fermer</button>
+      </div>
+      <div id="independentChallengeStatsContent" style="display:grid;gap:8px;margin-top:14px"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="independentChallengeModal" style="z-index:3200000">
+    <div class="modal-card" style="width:min(720px,95vw);max-height:92vh;overflow:auto">
+      <div class="modal-header">
+        <div><h2 style="margin:0">🎁 Publier un défi ZenQuest</h2><div class="muted">Le défi est indépendant du travail à faire. Ton image contient la question et les réponses A, B, C, D.</div></div>
+        <button class="btn outline" id="closeIndependentChallengeBtn">Fermer</button>
+      </div>
+      <div class="box" style="margin-top:12px;background:linear-gradient(135deg,#fffbeb,#fff);border:2px solid #fde68a">
+        <label style="font-weight:1000">Titre <span class="muted">(facultatif)</span></label>
+        <input id="independentChallengeTitle" placeholder="Défi du week-end" style="width:100%;margin-top:5px">
+        <label style="display:block;font-weight:1000;margin-top:13px">🖼️ Image du QCM</label>
+        <input type="file" id="independentChallengeImage" accept="image/png,image/jpeg,image/webp" style="margin-top:6px">
+        <div id="independentChallengePreviewWrap" style="display:none;margin-top:10px;text-align:center">
+          <img id="independentChallengePreview" alt="Aperçu du QCM" style="max-width:100%;max-height:420px;border-radius:15px;border:1px solid #cbd5e1;background:white">
+        </div>
+        <div style="font-weight:1000;margin-top:16px">✅ Quelle est la bonne réponse ?</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:8px">
+          <button type="button" class="btn outline zq-correct-letter" data-index="0" style="font-size:22px;font-weight:1000;padding:13px">A</button>
+          <button type="button" class="btn outline zq-correct-letter" data-index="1" style="font-size:22px;font-weight:1000;padding:13px">B</button>
+          <button type="button" class="btn outline zq-correct-letter" data-index="2" style="font-size:22px;font-weight:1000;padding:13px">C</button>
+          <button type="button" class="btn outline zq-correct-letter" data-index="3" style="font-size:22px;font-weight:1000;padding:13px">D</button>
+        </div>
+        <input type="hidden" id="independentChallengeCorrect">
+        <div id="independentChallengeCorrectLabel" class="muted" style="margin-top:8px;font-weight:900">Choisis A, B, C ou D.</div>
+        <div style="margin-top:14px;padding:11px;border-radius:13px;background:#f8fafc;border:1px solid #cbd5e1;font-size:13px">
+          🎯 <strong>2 essais maximum.</strong> En cas de réussite, ZenQuest choisit automatiquement le Trésor : +1 point, +1 progression ou une carte.
+        </div>
+        <button class="btn primary" id="publishIndependentChallengeBtn" style="width:100%;margin-top:14px">🎁 Publier le défi</button>
+        <div id="independentChallengeStatus" style="display:none;margin-top:10px;padding:10px;border-radius:12px;font-weight:900"></div>
+      </div>
+      <div class="box" style="margin-top:12px">
+        <div style="font-size:19px;font-weight:1000">🎁 Défis publiés</div>
+        <div id="independentChallengeList" style="display:grid;gap:8px;margin-top:10px"><div class="muted">Chargement…</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="studentChallengeQcmModal" style="z-index:3200000"><div class="modal-card" style="width:min(900px,96vw);max-height:92vh;overflow:auto"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px"><div id="studentChallengeQcmTitle" style="font-size:21px;font-weight:1000">🎁 Défi ZenQuest</div><button type="button" class="btn outline" id="closeStudentChallengeQcmBtn">Fermer</button></div><div id="studentChallengeQcmBody"></div></div></div>
+<div class="modal" id="studentTreasureModal" style="z-index:3300000">
+    <div class="modal-card" style="width:min(520px,94vw);text-align:center;background:linear-gradient(145deg,#fffbeb,#ffffff)">
+      <div id="studentTreasureContent"></div>
+      <button class="btn primary" id="closeStudentTreasureBtn" style="margin-top:16px">Continuer</button>
+    </div>
+  </div>
+
+  <div class="modal" id="homeworkChallengeManagerModal" style="z-index:3200000">
+    <div class="modal-card" style="width:min(760px,95vw);max-height:92vh;overflow:auto">
+      <div class="modal-header">
+        <div><h2 style="margin:0">🎁 Défi du week-end</h2><div class="muted" id="homeworkChallengeManagerSubtitle">QCM bonus lié à l'exercice.</div></div>
+        <button class="btn outline" id="closeHomeworkChallengeManagerBtn">Fermer</button>
+      </div>
+      <input type="hidden" id="homeworkChallengeResourceId">
+      <div class="box" style="margin-top:12px;background:#fffbeb;border:1px solid #fde68a">
+        <input id="homeworkChallengeQuestion" placeholder="Question" style="width:100%">
+        <div style="display:grid;gap:8px;margin-top:10px">
+          <label style="display:flex;gap:8px;align-items:center"><input type="radio" name="homeworkChallengeCorrect" value="0"><input class="zq-manager-choice" placeholder="Réponse A" style="flex:1"></label>
+          <label style="display:flex;gap:8px;align-items:center"><input type="radio" name="homeworkChallengeCorrect" value="1"><input class="zq-manager-choice" placeholder="Réponse B" style="flex:1"></label>
+          <label style="display:flex;gap:8px;align-items:center"><input type="radio" name="homeworkChallengeCorrect" value="2"><input class="zq-manager-choice" placeholder="Réponse C" style="flex:1"></label>
+          <label style="display:flex;gap:8px;align-items:center"><input type="radio" name="homeworkChallengeCorrect" value="3"><input class="zq-manager-choice" placeholder="Réponse D (facultative)" style="flex:1"></label>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px">
+          <button class="btn danger" id="disableHomeworkChallengeBtn" style="display:none">Désactiver</button>
+          <button class="btn primary" id="saveHomeworkChallengeBtn">🎁 Enregistrer le défi</button>
+        </div>
+        <div id="homeworkChallengeManagerStatus" style="display:none;margin-top:10px;padding:10px;border-radius:12px;font-weight:850"></div>
+      </div>
+      <div class="box" id="homeworkChallengeStatsBox" style="margin-top:12px">
+        <strong>📊 Participation</strong><div class="muted" style="margin-top:5px">Enregistre le défi pour commencer.</div>
+      </div>
     </div>
   </div>
 
@@ -3566,6 +3673,69 @@ Noah"
       return [...map.values()].sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
     }
 
+
+    async function saveHomeworkChallengeForResource(resourceId,question,choices,correctIndex){
+      const cls=currentClass();
+      if(!cls?.id) throw new Error("Aucune classe active.");
+      const cleanChoices=(choices||[]).map(x=>String(x||"").trim()).filter(Boolean);
+      if(!String(question||"").trim()) throw new Error("Écris la question du défi.");
+      if(cleanChoices.length<2 || cleanChoices.length>4) throw new Error("Ajoute entre 2 et 4 réponses.");
+      const original=(choices||[]).map(x=>String(x||"").trim());
+      const selectedText=original[Number(correctIndex)]||"";
+      const mappedCorrect=cleanChoices.indexOf(selectedText);
+      if(mappedCorrect<0) throw new Error("Coche la bonne réponse.");
+      const {data,error}=await supabaseClient.rpc("save_homework_challenge",{
+        p_class_id:cls.id,p_resource_id:String(resourceId),p_question:String(question).trim(),
+        p_choices:cleanChoices,p_correct_index:mappedCorrect
+      });
+      if(error) throw error;
+      return data;
+    }
+
+    async function openHomeworkChallengeManager(resourceId){
+      const r=classResourceCatalog().find(x=>String(x.id)===String(resourceId));
+      if(!r) return;
+      document.getElementById("homeworkChallengeResourceId").value=resourceId;
+      document.getElementById("homeworkChallengeManagerSubtitle").textContent=`${r.title||"Exercice"} • 2 essais maximum`;
+      document.getElementById("homeworkChallengeQuestion").value="";
+      document.querySelectorAll(".zq-manager-choice").forEach(x=>x.value="");
+      document.querySelectorAll('input[name="homeworkChallengeCorrect"]').forEach(x=>x.checked=false);
+      const status=document.getElementById("homeworkChallengeManagerStatus"); status.style.display="none";
+      const disable=document.getElementById("disableHomeworkChallengeBtn"); disable.style.display="none";
+      document.getElementById("homeworkChallengeStatsBox").innerHTML='<strong>📊 Participation</strong><div class="muted" style="margin-top:5px">Chargement…</div>';
+      document.getElementById("homeworkChallengeManagerModal").classList.add("show");
+      try{
+        const cls=currentClass();
+        const {data:challenge,error}=await supabaseClient.from("homework_challenges")
+          .select("id,question,choices,is_active").eq("class_id",cls.id).eq("resource_id",String(resourceId)).maybeSingle();
+        if(error) throw error;
+        if(!challenge){
+          document.getElementById("homeworkChallengeStatsBox").innerHTML='<strong>📊 Participation</strong><div class="muted" style="margin-top:5px">Aucun défi pour cet exercice.</div>';
+          return;
+        }
+        document.getElementById("homeworkChallengeQuestion").value=challenge.question||"";
+        (challenge.choices||[]).forEach((v,i)=>{const el=document.querySelectorAll(".zq-manager-choice")[i];if(el)el.value=v;});
+        const {data:answer}=await supabaseClient.from("homework_challenge_answers").select("correct_index").eq("challenge_id",challenge.id).maybeSingle();
+        const radio=document.querySelector(`input[name="homeworkChallengeCorrect"][value="${Number(answer?.correct_index)}"]`); if(radio)radio.checked=true;
+        disable.style.display=challenge.is_active?"inline-flex":"none";
+        const [{data:attempts},{data:rewards}]=await Promise.all([
+          supabaseClient.from("homework_challenge_attempts").select("student_id,attempt_no,is_correct").eq("challenge_id",challenge.id),
+          supabaseClient.from("homework_challenge_rewards").select("student_id,reward_type").eq("challenge_id",challenge.id)
+        ]);
+        const byStudent=new Map();
+        (attempts||[]).forEach(a=>{const arr=byStudent.get(a.student_id)||[];arr.push(a);byStudent.set(a.student_id,arr);});
+        const names=new Map((cls.students||[]).map(x=>[x.id,x.name]));
+        const rows=[...byStudent.entries()].map(([sid,a])=>{
+          const won=(rewards||[]).some(x=>x.student_id===sid);
+          const correct=a.some(x=>x.is_correct);
+          return `<div style="padding:7px 0;border-bottom:1px solid #e2e8f0"><strong>${escapeHTML(names.get(sid)||"Élève")}</strong> • ${correct?`✅ Réussi (${a.length} essai${a.length>1?"s":""})`:`❌ Échoué (${a.length}/2)`}${won?" • 🎁 gagné":""}</div>`;
+        }).join("");
+        document.getElementById("homeworkChallengeStatsBox").innerHTML=`<strong>📊 Participation : ${byStudent.size}/${cls.students.length}</strong>${rows?`<div style="margin-top:8px">${rows}</div>`:'<div class="muted" style="margin-top:5px">Personne n’a encore tenté le défi.</div>'}`;
+      }catch(e){
+        document.getElementById("homeworkChallengeStatsBox").innerHTML=`<strong>❌ Impossible de charger le suivi</strong><div class="muted">${escapeHTML(e.message)}</div>`;
+      }
+    }
+
     function renderResourceManager(){
       const box=document.getElementById("resourceManagerList");
       if(!box) return;
@@ -3585,6 +3755,7 @@ Noah"
           </div>
           <div style="display:flex;gap:7px;flex-wrap:wrap">
             ${r.url?`<button class="btn outline small resource-preview-btn" data-id="${escapeHTML(r.id)}">👁️ Voir</button>`:""}
+            ${r.type==="exercise"?`<button class="btn outline small resource-challenge-btn" data-id="${escapeHTML(r.id)}">🎁 Défi</button>`:""}
             <button class="btn outline small resource-edit-btn" data-id="${escapeHTML(r.id)}">✏️ Modifier</button>
             <button class="btn danger small resource-delete-btn" data-id="${escapeHTML(r.id)}">🗑️ Supprimer</button>
           </div>
@@ -3594,9 +3765,147 @@ Noah"
         const r=classResourceCatalog().find(x=>x.id===btn.dataset.id);
         if(r?.url) window.open(r.url,"_blank","noopener");
       });
+      box.querySelectorAll(".resource-challenge-btn").forEach(btn=>btn.onclick=()=>openHomeworkChallengeManager(btn.dataset.id));
       box.querySelectorAll(".resource-edit-btn").forEach(btn=>btn.onclick=()=>openEditResource(btn.dataset.id));
       box.querySelectorAll(".resource-delete-btn").forEach(btn=>btn.onclick=()=>openDeleteResource(btn.dataset.id));
     }
+
+
+    let zqIndependentChallengeRows=[];
+    async function renderIndependentChallengeList(){
+      const box=document.getElementById("independentChallengeList"),cls=currentClass();
+      if(!box||!cls?.id)return;
+      box.innerHTML='<div class="muted">Chargement…</div>';
+      const {data,error}=await supabaseClient.from("homework_challenges")
+        .select("id,title,image_url,is_active,created_at").eq("class_id",cls.id).is("resource_id",null)
+        .order("created_at",{ascending:false});
+      if(error){box.innerHTML=`<div style="color:#991b1b">❌ ${escapeHTML(error.message)}</div>`;return;}
+      zqIndependentChallengeRows=data||[];
+      if(!zqIndependentChallengeRows.length){box.innerHTML='<div class="muted">Aucun défi indépendant publié pour cette classe.</div>';return;}
+      box.innerHTML=zqIndependentChallengeRows.map(c=>`<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px;border:1px solid #e2e8f0;border-radius:13px;background:white">
+        <div style="display:flex;gap:9px;align-items:center;min-width:0">
+          ${c.image_url?`<img src="${escapeHTML(c.image_url)}" style="width:58px;height:58px;object-fit:cover;border-radius:10px;border:1px solid #cbd5e1">`:""}
+          <div><strong>${escapeHTML(c.title||"Défi ZenQuest")}</strong><div class="muted" style="font-size:11px">${c.is_active?"🟢 Actif":"⚪ Fermé"} • ${new Date(c.created_at).toLocaleDateString("fr-FR")}</div></div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn outline small zq-view-independent" data-id="${c.id}">📊 Suivi</button>
+          ${c.is_active?`<button class="btn danger small zq-close-independent" data-id="${c.id}">Fermer</button>`:""}
+        </div>
+      </div>`).join("");
+      box.querySelectorAll(".zq-view-independent").forEach(b=>b.onclick=()=>openIndependentChallengeStats(b.dataset.id));
+      box.querySelectorAll(".zq-close-independent").forEach(b=>b.onclick=async()=>{
+        const {error}=await supabaseClient.from("homework_challenges").update({is_active:false}).eq("id",b.dataset.id);
+        if(error) alert("Impossible de fermer le défi : "+error.message); else renderIndependentChallengeList();
+      });
+    }
+    async function openIndependentChallengeStats(id){
+      const modal=document.getElementById("independentChallengeStatsModal");
+      const title=document.getElementById("independentChallengeStatsTitle");
+      const summary=document.getElementById("independentChallengeStatsSummary");
+      const content=document.getElementById("independentChallengeStatsContent");
+      const c=zqIndependentChallengeRows.find(x=>String(x.id)===String(id));
+      const cls=currentClass();
+      modal.classList.add("show");
+      title.textContent=`📊 ${c?.title||"Suivi du défi"}`;
+      summary.textContent="Chargement…";
+      content.innerHTML='<div class="muted">Récupération des participations…</div>';
+      try{
+        const [{data:attempts,error:aerr},{data:rewards,error:rerr}]=await Promise.all([
+          supabaseClient.from("homework_challenge_attempts").select("student_id,attempt_no,is_correct").eq("challenge_id",id),
+          supabaseClient.from("homework_challenge_rewards").select("student_id,reward_type,card_name").eq("challenge_id",id)
+        ]);
+        if(aerr) throw aerr;
+        if(rerr) throw rerr;
+
+        // In ZenQuest the students are stored globally; some class objects don't carry a .students array.
+        const classStudents=(state.students||[]).filter(st=>String(st.classId||st.class_id)===String(cls?.id));
+        const fallbackStudents=Array.isArray(cls?.students)?cls.students:[];
+        const students=classStudents.length?classStudents:fallbackStudents;
+
+        const by=new Map();
+        (attempts||[]).forEach(a=>{
+          const key=String(a.student_id),arr=by.get(key)||[];
+          arr.push(a); by.set(key,arr);
+        });
+        const rewardMap=new Map((rewards||[]).map(r=>[String(r.student_id),r]));
+        const attempted=new Set((attempts||[]).map(a=>String(a.student_id)));
+        const won=new Set((rewards||[]).map(r=>String(r.student_id)));
+
+        summary.textContent=`${attempted.size} participation${attempted.size>1?"s":""} • ${won.size} réussite${won.size>1?"s":""} • ${students.length} élève${students.length>1?"s":""} dans la classe`;
+
+        if(!students.length){
+          content.innerHTML='<div style="padding:12px;border-radius:12px;background:#fff7ed;color:#9a3412;font-weight:850">⚠️ Impossible de retrouver la liste locale des élèves de cette classe. Les tentatives enregistrées sont bien conservées dans Supabase.</div>';
+          return;
+        }
+
+        content.innerHTML=students.map(st=>{
+          const sid=String(st.id),aa=by.get(sid)||[],rw=rewardMap.get(sid);
+          let status,bg;
+          if(rw){status=`✅ Réussi en ${aa.length} essai${aa.length>1?"s":""}`;bg="#ecfdf5";}
+          else if(aa.length>=2){status="❌ Échoué après 2 essais";bg="#fef2f2";}
+          else if(aa.length===1){status="🟠 1 essai utilisé • 1 restant";bg="#fff7ed";}
+          else {status="⚪ Pas encore tenté";bg="#f8fafc";}
+          const reward=rw?`<div class="muted" style="font-size:11px;margin-top:3px">🎁 ${rw.reward_type==="point"?"+1 point":rw.reward_type==="progress"?"+1 progression":escapeHTML(rw.card_name||"Carte")}</div>`:"";
+          return `<div style="padding:11px 12px;border-radius:13px;background:${bg};border:1px solid #e2e8f0">
+            <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+              <strong>${escapeHTML(st.name||st.firstName||st.first_name||"Élève")}</strong>
+              <span style="font-weight:900">${status}</span>
+            </div>${reward}
+          </div>`;
+        }).join("");
+      }catch(e){
+        summary.textContent="Suivi indisponible";
+        content.innerHTML=`<div style="padding:12px;border-radius:12px;background:#fee2e2;color:#991b1b;font-weight:850">❌ ${escapeHTML(e?.message||String(e))}</div>`;
+      }
+    }
+    document.getElementById("closeIndependentChallengeStatsBtn").onclick=()=>document.getElementById("independentChallengeStatsModal").classList.remove("show");
+    async function openIndependentChallengeModal(){
+      document.getElementById("independentChallengeModal").classList.add("show");
+      await renderIndependentChallengeList();
+    }
+    document.getElementById("independentChallengeBtn").onclick=openIndependentChallengeModal;
+    document.getElementById("closeIndependentChallengeBtn").onclick=()=>document.getElementById("independentChallengeModal").classList.remove("show");
+    document.getElementById("independentChallengeImage").onchange=e=>{
+      const file=e.target.files?.[0],wrap=document.getElementById("independentChallengePreviewWrap"),img=document.getElementById("independentChallengePreview");
+      if(!file){wrap.style.display="none";return;}
+      img.src=URL.createObjectURL(file);wrap.style.display="block";
+    };
+    document.querySelectorAll(".zq-correct-letter").forEach(btn=>btn.onclick=()=>{
+      document.querySelectorAll(".zq-correct-letter").forEach(x=>{x.classList.remove("primary");x.classList.add("outline");});
+      btn.classList.remove("outline");btn.classList.add("primary");
+      document.getElementById("independentChallengeCorrect").value=btn.dataset.index;
+      document.getElementById("independentChallengeCorrectLabel").textContent=`✅ ${["A","B","C","D"][Number(btn.dataset.index)]} est la bonne réponse.`;
+    });
+    document.getElementById("publishIndependentChallengeBtn").onclick=async()=>{
+      const btn=document.getElementById("publishIndependentChallengeBtn"),status=document.getElementById("independentChallengeStatus");
+      const cls=currentClass(),file=document.getElementById("independentChallengeImage").files?.[0],correct=document.getElementById("independentChallengeCorrect").value;
+      status.style.display="block";
+      if(!cls?.id){status.style.background="#fee2e2";status.textContent="❌ Choisis une classe.";return;}
+      if(!file){status.style.background="#fee2e2";status.textContent="❌ Ajoute l’image du QCM.";return;}
+      if(correct===""){status.style.background="#fee2e2";status.textContent="❌ Clique sur A, B, C ou D pour indiquer la bonne réponse.";return;}
+      btn.disabled=true;btn.textContent="⏳ Publication…";
+      try{
+        const ext=(file.name.split(".").pop()||"jpg").toLowerCase();
+        const path=`${cls.id}/challenges/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+        const {error:upErr}=await supabaseClient.storage.from("zenquest-resources").upload(path,file,{contentType:file.type,upsert:false});
+        if(upErr) throw new Error("Image : "+upErr.message);
+        const {data:urlData}=supabaseClient.storage.from("zenquest-resources").getPublicUrl(path);
+        const {error}=await supabaseClient.rpc("save_independent_homework_challenge",{
+          p_class_id:cls.id,p_title:document.getElementById("independentChallengeTitle").value.trim()||"Défi ZenQuest",
+          p_image_url:urlData.publicUrl,p_image_path:path,p_correct_index:Number(correct)
+        });
+        if(error) throw error;
+        status.style.background="#dcfce7";status.textContent="✅ Défi publié ! Les élèves peuvent maintenant tenter leur chance.";
+        document.getElementById("independentChallengeTitle").value="";
+        document.getElementById("independentChallengeImage").value="";
+        document.getElementById("independentChallengePreviewWrap").style.display="none";
+        document.getElementById("independentChallengeCorrect").value="";
+        document.getElementById("independentChallengeCorrectLabel").textContent="Choisis A, B, C ou D.";
+        document.querySelectorAll(".zq-correct-letter").forEach(x=>{x.classList.remove("primary");x.classList.add("outline");});
+        await renderIndependentChallengeList();
+      }catch(e){status.style.background="#fee2e2";status.textContent="❌ "+e.message;}
+      finally{btn.disabled=false;btn.textContent="🎁 Publier le défi";}
+    };
 
     function openResourcesManager(){
       renderResourceManager();
@@ -3607,9 +3916,15 @@ Noah"
     document.getElementById("closeResourcesBtn").onclick=()=>document.getElementById("resourcesModal").classList.remove("show");
     document.getElementById("refreshResourceManagerBtn").onclick=renderResourceManager;
     document.getElementById("resourceType").onchange=()=>{
-      document.getElementById("resourceDueWrap").style.display=document.getElementById("resourceType").value==="exercise"?"block":"none";
+      const isExercise=document.getElementById("resourceType").value==="exercise";
+      document.getElementById("resourceDueWrap").style.display=isExercise?"block":"none";
+      document.getElementById("resourceChallengeWrap").style.display="none";
+      if(!isExercise){document.getElementById("resourceChallengeEnabled").checked=false;document.getElementById("resourceChallengeFields").style.display="none";}
     };
     document.getElementById("resourceType").dispatchEvent(new Event("change"));
+    document.getElementById("resourceChallengeEnabled").onchange=()=>{
+      document.getElementById("resourceChallengeFields").style.display=document.getElementById("resourceChallengeEnabled").checked?"block":"none";
+    };
     function refreshResourceSourceType(){
       const mode=document.querySelector('input[name="resourceSourceType"]:checked')?.value||"file";
       document.getElementById("resourceFileWrap").style.display=mode==="file"?"block":"none";
@@ -3650,13 +3965,41 @@ Noah"
         }
         const payload={id:uid(),classId:cls.id,type,title,instruction:document.getElementById("resourceInstruction").value.trim(),dueDate:document.getElementById("resourceDueDate").value||null,sourceType,fileName,mime,url,path,isYoutube,createdAt:new Date().toISOString()};
         await publishDataToClass("resource",payload);
+        if(type==="exercise" && document.getElementById("resourceChallengeEnabled").checked){
+          const choices=[...document.querySelectorAll(".zq-challenge-choice")].map(x=>x.value);
+          const correct=document.querySelector('input[name="resourceChallengeCorrect"]:checked')?.value;
+          await saveHomeworkChallengeForResource(payload.id,document.getElementById("resourceChallengeQuestion").value,choices,correct);
+        }
         status.style.display="block";status.style.background="#dcfce7";status.textContent=`✅ ${resourceIcon(type)} Ressource publiée pour ${cls.students.length} élèves.`;
-        document.getElementById("resourceTitle").value="";document.getElementById("resourceInstruction").value="";document.getElementById("resourceFile").value="";document.getElementById("resourceLink").value="";
+        document.getElementById("resourceTitle").value="";document.getElementById("resourceInstruction").value="";document.getElementById("resourceFile").value="";document.getElementById("resourceLink").value="";document.getElementById("resourceChallengeEnabled").checked=false;document.getElementById("resourceChallengeFields").style.display="none";document.getElementById("resourceChallengeQuestion").value="";document.querySelectorAll(".zq-challenge-choice").forEach(x=>x.value="");document.querySelectorAll('input[name="resourceChallengeCorrect"]').forEach(x=>x.checked=false);
         renderResourceManager();
       }catch(e){status.style.display="block";status.style.background="#fee2e2";status.textContent="❌ "+e.message;}
       finally{btn.disabled=false;btn.textContent="Publier pour la classe";}
     };
 
+
+
+    document.getElementById("closeHomeworkChallengeManagerBtn").onclick=()=>document.getElementById("homeworkChallengeManagerModal").classList.remove("show");
+    document.getElementById("saveHomeworkChallengeBtn").onclick=async()=>{
+      const btn=document.getElementById("saveHomeworkChallengeBtn"),st=document.getElementById("homeworkChallengeManagerStatus");
+      btn.disabled=true;st.style.display="block";st.style.background="#eff6ff";st.textContent="⏳ Enregistrement…";
+      try{
+        const id=document.getElementById("homeworkChallengeResourceId").value;
+        const choices=[...document.querySelectorAll(".zq-manager-choice")].map(x=>x.value);
+        const correct=document.querySelector('input[name="homeworkChallengeCorrect"]:checked')?.value;
+        await saveHomeworkChallengeForResource(id,document.getElementById("homeworkChallengeQuestion").value,choices,correct);
+        st.style.background="#dcfce7";st.textContent="✅ Défi enregistré.";
+        await openHomeworkChallengeManager(id);
+      }catch(e){st.style.background="#fee2e2";st.textContent="❌ "+e.message;}
+      finally{btn.disabled=false;}
+    };
+    document.getElementById("disableHomeworkChallengeBtn").onclick=async()=>{
+      const id=document.getElementById("homeworkChallengeResourceId").value,cls=currentClass();
+      const {error}=await supabaseClient.from("homework_challenges").update({is_active:false}).eq("class_id",cls.id).eq("resource_id",String(id));
+      const st=document.getElementById("homeworkChallengeManagerStatus");st.style.display="block";
+      if(error){st.style.background="#fee2e2";st.textContent="❌ "+error.message;return;}
+      st.style.background="#dcfce7";st.textContent="✅ Défi désactivé.";document.getElementById("disableHomeworkChallengeBtn").style.display="none";
+    };
 
     function openEditResource(id){
       const r=classResourceCatalog().find(x=>x.id===id);
@@ -6717,6 +7060,7 @@ Noah"
       return {
         initialized:!!data.initialized,
         resources:Array.isArray(data.resources)?data.resources.map(String):[],
+        challenges:Array.isArray(data.challenges)?data.challenges.map(String):[],
         classMessages:Array.isArray(data.classMessages)?data.classMessages.map(String):[],
         history:Array.isArray(data.history)?data.history.map(String):[],
         tracking:(data.tracking && typeof data.tracking==="object")?{...data.tracking}:{},
@@ -6760,6 +7104,7 @@ Noah"
       currentStudentSeenMeta={
         initialized:true,
         resources:[...new Set(resourceIds.filter(id=>!deletedIds.has(id)))],
+        challenges:[],
         classMessages:[...new Set((classMessages||[]).map(m=>String(m.id)).filter(Boolean))],
         history:[...new Set(historyKeys)],
         tracking:{[currentPeriodId||"current"]:Date.now()},
@@ -8664,6 +9009,24 @@ Noah"
 
 
       const mappedClassMessages=(classMessages||[]).map(mapSupabaseClassMessage);
+
+      const {data:homeworkChallenges,error:homeworkChallengesError}=await supabaseClient
+        .from("homework_challenges").select("id,resource_id,title,image_url,question,choices,is_active,created_at")
+        .eq("class_id",studentRow.class_id).eq("is_active",true);
+      if(homeworkChallengesError) throw new Error(`Erreur défis : ${homeworkChallengesError.message}`);
+
+      const challengeIds=(homeworkChallenges||[]).map(x=>x.id);
+      let homeworkChallengeAttempts=[],homeworkChallengeRewards=[];
+      if(challengeIds.length){
+        const [attemptRes,rewardRes]=await Promise.all([
+          supabaseClient.from("homework_challenge_attempts").select("challenge_id,attempt_no,chosen_index,is_correct,created_at").in("challenge_id",challengeIds),
+          supabaseClient.from("homework_challenge_rewards").select("challenge_id,reward_type,reward_value,card_code,card_name,card_emoji,card_rarity,created_at").in("challenge_id",challengeIds)
+        ]);
+        if(attemptRes.error) throw new Error(`Erreur tentatives : ${attemptRes.error.message}`);
+        if(rewardRes.error) throw new Error(`Erreur trésors : ${rewardRes.error.message}`);
+        homeworkChallengeAttempts=attemptRes.data||[];
+        homeworkChallengeRewards=rewardRes.data||[];
+      }
       await initializeStudentSeenMeta(user,{
         remarks:remarks||[],
         classMessages:mappedClassMessages,
@@ -8681,7 +9044,10 @@ Noah"
         remarks||[],
         mappedClassMessages,
         studentPeriodHistory,
-        currentPeriod
+        currentPeriod,
+        homeworkChallenges||[],
+        homeworkChallengeAttempts,
+        homeworkChallengeRewards
       );
     }
 
@@ -8694,7 +9060,7 @@ Noah"
 
     let authenticatedStudentActiveTab="current";
 
-    function renderAuthenticatedStudentDashboard(student,cls,currentPeriodName,periodAverage,lessonScores,remarks,classMessages=[],periodHistory=[],currentPeriod=null){
+    function renderAuthenticatedStudentDashboard(student,cls,currentPeriodName,periodAverage,lessonScores,remarks,classMessages=[],periodHistory=[],currentPeriod=null,homeworkChallenges=[],homeworkChallengeAttempts=[],homeworkChallengeRewards=[]){
       document.getElementById("studentClassPill").textContent=cls?.name||"Ma classe";
 
       const scores=(lessonScores||[])
@@ -8788,6 +9154,11 @@ Noah"
         else if(ev.type==="resource_update"&&resourceMap.has(id)) resourceMap.set(id,{...resourceMap.get(id),...ev.data});
       });
       const resources=[...resourceMap.values()].sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+      const challengeByResource=new Map((homeworkChallenges||[]).map(c=>[String(c.resource_id),c]));
+      const attemptsByChallenge=new Map();
+      (homeworkChallengeAttempts||[]).forEach(a=>{const arr=attemptsByChallenge.get(String(a.challenge_id))||[];arr.push(a);attemptsByChallenge.set(String(a.challenge_id),arr);});
+      const rewardByChallenge=new Map((homeworkChallengeRewards||[]).map(r=>[String(r.challenge_id),r]));
+      const treasureCards=(homeworkChallengeRewards||[]).filter(r=>r.reward_type==="card");
       const announcements=[];
       const seenAnnouncementIds=new Set();
       zqDataRows.filter(x=>x.e.type==="announcement").forEach(x=>{const d=x.e.data||{};if(d.id&&!seenAnnouncementIds.has(d.id)){seenAnnouncementIds.add(d.id);announcements.push({...d,rowCreatedAt:x.row.created_at});}});
@@ -8796,7 +9167,10 @@ Noah"
       if(roleRow) studentRoles=roleRow.e.data?.roles||[];
 
       const seenResourceSet=new Set((currentStudentSeenMeta.resources||[]).map(String));
+      const seenChallengeSet=new Set((currentStudentSeenMeta.challenges||[]).map(String));
       const resourceUnread=resources.filter(r=>!seenResourceSet.has(String(r.id))).length;
+      const challengeUnread=(homeworkChallenges||[]).filter(c=>!seenChallengeSet.has(String(c.id))).length;
+      const resourcesTotalUnread=resourceUnread+challengeUnread;
       const urgentResources=resources.filter(r=>!seenResourceSet.has(r.id)&&(r.type==="lesson"||r.type==="exercise"));
 
       const announcementSeenKey=`zenquest_announcements_seen_${student.id}`;
@@ -8833,7 +9207,7 @@ Noah"
             </button>
             <button type="button" id="studentResourcesTabBtn" style="flex:1;min-width:170px;position:relative">
               📚 Ressources
-              ${resourceUnread>0?`<span id="studentResourcesNotifBadge" style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;margin-left:5px;border-radius:999px;background:#dc2626;color:white;font-size:12px;font-weight:1000">${resourceUnread}</span>`:""}
+              ${resourcesTotalUnread>0?`<span id="studentResourcesNotifBadge" style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;margin-left:5px;border-radius:999px;background:#dc2626;color:white;font-size:12px;font-weight:1000">${resourcesTotalUnread}</span>`:""}
             </button>
             <button type="button" id="studentMaterialsTabBtn" style="flex:1;min-width:170px;position:relative">
               🎒 Matériel scolaire
@@ -9183,8 +9557,21 @@ Noah"
                 <br><span class="muted">🔥 Série actuelle : ${studentHomeworkStreak}</span>
               </div>
             </div>
-            <div style="margin-top:12px">${homeworkBadgeCollectionHTML(studentHomeworkStats,true,student.id)}</div>
-            <div style="margin-top:9px;font-weight:850">✨ Chaque devoir réalisé débloque un nouveau badge pour ta collection.</div>
+            <div style="margin-top:14px;font-weight:1000">🎴 Cartes « Travail accompli »</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+              ${studentHomeworkDone?Array.from({length:studentHomeworkDone},(_,i)=>`<div title="Travail vérifié en classe" style="width:94px;min-height:112px;padding:9px;border-radius:14px;background:white;border:2px solid #86efac;box-shadow:0 3px 9px rgba(15,23,42,.08);text-align:center"><div style="font-size:30px">${["✏️","📚","✅","🎯","🔥"][i%5]}</div><div style="font-size:12px;font-weight:1000;margin-top:5px">${["TRAVAIL ACCOMPLI","MISSION FAITE","DEVOIR VALIDÉ","RÉGULARITÉ","TRAVAIL SÉRIEUX"][i%5]}</div><div class="muted" style="font-size:10px;margin-top:4px">Vérifié en classe</div></div>`).join(""):'<span class="muted">Ta première carte apparaîtra quand le professeur vérifiera un devoir réalisé.</span>'}
+            </div>
+            <div style="margin-top:18px;font-size:18px;font-weight:1000">🎁 Mes Trésors ZenQuest</div>
+            <div class="muted" style="margin-top:3px">Tu retrouves ici tout ce que tu as gagné dans les défis.</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:9px">
+              ${(homeworkChallengeRewards||[]).length?(homeworkChallengeRewards||[]).slice().sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0)).map(c=>{
+                const isCard=c.reward_type==="card";
+                const emoji=isCard?(c.card_emoji||"🎴"):c.reward_type==="point"?"💚":"⭐";
+                const label=isCard?(c.card_name||"Carte ZenQuest"):c.reward_type==="point"?"+1 POINT":"+1 PROGRESSION";
+                const sub=isCard?(c.card_rarity==="rare"?"✨ CARTE RARE":"🎴 CARTE"):"🎁 TRÉSOR";
+                return `<div style="width:104px;min-height:120px;padding:10px;border-radius:15px;background:${c.card_rarity==="rare"?"linear-gradient(135deg,#fef3c7,#fff7ed)":"white"};border:2px solid ${c.card_rarity==="rare"?"#f59e0b":"#cbd5e1"};box-shadow:0 3px 9px rgba(15,23,42,.08);text-align:center"><div style="font-size:34px">${escapeHTML(emoji)}</div><div style="font-size:12px;font-weight:1000;margin-top:5px">${escapeHTML(String(label).toUpperCase())}</div><div style="font-size:10px;font-weight:900;margin-top:5px;color:${c.card_rarity==="rare"?"#b45309":"#64748b"}">${sub}</div></div>`;
+              }).join(""):'<span class="muted">Aucun trésor gagné pour le moment.</span>'}
+            </div>
           </div>
 
 
@@ -9222,13 +9609,16 @@ Noah"
               <div class="muted" style="margin-top:5px">Retrouve ici les ressources mises à disposition pour t’aider en mathématiques.</div>
             </div>
             <div style="display:grid;gap:10px">
-              ${resources.length?resources.map(r=>`<div class="box" style="margin:0">
+              ${homeworkChallenges.length?`<div style="margin-bottom:16px"><div style="font-size:21px;font-weight:1000">🎁 Défis ZenQuest</div><div class="muted" style="margin-top:3px">Questions bonus indépendantes du travail à faire.</div><div style="display:grid;gap:8px;margin-top:10px">${homeworkChallenges.filter(c=>!c.resource_id).map(c=>{const aa=attemptsByChallenge.get(String(c.id))||[],rw=rewardByChallenge.get(String(c.id)),left=Math.max(0,2-aa.length);const status=rw?"✅ Réussi":left===0?"❌ Terminé":aa.length===1?"🟠 1 essai restant":"🎁 À découvrir";return `<button type="button" class="zq-open-student-challenge" data-challenge-id="${escapeHTML(c.id)}" style="width:100%;border:1px solid #fde68a;background:linear-gradient(135deg,#fffbeb,#fff);border-radius:15px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;cursor:pointer;color:inherit"><div style="min-width:0"><div style="font-size:17px;font-weight:1000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🎁 ${escapeHTML(c.title||"Défi ZenQuest")}</div><div class="muted" style="font-size:12px;font-weight:850;margin-top:2px">${status} • ${rw?"Trésor ouvert":left===0?"2 essais utilisés":`${left} essai${left>1?"s":""} disponible${left>1?"s":""}`}</div></div><span style="flex:none;font-weight:1000;color:#0f766e">Ouvrir ›</span></button>`}).join("")}</div></div>`:""}
+            ${resources.length?resources.map(r=>`<div class="box" style="margin:0">
                 <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
                   <div><div style="font-size:18px;font-weight:1000">${resourceIcon(r.type)} ${escapeHTML(r.title||"Ressource")}</div>
                   ${r.instruction?`<div style="margin-top:5px">${escapeHTML(r.instruction)}</div>`:""}
                   ${r.dueDate?`<div style="margin-top:5px;font-weight:900;color:#b45309">📅 À faire pour le ${new Date(r.dueDate+"T12:00:00").toLocaleDateString("fr-FR")}</div>`:""}</div>
                   <button type="button" class="btn primary student-resource-open" data-resource-id="${escapeHTML(r.id)}">${r.isYoutube?"▶️ Voir la vidéo":r.sourceType==="link"?"🔗 Voir la ressource":"👁️ Voir"}</button>
                 </div>
+                ${r.type==="exercise"?`<div style="margin-top:12px;padding:12px;border-radius:14px;background:#f8fafc;border:1px solid #cbd5e1"><strong>📚 TRAVAIL À FAIRE</strong><div style="margin-top:4px">Le travail indiqué ci-dessus doit être fait dans ton cahier.</div></div>`:""}
+                ${(()=>{const c=challengeByResource.get(String(r.id));if(!c)return"";const aa=attemptsByChallenge.get(String(c.id))||[];const rw=rewardByChallenge.get(String(c.id));const left=Math.max(0,2-aa.length);return `<div class="student-homework-challenge" data-challenge-id="${escapeHTML(c.id)}" style="margin-top:10px;padding:14px;border-radius:16px;background:linear-gradient(135deg,#fffbeb,#fff);border:2px solid #fde68a"><div style="font-size:19px;font-weight:1000">🎁 DÉFI DU WEEK-END</div><div style="margin-top:4px;font-weight:900;color:#92400e">⚠️ Ce défi est un bonus. Il ne remplace pas le travail demandé.</div><div style="margin-top:10px;font-size:17px;font-weight:950">${escapeHTML(c.question)}</div>${rw?`<div style="margin-top:10px;padding:10px;border-radius:12px;background:#dcfce7;font-weight:950">🎉 Défi réussi • Trésor déjà ouvert !</div>`:left===0?`<div style="margin-top:10px;padding:10px;border-radius:12px;background:#fee2e2;font-weight:900">❌ Défi terminé • 2 essais utilisés.</div>`:`<div class="zq-student-challenge-choices" style="display:grid;gap:7px;margin-top:10px">${(c.choices||[]).map((choice,i)=>`<button type="button" class="btn outline zq-student-challenge-answer" data-challenge-id="${escapeHTML(c.id)}" data-choice="${i}" style="text-align:left;justify-content:flex-start">${String.fromCharCode(65+i)}. ${escapeHTML(choice)}</button>`).join("")}</div><div class="muted" style="margin-top:8px;font-weight:850">🎯 ${left} tentative${left>1?"s":""} restante${left>1?"s":""} sur 2.</div>`}</div>`})()}
               </div>`).join(""):'<div class="box muted">Aucune ressource publiée pour le moment.</div>'}
             </div>
           </div>
@@ -9400,11 +9790,126 @@ Noah"
         currentStudentSeenMeta.resources=[...seenResourceSet];
         queuePersistStudentSeenMeta();
         const badge=document.getElementById("studentResourcesNotifBadge");
-        if(badge){const left=resources.filter(x=>!seenResourceSet.has(x.id)).length;if(left) badge.textContent=left;else badge.remove();}
+        if(badge){
+          const leftResources=resources.filter(x=>!seenResourceSet.has(String(x.id))).length;
+          const leftChallenges=(homeworkChallenges||[]).filter(c=>!seenChallengeSet.has(String(c.id))).length;
+          const left=leftResources+leftChallenges;
+          if(left) badge.textContent=String(left); else badge.remove();
+        }
         openResourceInsideZenQuest(r);
       };
+      function showStudentTreasureOverlay(result){
+        document.getElementById("zqStudentTreasureOverlay")?.remove();
+        const rewardType=result?.reward_type;
+        let rewardHTML="";
+        if(rewardType==="point"){
+          rewardHTML='<div style="font-size:52px">💚</div><div style="font-size:27px;font-weight:1000">+1 POINT D’IMPLICATION</div><div style="margin-top:6px;color:#64748b;font-weight:800">Ton trésor t’aide à progresser.</div>';
+        }else if(rewardType==="progress"){
+          rewardHTML='<div style="font-size:52px">⭐</div><div style="font-size:27px;font-weight:1000">+1 PROGRESSION</div><div style="margin-top:6px;color:#64748b;font-weight:800">Un cran de plus vers ta prochaine progression ZenQuest.</div>';
+        }else{
+          rewardHTML=`<div style="font-size:58px">${escapeHTML(result?.card_emoji||"🎴")}</div>
+            <div style="font-size:13px;font-weight:1000;color:#b45309">${result?.card_rarity==="rare"?"✨ CARTE RARE":"🎴 NOUVELLE CARTE"}</div>
+            <div style="font-size:27px;font-weight:1000;margin-top:4px">${escapeHTML(result?.card_name||"Carte ZenQuest")}</div>
+            <div style="margin-top:6px;color:#64748b;font-weight:800">Retrouve-la dans « Mon travail maison ».</div>`;
+        }
+        const overlay=document.createElement("div");
+        overlay.id="zqStudentTreasureOverlay";
+        overlay.style.cssText="position:fixed;inset:0;z-index:2147483647;background:rgba(15,23,42,.72);display:flex;align-items:center;justify-content:center;padding:18px";
+        const wonText=rewardType==="point"?"+1 point d’implication":rewardType==="progress"?"+1 progression ⭐":`${result?.card_emoji||"🎴"} ${result?.card_name||"Carte ZenQuest"}${result?.card_rarity==="rare"?" • carte rare":""}`;
+        const confetti=["✨","⭐","🎉","🎁","💫","🌟"].map((x,i)=>`<span style="position:absolute;left:${8+i*16}%;top:0;font-size:${20+(i%3)*5}px;animation:zqTreasureConfetti ${1.5+(i%3)*.25}s ease-in ${i*.08}s forwards">${x}</span>`).join("");
+        overlay.innerHTML=`<div style="position:absolute;inset:0;overflow:hidden;pointer-events:none">${confetti}</div>
+        <div class="zq-treasure-card-anim" style="position:relative;width:min(520px,94vw);max-height:90vh;overflow:auto;background:linear-gradient(145deg,#fffbeb,#fff);border-radius:24px;padding:24px;text-align:center;box-shadow:0 25px 70px rgba(0,0,0,.35)">
+          <div class="zq-treasure-icon-anim" style="font-size:58px">🎁✨</div>
+          <div style="font-size:30px;font-weight:1000">TRÉSOR OUVERT !</div>
+          <div style="margin:16px 0;padding:18px;border-radius:18px;background:white;border:2px solid #fde68a">${rewardHTML}</div>
+          <div style="font-weight:900">📚 Le défi est un bonus : pense aussi au travail demandé.</div>
+          <div style="margin-top:13px;padding:12px;border-radius:14px;background:#ecfdf5;border:2px solid #86efac;font-size:16px;font-weight:1000">🏆 Tu as gagné : ${escapeHTML(wonText)}</div>
+          <button type="button" id="zqStudentTreasureContinue" class="btn primary" style="margin-top:17px;width:100%">Continuer</button>
+        </div>`;
+        document.body.appendChild(overlay);
+        overlay.querySelector("#zqStudentTreasureContinue").onclick=async()=>{
+          overlay.remove();
+          // Refresh student data safely, without a hard page reload / blank navigation.
+          try{
+            const {data:{session}}=await supabaseClient.auth.getSession();
+            if(session?.user) await loadAuthenticatedStudent(session.user);
+          }catch(e){ console.error("TREASURE REFRESH",e); }
+        };
+      }
+
+      function bindStudentChallengeAnswerButtons(root=document){root.querySelectorAll(".zq-student-challenge-answer").forEach(btn=>btn.onclick=submitStudentChallengeAnswer);}
+      async function submitStudentChallengeAnswer(ev){
+        const btn=ev.currentTarget;
+        ev?.preventDefault?.();
+        ev?.stopPropagation?.();
+        const challengeId=btn.dataset.challengeId,choice=Number(btn.dataset.choice);
+        const card=btn.closest(".student-homework-challenge");
+        const allButtons=[...(card?.querySelectorAll(".zq-student-challenge-answer")||[])];
+        allButtons.forEach(x=>x.disabled=true);
+        const oldStatus=card?.querySelector(".zq-challenge-live-status");
+        oldStatus?.remove();
+        const live=document.createElement("div");
+        live.className="zq-challenge-live-status";
+        live.style.cssText="margin-top:9px;padding:9px;border-radius:11px;background:#eff6ff;color:#1e40af;font-weight:900";
+        live.textContent="⏳ Vérification de ta réponse…";
+        card?.appendChild(live);
+        try{
+          const rpc=await supabaseClient.rpc("submit_homework_challenge",{p_challenge_id:challengeId,p_chosen_index:choice});
+          if(rpc.error) throw rpc.error;
+          let result=rpc.data;
+          if(typeof result==="string"){
+            try{ result=JSON.parse(result); }catch{}
+          }
+          if(!result || typeof result!=="object") throw new Error("Réponse du serveur inattendue.");
+
+          if(result.correct===true || result.status==="won" || result.status==="already_won"){
+            live.style.background="#dcfce7";live.style.color="#166534";live.textContent="🎉 Bonne réponse ! Ton trésor est prêt.";
+            showStudentTreasureOverlay(result);
+          }else if(Number(result.attempts_left)>0){
+            allButtons.forEach(x=>x.disabled=false);
+            live.style.background="#fff7ed";live.style.color="#9a3412";
+            live.textContent="❌ Pas cette fois ! Il te reste 1 tentative. Relis ton cours ou fais l’exercice avant de réessayer.";
+          }else{
+            card?.querySelector(".zq-student-challenge-choices")?.remove();
+            live.style.background="#fee2e2";live.style.color="#991b1b";
+            live.textContent="❌ Défi terminé. Tu peux évidemment continuer à faire le travail demandé.";
+          }
+        }catch(e){
+          console.error("HOMEWORK CHALLENGE SUBMIT ERROR",e);
+          allButtons.forEach(x=>x.disabled=false);
+          live.style.background="#fee2e2";live.style.color="#991b1b";
+          live.innerHTML=`❌ Le défi n’a pas pu être validé.<div style="font-size:11px;margin-top:4px;font-weight:800">${escapeHTML(e?.message||String(e))}</div>`;
+        }
+      
+      }
+      function openStudentChallengeQcm(id){
+        const c=(homeworkChallenges||[]).find(x=>String(x.id)===String(id));if(!c)return;
+        const aa=attemptsByChallenge.get(String(c.id))||[],rw=rewardByChallenge.get(String(c.id)),left=Math.max(0,2-aa.length);
+        document.getElementById("studentChallengeQcmTitle").textContent=`🎁 ${c.title||"Défi ZenQuest"}`;
+        const body=document.getElementById("studentChallengeQcmBody");
+        body.innerHTML=`${c.image_url?`<div style="text-align:center"><img src="${escapeHTML(c.image_url)}" alt="QCM ZenQuest" style="max-width:100%;max-height:62vh;border-radius:15px;border:1px solid #cbd5e1;background:white"></div>`:""}${rw?`<div style="margin-top:10px;padding:10px;border-radius:12px;background:#dcfce7;font-weight:950">🎉 Défi réussi • Trésor déjà ouvert !</div>`:left===0?`<div style="margin-top:10px;padding:10px;border-radius:12px;background:#fee2e2;font-weight:900">❌ Défi terminé • 2 essais utilisés.</div>`:`<div style="font-weight:950;margin-top:12px">Quelle réponse choisis-tu ?</div><div class="zq-student-challenge-choices" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px">${["A","B","C","D"].map((letter,i)=>`<button type="button" class="btn outline zq-student-challenge-answer" data-challenge-id="${escapeHTML(c.id)}" data-choice="${i}" style="font-size:22px;font-weight:1000;padding:12px">${letter}</button>`).join("")}</div><div class="muted" style="margin-top:8px;font-weight:850">🎯 ${left} tentative${left>1?"s":""} restante${left>1?"s":""} sur 2.</div>`}`;
+        document.getElementById("studentChallengeQcmModal").classList.add("show");bindStudentChallengeAnswerButtons(body);
+      }
+      document.querySelectorAll(".zq-open-student-challenge").forEach(btn=>btn.onclick=()=>openStudentChallengeQcm(btn.dataset.challengeId));
+      const closeQcm=document.getElementById("closeStudentChallengeQcmBtn");if(closeQcm)closeQcm.onclick=()=>document.getElementById("studentChallengeQcmModal").classList.remove("show");
+      bindStudentChallengeAnswerButtons(document);
+      // Legacy treasure modal: never hard-reload the page.
+      const legacyTreasureClose=document.getElementById("closeStudentTreasureBtn");
+      if(legacyTreasureClose) legacyTreasureClose.onclick=()=>document.getElementById("studentTreasureModal")?.classList.remove("show");
+
       document.querySelectorAll(".student-resource-open,.student-open-resource-alert").forEach(b=>b.onclick=()=>markResourceSeenAndOpen(b.dataset.resourceId));
-      if(resourcesTabBtn) resourcesTabBtn.onclick=()=>showStudentTab("resources");
+      if(resourcesTabBtn) resourcesTabBtn.onclick=()=>{
+        showStudentTab("resources");
+        (homeworkChallenges||[]).forEach(c=>seenChallengeSet.add(String(c.id)));
+        currentStudentSeenMeta.challenges=[...seenChallengeSet];
+        queuePersistStudentSeenMeta();
+        const badge=document.getElementById("studentResourcesNotifBadge");
+        if(badge){
+          const unreadResources=resources.filter(r=>!seenResourceSet.has(String(r.id))).length;
+          if(unreadResources>0) badge.textContent=String(unreadResources);
+          else badge.remove();
+        }
+      };
 
       document.querySelectorAll(".student-class-message-seen").forEach(btn=>{
         btn.onclick=()=>{
@@ -12135,7 +12640,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.13.14b</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.13.16gb</span>.
   </footer>
 
 </body>
