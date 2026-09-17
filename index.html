@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.13.17b</title>
+  <title>ZenQuest v5.13.17bb</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -9847,7 +9847,7 @@ Noah"
         ev?.preventDefault?.();
         ev?.stopPropagation?.();
         const challengeId=btn.dataset.challengeId,choice=Number(btn.dataset.choice);
-        const card=btn.closest(".student-homework-challenge");
+        const card=btn.closest("#studentChallengeQcmBody") || btn.closest(".student-homework-challenge");
         const allButtons=[...(card?.querySelectorAll(".zq-student-challenge-answer")||[])];
         allButtons.forEach(x=>x.disabled=true);
         const oldStatus=card?.querySelector(".zq-challenge-live-status");
@@ -9900,7 +9900,7 @@ Noah"
         const aa=attemptsByChallenge.get(String(c.id))||[],rw=rewardByChallenge.get(String(c.id)),left=Math.max(0,2-aa.length);
         document.getElementById("studentChallengeQcmTitle").textContent=`🎁 ${c.title||"Défi ZenQuest"}`;
         const body=document.getElementById("studentChallengeQcmBody");
-        body.innerHTML=`${c.image_url?`<div style="text-align:center"><img src="${escapeHTML(c.image_url)}" alt="QCM ZenQuest" style="max-width:100%;max-height:62vh;border-radius:15px;border:1px solid #cbd5e1;background:white"></div>`:""}${rw?`<div style="margin-top:10px;padding:10px;border-radius:12px;background:#dcfce7;font-weight:950">🎉 Défi réussi • Trésor déjà ouvert !</div>`:left===0?`<div style="margin-top:10px;padding:10px;border-radius:12px;background:#fee2e2;font-weight:900">❌ Défi terminé • 2 essais utilisés.</div>`:`<div style="font-weight:950;margin-top:12px">Quelle réponse choisis-tu ?</div><div class="zq-student-challenge-choices" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px">${["A","B","C","D"].map((letter,i)=>`<button type="button" class="btn outline zq-student-challenge-answer" data-challenge-id="${escapeHTML(c.id)}" data-choice="${i}" style="font-size:22px;font-weight:1000;padding:12px">${letter}</button>`).join("")}</div><div class="muted" style="margin-top:8px;font-weight:850">🎯 ${left} tentative${left>1?"s":""} restante${left>1?"s":""} sur 2.</div>`}`;
+        body.innerHTML=`${c.image_url?`<div style="text-align:center"><img src="${escapeHTML(c.image_url)}" alt="QCM ZenQuest" style="max-width:100%;max-height:62vh;border-radius:15px;border:1px solid #cbd5e1;background:white"></div>`:""}${rw?`<div style="margin-top:10px;padding:10px;border-radius:12px;background:#dcfce7;font-weight:950">🎉 Défi réussi • Trésor déjà ouvert !</div>`:left===0?`<div style="margin-top:10px;padding:10px;border-radius:12px;background:#fee2e2;font-weight:900">❌ Défi terminé • 2 essais utilisés.</div>`:`<div style="font-weight:950;margin-top:12px">Quelle réponse choisis-tu ?</div><div class="zq-student-challenge-choices" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px">${["A","B","C","D"].map((letter,i)=>`<button type="button" class="btn outline zq-student-challenge-answer" data-challenge-id="${escapeHTML(c.id)}" data-choice="${i}" style="font-size:22px;font-weight:1000;padding:14px;min-height:52px;touch-action:manipulation;cursor:pointer">${letter}</button>`).join("")}</div><div class="muted" style="margin-top:8px;font-weight:850">🎯 ${left} tentative${left>1?"s":""} restante${left>1?"s":""} sur 2.</div>`}`;
         document.getElementById("studentChallengeQcmModal").classList.add("show");bindStudentChallengeAnswerButtons(body);
       }
       document.querySelectorAll(".zq-open-student-challenge").forEach(btn=>btn.onclick=()=>openStudentChallengeQcm(btn.dataset.challengeId));
@@ -12653,7 +12653,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.13.17b</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.13.17bb</span>.
   </footer>
 
 </body>
