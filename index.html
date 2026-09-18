@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.13.18bb</title>
+  <title>ZenQuest v5.13.19h</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -2001,7 +2001,19 @@ Noah"
     </div>
   </div>
 
-  <div class="modal" id="studentCardDetailModal" style="z-index:3210000">
+  <div class="modal" id="undoActionsModal" style="z-index:5200000">
+  <div class="modal-card" style="width:min(680px,95vw);max-height:88vh;overflow:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div>
+        <div style="font-size:22px;font-weight:1000">↩️ Actions récentes</div>
+        <div class="muted" style="margin-top:3px">Annule une erreur et restaure exactement l’état précédent.</div>
+      </div>
+      <button type="button" class="btn outline" id="closeUndoActionsBtn">Fermer</button>
+    </div>
+    <div id="undoActionsList" style="margin-top:15px"></div>
+  </div>
+</div>
+<div class="modal" id="studentCardDetailModal" style="z-index:3210000">
   <div class="modal-card" style="width:min(520px,94vw);max-height:90vh;overflow:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
       <div id="studentCardDetailTitle" style="font-size:21px;font-weight:1000">🎴 Carte ZenQuest</div>
@@ -3373,6 +3385,129 @@ Noah"
       document.getElementById("avatarModal").classList.add("show");
     }
 
+    function zqUndoStudentSnapshot(student){
+      return {
+        id:student.id,
+        points:Number(student.points||0),
+        progress:Number(student.progress||0),
+        level:Number(student.level||1),
+        stars:Number(student.stars||0),
+        diamonds:Number(student.diamonds||0),
+        current_streak:Number(student.currentStreak||0),
+        lostThisLesson:!!student.lostThisLesson,
+        lostStarThisLesson:!!student.lostStarThisLesson,
+        pointsLostThisLesson:Number(student.pointsLostThisLesson||0),
+        totalPointsLost:Number(student.totalPointsLost||0),
+        lastReasonLabel:student.lastReasonLabel||"",
+        engagementEvents:Array.isArray(student.engagementEvents)?student.engagementEvents.map(x=>({...x})):[]
+      };
+    }
+    function zqUndoCollectiveSnapshot(cls){
+      return {
+        collective_stars:Number(cls.collectiveStars||0),
+        collective_diamonds:Number(cls.collectiveDiamonds||0),
+        group1_stars:Number(cls.groupStars?.g1||0),
+        group1_diamonds:Number(cls.groupDiamonds?.g1||0),
+        group2_stars:Number(cls.groupStars?.g2||0),
+        group2_diamonds:Number(cls.groupDiamonds?.g2||0)
+      };
+    }
+    async function zqCreateUndoAction(actionType,label,beforeSnapshot,context={}){
+      const cls=currentClass();
+      const teacherId=cachedTeacherUserId || (await supabaseClient.auth.getUser()).data?.user?.id;
+      if(!teacherId) throw new Error("Session professeur introuvable.");
+      const {data,error}=await supabaseClient.from("teacher_undo_actions").insert({
+        teacher_id:teacherId,class_id:cls?.id||null,action_type:actionType,label,
+        context,before_snapshot:beforeSnapshot
+      }).select("id").single();
+      if(error) throw error;
+      return data.id;
+    }
+    async function zqPatchUndoAfter(actionId,afterSnapshot){
+      // UPDATE direct is intentionally blocked by RLS; after_snapshot is completed
+      // through the insert-time data whenever possible. Kept as no-op fallback.
+      return actionId;
+    }
+    async function zqDeleteUndoAction(actionId){
+      // Journal rows are intentionally immutable from the browser.
+      return actionId;
+    }
+    function zqRestoreLocalLessonStateFromAction(action){
+      const cls=currentClass();
+      const snapshots=action?.before_snapshot?.students;
+      if(!cls || !Array.isArray(snapshots)) return;
+      snapshots.forEach(snap=>{
+        const st=cls.students?.find(x=>String(x.id)===String(snap.id));
+        if(!st) return;
+        if("lostThisLesson" in snap) st.lostThisLesson=!!snap.lostThisLesson;
+        if("lostStarThisLesson" in snap) st.lostStarThisLesson=!!snap.lostStarThisLesson;
+        if("pointsLostThisLesson" in snap) st.pointsLostThisLesson=Number(snap.pointsLostThisLesson||0);
+        if("totalPointsLost" in snap) st.totalPointsLost=Number(snap.totalPointsLost||0);
+        if("lastReasonLabel" in snap) st.lastReasonLabel=snap.lastReasonLabel||"";
+        if(Array.isArray(snap.engagementEvents)) st.engagementEvents=snap.engagementEvents.map(x=>({...x}));
+        st.lastAction=null;
+      });
+      save();
+      render();
+    }
+
+    async function zqLoadUndoActions(){
+      const box=document.getElementById("undoActionsList");
+      if(!box)return;
+      box.innerHTML='<div class="muted">Chargement…</div>';
+      const {data,error}=await supabaseClient.from("teacher_undo_actions")
+        .select("id,label,action_type,context,before_snapshot,after_snapshot,created_at,is_undone,undone_at")
+        .order("created_at",{ascending:false}).limit(10);
+      if(error){box.innerHTML=`<div style="color:#b91c1c;font-weight:900">❌ ${escapeHTML(error.message)}</div>`;return;}
+      if(!data?.length){box.innerHTML='<div class="muted" style="padding:14px">Aucune action annulable récente.</div>';return;}
+      window.zqUndoRecentActions=new Map((data||[]).map(a=>[String(a.id),a]));
+      box.innerHTML=data.map(a=>{
+        const when=a.created_at?new Date(a.created_at).toLocaleString("fr-FR"):"";
+        const icon=a.action_type==="lesson_end"?"🏁":"🎯";
+        return `<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;margin-bottom:8px;border:1px solid #e2e8f0;border-radius:14px;background:${a.is_undone?"#f8fafc":"white"}">
+          <div style="min-width:0"><div style="font-weight:1000">${icon} ${escapeHTML(a.label||"Action")}</div><div class="muted" style="font-size:11px;margin-top:3px">${escapeHTML(when)}</div></div>
+          ${a.is_undone?'<span style="font-weight:1000;color:#64748b">↩️ Annulée</span>':`<button type="button" class="btn outline zq-undo-action-btn" data-id="${a.id}" style="white-space:nowrap">↩️ Annuler</button>`}
+        </div>`;
+      }).join("");
+      box.querySelectorAll(".zq-undo-action-btn").forEach(btn=>btn.onclick=async()=>{
+        btn.disabled=true;btn.textContent="⏳ Restauration…";
+        try{
+          document.getElementById("summaryModal")?.classList.remove("show");
+          if(typeof stopEndLessonMessages==="function") stopEndLessonMessages();
+          const {data,error}=await supabaseClient.rpc("undo_teacher_action",{p_action_id:btn.dataset.id});
+          if(error)throw error;
+          await loadTeacherSupabaseData();
+          const undoneAction=window.zqUndoRecentActions?.get(String(btn.dataset.id));
+          zqRestoreLocalLessonStateFromAction(undoneAction);
+
+          // The +/- motif is part of the student's visible history.
+          // Remove the exact rows locally too; the RPC has already deleted them in Supabase.
+          const deletedRemarkIds=new Set((undoneAction?.after_snapshot?.created_teacher_remark_ids||[]).map(String));
+          if(deletedRemarkIds.size){
+            const cls=currentClass();
+            (cls?.students||[]).forEach(st=>{
+              if(Array.isArray(st.teacherRemarks)){
+                st.teacherRemarks=st.teacherRemarks.filter(r=>!deletedRemarkIds.has(String(r.id)));
+              }
+            });
+            save();
+          }
+          render();
+          document.getElementById("summaryModal")?.classList.remove("show");
+          if(typeof stopEndLessonMessages==="function") stopEndLessonMessages();
+          await zqLoadUndoActions();
+          showEndLessonStatus("↩️ Action annulée : état précédent restauré.", "success", true);
+        }catch(e){
+          console.error("UNDO ERROR",e);btn.disabled=false;btn.textContent="↩️ Annuler";
+          alert("❌ Impossible d’annuler cette action.\n\n"+(e?.message||String(e)));
+        }
+      });
+    }
+    function zqOpenUndoActions(){
+      document.getElementById("undoActionsModal")?.classList.add("show");
+      zqLoadUndoActions();
+    }
+
     async function updateStudentPointsInSupabase(student,newPoints){
       if(!student?.id) throw new Error("Élève invalide.");
       const safeValue=Math.max(0,Math.min(MAX_POINTS,Number(newPoints)||0));
@@ -4527,15 +4662,17 @@ Noah"
       const buttons=[...document.querySelectorAll("#reasonPickerGrid button")];
       buttons.forEach(b=>b.disabled=true);
       beginLocalTeacherMutation();
+      const undoBeforePoint={students:[zqUndoStudentSnapshot(student)]};
+      let undoPointRemarkIds=[];
       try{
         await updateStudentPointsInSupabase(student,next);
 
+        let thresholdStarLost=false;
         if(type==="minus"){
           student.lostThisLesson=true;
           const actualLoss=Math.max(0,prev-next);
           student.pointsLostThisLesson+=actualLoss;
           student.totalPointsLost+=actualLoss;
-          let thresholdStarLost=false;
           if(prev>=10&&next<10&&student.stars>0&&!student.lostStarThisLesson){
             const nextStars=Math.max(0,student.stars-1);
             await updateStudentStarsInSupabase(student,nextStars);
@@ -4571,8 +4708,9 @@ Noah"
         if(teacherId){
           const result=await supabaseClient
             .from("teacher_remarks")
-            .insert({student_id:student.id,teacher_id:teacherId,remark:encoded});
+            .insert({student_id:student.id,teacher_id:teacherId,remark:encoded}).select("id").maybeSingle();
           eventError=result.error||null;
+          if(result.data?.id) undoPointRemarkIds.push(result.data.id);
         }else{
           eventError=new Error("Identifiant professeur temporairement indisponible.");
         }
@@ -4580,14 +4718,15 @@ Noah"
         // Never turn a successfully saved −1 into an apparent failure.
         // Keep a local history entry; realtime will reconcile once the remote motif exists.
         if(eventError) console.error("REASON SYNC ERROR",eventError);
-        const eventRow={id:uid(),remark:encoded,created_at:new Date().toISOString()};
+        const eventRow={id:undoPointRemarkIds[0]||uid(),remark:encoded,created_at:new Date().toISOString()};
 
         if(type==="minus" && thresholdStarLost){
           const starEncoded=encodeZQEvent("star_minus","score_below_10_v2","Score passé sous 10/20",student.stars);
-          const {error:starErr}=await supabaseClient
+          const {data:starData,error:starErr}=await supabaseClient
             .from("teacher_remarks")
-            .insert({student_id:student.id,teacher_id:teacherId,remark:starEncoded});
+            .insert({student_id:student.id,teacher_id:teacherId,remark:starEncoded}).select("id").maybeSingle();
           if(starErr) console.error("STAR REASON SYNC ERROR",starErr);
+          else if(starData?.id) undoPointRemarkIds.push(starData.id);
         }
 
         if(!Array.isArray(student.teacherRemarks)) student.teacherRemarks=[];
@@ -4597,6 +4736,26 @@ Noah"
           text:eventRow.remark,
           createdAt:eventRow.created_at||null
         });
+
+        // IMPORTANT: create the undo action only after the database motif rows exist,
+        // so their exact IDs can be removed by undo_teacher_action.
+        try{
+          const cls=currentClass();
+          const actionLabel=`${type==="minus"?"−":"+"}${Math.abs(next-prev)} ${student.name} — ${label}`;
+          const {error:undoErr}=await supabaseClient.rpc("record_teacher_undo_action",{
+            p_class_id:cls?.id||null,
+            p_action_type:"point_change",
+            p_label:actionLabel,
+            p_context:{student_id:student.id,student_name:student.name,delta:next-prev,reason:label},
+            p_before_snapshot:undoBeforePoint,
+            p_after_snapshot:{created_teacher_remark_ids:undoPointRemarkIds}
+          });
+          if(undoErr) throw undoErr;
+          console.info("UNDO POINT RECORDED",actionLabel);
+        }catch(undoJournalErr){
+          console.error("UNDO JOURNAL POINT ERROR",undoJournalErr);
+          showEndLessonStatus("⚠️ Point enregistré, mais impossible de l’ajouter à ↩️ Annuler : "+(undoJournalErr?.message||String(undoJournalErr)),"error",false);
+        }
 
         recordEngagementEvent(student,type,code,label);
         pendingReasonAction=null;
@@ -6334,6 +6493,13 @@ Noah"
 
         let presentStudents=cls.students.filter(s=>!s.isAbsent);
 
+        // Snapshot BEFORE end-of-lesson mutations. Includes all students because
+        // "Classe entière" may have been selected accidentally.
+        const undoBeforeLesson={
+          students:cls.students.map(zqUndoStudentSnapshot),
+          class_collective:zqUndoCollectiveSnapshot(cls)
+        };
+
         if(!presentStudents.length){
           throw new Error("Aucun élève présent à enregistrer. Vérifie l’appel ou le groupe affiché.");
         }
@@ -6423,10 +6589,13 @@ Noah"
           score:u.newPoints
         }));
         if(scorePayload.length){
-          const {error:scoreError}=await supabaseClient
+          const {data:createdScores,error:scoreError}=await supabaseClient
             .from("lesson_scores")
-            .insert(scorePayload);
+            .insert(scorePayload).select("id");
           if(scoreError) throw new Error("Historique/graphique : "+scoreError.message);
+          var undoCreatedLessonScoreIds=(createdScores||[]).map(x=>x.id).filter(Boolean);
+        }else{
+          var undoCreatedLessonScoreIds=[];
         }
 
         // Puis on reflète le résultat dans l'interface.
@@ -6486,6 +6655,27 @@ Noah"
         }catch(collectiveErr){
           throw new Error("Progression collective : "+(collectiveErr?.message||String(collectiveErr)));
         }
+
+        // Only now is the end-of-lesson transaction considered successful enough
+        // to expose as an undoable action.
+        try{
+          const teacherId=cachedTeacherUserId || (await supabaseClient.auth.getUser()).data?.user?.id;
+          const viewLabel=state.viewMode==="g1"?"Groupe 1":state.viewMode==="g2"?"Groupe 2":"Classe entière";
+          if(teacherId){
+            const {error:undoLessonErr}=await supabaseClient.rpc("record_teacher_undo_action",{
+              p_class_id:cls.id,
+              p_action_type:"lesson_end",
+              p_label:`Fin de cours — ${cls.name} · ${viewLabel}`,
+              p_context:{view_mode:state.viewMode,period_id:periodId,period_name:periodName},
+              p_before_snapshot:undoBeforeLesson,
+              p_after_snapshot:{created_lesson_score_ids:undoCreatedLessonScoreIds}
+            });
+            if(undoLessonErr){
+              console.error("UNDO JOURNAL LESSON ERROR",undoLessonErr);
+              showEndLessonStatus("⚠️ Fin de cours enregistrée, mais impossible de l’ajouter à ↩️ Annuler : "+undoLessonErr.message,"error",false);
+            }
+          }
+        }catch(undoLessonJournalErr){console.error("UNDO JOURNAL LESSON ERROR",undoLessonJournalErr);}
 
         cls.history=cls.history||[];
         cls.history.unshift({
@@ -12718,12 +12908,24 @@ Noah"
     document.getElementById("closeCollectiveStickerInfoBtn").onclick=()=>document.getElementById("collectiveStickerInfoModal").classList.remove("show");
     document.getElementById("closeStudentIndexInfoBtn").onclick=()=>document.getElementById("studentIndexInfoModal").classList.remove("show");
     document.getElementById("closeStudentRoleInfoBtn").onclick=()=>document.getElementById("studentRoleInfoModal").classList.remove("show");
+
+    document.addEventListener("DOMContentLoaded",()=>{
+      const undoBtn=document.getElementById("zqUndoFloatingBtn");
+      if(undoBtn){
+        undoBtn.style.display="block";
+        undoBtn.onclick=zqOpenUndoActions;
+      }
+      const closeUndo=document.getElementById("closeUndoActionsBtn");
+      if(closeUndo) closeUndo.onclick=()=>document.getElementById("undoActionsModal")?.classList.remove("show");
+    });
 </script>
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.13.18bb</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.13.19h</span>.
   </footer>
 
+<button type="button" id="zqUndoFloatingBtn" title="Actions récentes"
+style="display:none;position:fixed;right:18px;bottom:18px;z-index:5100000;border:0;border-radius:999px;padding:12px 16px;background:#0f172a;color:white;font-weight:1000;box-shadow:0 10px 30px rgba(15,23,42,.28);cursor:pointer;touch-action:manipulation">↩️ Annuler</button>
 </body>
 </html>
