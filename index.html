@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.15.0c</title>
+  <title>ZenQuest v5.15.0d</title>
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -12989,7 +12989,7 @@ Noah"
       if(closeUndo) closeUndo.onclick=()=>document.getElementById("undoActionsModal")?.classList.remove("show");
     });
 
-    // ===== ZenQuest v5.15.0c — Suivi élèves visible =====
+    // ===== ZenQuest v5.15.0d — Suivi élèves visible =====
     function zqFindStudentFollowup(id){
       for(const cls of (window.appState?.classes||window.classes||[])){
         const st=(cls.students||[]).find(x=>String(x.id)===String(id));
@@ -13007,18 +13007,43 @@ Noah"
       return out.sort((a,b)=>Number(a.student.points)-Number(b.student.points));
     }
     function zqEnsureFollowupUI(){
-      const _main=document.getElementById("mainApp");
-      const teacherVisible=!!(_main && getComputedStyle(_main).display!=="none");
-      let btn=document.getElementById("zqFollowupButton");
-      if(!teacherVisible){ btn?.remove(); document.getElementById("zqFollowupModal")?.remove(); return; }
-      if(btn) return;
-      btn=document.createElement("button");
-      btn.id="zqFollowupButton";
-      btn.type="button";
-      btn.style.cssText="position:fixed;right:18px;bottom:145px;z-index:2147483000;border:0;border-radius:16px;padding:12px 15px;background:#fff7ed;box-shadow:0 8px 28px rgba(0,0,0,.18);font-weight:900;font-size:14px;cursor:pointer;color:#9a3412";
-      btn.innerHTML="📞 Suivi élèves";
-      btn.onclick=zqOpenFollowupModal;
-      document.body.appendChild(btn);
+      document.getElementById("zqFollowupButton")?.remove();
+      zqInjectFollowupBlock();
+    }
+    function zqCurrentClassForFollowup(){
+      const classes=(window.appState?.classes||window.classes||[]);
+      const activeId=window.appState?.activeClassId||window.appState?.selectedClassId||window.currentClassId;
+      return classes.find(c=>String(c.id)===String(activeId)) || classes[0] || null;
+    }
+    function zqInjectFollowupBlock(){
+      document.getElementById("zqFollowupButton")?.remove();
+      const old=document.getElementById("zqFollowupInlineBlock");
+      const buttons=[...document.querySelectorAll("button")];
+      const reminderBtn=buttons.find(x=>/Gérer les rappels/i.test(x.textContent||""));
+      if(!reminderBtn){ old?.remove(); return; }
+      const reminderBox=reminderBtn.closest(".card,.panel,section")||reminderBtn.parentElement;
+      if(!reminderBox?.parentElement) return;
+
+      let box=old||document.createElement("div");
+      box.id="zqFollowupInlineBlock";
+      box.style.cssText="margin:0 0 12px;padding:12px 14px;border:1px solid #fed7aa;border-radius:16px;background:#fff7ed;box-shadow:0 6px 18px rgba(0,0,0,.06)";
+      reminderBox.parentElement.insertBefore(box,reminderBox);
+
+      const cls=zqCurrentClassForFollowup();
+      if(!cls){ box.innerHTML="<b>📞 Suivi élèves</b>"; return; }
+      const low=(cls.students||[]).filter(st=>Number(st.points)<=9).sort((x,y)=>Number(x.points)-Number(y.points));
+      const active=(window.zqStudentFollowups||[]).filter(f=>String(f.class_id)===String(cls.id)&&f.status==="todo");
+      const activeIds=new Set(active.map(f=>String(f.student_id)));
+
+      let h=`<div style="display:flex;justify-content:space-between;align-items:center"><div><b>📞 Suivi élèves</b><div style="font-size:12px;color:#9a3412">${escapeHTML(cls.name||"")}</div></div>${low.length?`<span style="background:#dc2626;color:#fff;border-radius:999px;padding:3px 8px;font-weight:900">${low.length}</span>`:""}</div>`;
+      if(!low.length) h+='<div style="font-size:12px;color:#64748b;margin-top:7px">Aucun élève à 9/20 ou moins.</div>';
+      for(const st of low){
+        const f=active.find(x=>String(x.student_id)===String(st.id));
+        h+=`<div style="margin-top:8px;padding:9px 10px;border-radius:12px;background:${f?"#fff":"#fef2f2"};border:1px solid ${f?"#fdba74":"#fecaca"}"><b>${f?"📞":"🚨"} ${escapeHTML(st.name||st.firstName||"Élève")} — ${Number(st.points)}/20</b><div style="font-size:12px;margin-top:2px">${f?"Famille à contacter":"Contact famille conseillé"}</div><button ${f?`data-zq-done-inline="${f.id}"`:`data-zq-add-inline="${st.id}" data-class-inline="${cls.id}"`} style="margin-top:6px;border:0;border-radius:9px;padding:6px 9px;font-weight:850;cursor:pointer">${f?"✓ Famille contactée":"📞 À contacter"}</button></div>`;
+      }
+      box.innerHTML=h;
+      box.querySelectorAll("[data-zq-add-inline]").forEach(x=>x.onclick=async()=>{await zqAddFamilyFollowup(x.dataset.zqAddInline,x.dataset.classInline);zqInjectFollowupBlock()});
+      box.querySelectorAll("[data-zq-done-inline]").forEach(x=>x.onclick=async()=>{await zqDoneFamilyFollowup(x.dataset.zqDoneInline);zqInjectFollowupBlock()});
     }
     async function zqRefreshFollowups(){
       const clsIds=(window.appState?.classes||window.classes||[]).map(c=>c.id).filter(Boolean);
@@ -13028,6 +13053,7 @@ Noah"
         .in("class_id",clsIds).eq("status","todo").order("created_at",{ascending:false});
       if(error) throw error;
       window.zqStudentFollowups=data||[];
+      zqInjectFollowupBlock();
     }
     async function zqAddFamilyFollowup(studentId,classId){
       const {data:{user}}=await supabaseClient.auth.getUser();
@@ -13099,7 +13125,7 @@ Noah"
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.15.0c</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.15.0d</span>.
   </footer>
 
 <button type="button" id="zqUndoFloatingBtn" title="Actions récentes"
