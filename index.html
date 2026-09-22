@@ -10517,13 +10517,15 @@ ${schoolMaterialsStudentHTML(remarks,remarks)}
       zqFullReloadCount++;
       console.info(`[ZenQuest perf] chargement complet #${zqFullReloadCount}`,new Date().toLocaleTimeString());
       const transientByStudent=new Map();
+      const legacyNotebookMigrations=[];
       (state.classes||[]).forEach(c=>(c.students||[]).forEach(s=>{
         transientByStudent.set(String(s.id),{
           isAbsent:!!s.isAbsent,
           isAutoAbsent:!!s.isAutoAbsent,
           manualPresenceOverride:!!s.manualPresenceOverride,
           homeworkAddedThisLesson:!!s.homeworkAddedThisLesson,
-          lostStarThisLesson:!!s.lostStarThisLesson
+          lostStarThisLesson:!!s.lostStarThisLesson,
+          notebookChecks:Array.isArray(s.notebookChecks)?s.notebookChecks.map(x=>({...x})):[]
         });
       }));
 
@@ -10642,6 +10644,22 @@ ${schoolMaterialsStudentHTML(remarks,remarks)}
           s.manualPresenceOverride=old.manualPresenceOverride;
           s.homeworkAddedThisLesson=old.homeworkAddedThisLesson;
           s.lostStarThisLesson=old.lostStarThisLesson;
+          const cloudIds=new Set(zqNotebookRecords(s).map(x=>String(x.id)));
+          const recovered=(old.notebookChecks||[]).map(x=>({
+            ...x,
+            id:x.id||uid(),
+            periodId:x.periodId||mappedClass.currentPeriodId||null,
+            periodName:x.periodName||mappedClass.currentPeriodName||"Période en cours",
+            classId:x.classId||mappedClass.id,
+            createdAt:x.createdAt||x.date||new Date().toISOString()
+          }));
+          recovered.forEach(record=>{
+            if(cloudIds.has(String(record.id))) return;
+            s.notebookChecks=s.notebookChecks||[];
+            s.notebookChecks.push(record);
+            cloudIds.add(String(record.id));
+            legacyNotebookMigrations.push({student:s,record});
+          });
           // lastAction is deliberately NOT restored: point animations are one-shot.
         });
         mappedClass.students.forEach(s=>{
@@ -10664,6 +10682,18 @@ ${schoolMaterialsStudentHTML(remarks,remarks)}
       }
 
       state.classes=mapped;
+      if(legacyNotebookMigrations.length){
+        try{
+          const teacher_id=await currentTeacherId();
+          const {data:migrated,error:migrationError}=await supabaseClient.from("teacher_remarks").insert(legacyNotebookMigrations.map(x=>({teacher_id,student_id:x.student.id,remark:encodeZQData("notebook_check",x.record)}))).select("id,student_id,remark,created_at");
+          if(migrationError) throw migrationError;
+          (migrated||[]).forEach(row=>{const student=state.classes.flatMap(c=>c.students).find(s=>String(s.id)===String(row.student_id));if(student){student.teacherRemarks=student.teacherRemarks||[];student.teacherRemarks.unshift({id:row.id,text:row.remark,createdAt:row.created_at,date:row.created_at});}});
+          console.info(`[ZenQuest] ${legacyNotebookMigrations.length} ancienne(s) vérification(s) de cahier récupérée(s) et sécurisée(s).`);
+        }catch(err){
+          console.error("Migration des anciennes vérifications de cahier impossible",err);
+        }
+      }
+      save();
       setTimeout(()=>zqLoadScheduleAndReminders().catch(()=>{}),0);
       if(!state.classes.length){
         state.currentClassId=null;
