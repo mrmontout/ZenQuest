@@ -7,6 +7,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ZenQuest v5.15.0d</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230f766e'/%3E%3Cpath d='M18 19h30L24 45h25' fill='none' stroke='white' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <style>
     :root{
       --bg1:#d8f0ef; --bg2:#f8f0dd; --bg3:#dff3f1; --bg4:#d2ecec;
@@ -1126,6 +1127,7 @@
         </div>
         <div class="teacher-nav-row teacher-nav-tools">
           <button class="btn outline" id="boardBtn">👋 Accueil</button>
+          <button class="btn outline" id="customWelcomeBtn">📣 Accueil personnalisé</button>
           <button class="btn outline" id="boardRemoteBtn">📱 Télécommande</button>
           <button class="btn outline" id="successCardsBtn">🏆 Cartes Réussite</button>
           <button class="btn outline" id="homeworkBatchBtn">📝 Travail maison</button>
@@ -1150,6 +1152,19 @@
         <button type="button" class="btn outline" id="zqQuickReminderSeeAll">Gérer les rappels</button>
       </div>
       <div id="zqQuickReminderUpcoming" class="muted" style="margin-top:8px;font-weight:750">Aucun rappel en attente.</div>
+    </div>
+    <div id="zqStudentFollowupPanel" style="margin:0 0 14px;padding:14px 16px;border:2px solid #fecaca;background:#fef2f2;border-radius:18px">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+        <div>
+          <strong style="font-size:17px">📞 Suivi élèves</strong>
+          <div class="muted" style="margin-top:3px;font-size:12px">Élèves sous 10/20 pour lesquels un appel aux parents est nécessaire.</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button type="button" class="btn outline" id="zqStudentFollowupHistory" style="padding:7px 11px">🕘 Anciens appels</button>
+          <span id="zqStudentFollowupCount" style="display:none;background:#dc2626;color:#fff;border-radius:999px;padding:4px 9px;font-weight:900"></span>
+        </div>
+      </div>
+      <div id="zqStudentFollowupContent" class="muted" style="margin-top:9px;font-weight:750">Chargement du suivi…</div>
     </div>
 <div id="supabaseTeacherStatus" class="panel" style="margin-bottom:12px;border:1px solid #a7f3d0;background:#ecfdf5;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
       <div>
@@ -1359,7 +1374,8 @@ Noah"
         <button class="btn outline teacher-tool-launch" data-target="classAnalyticsBtn">📈 Analyse classe</button>
         <button class="btn outline teacher-tool-launch" data-target="resourcesBtn">📚 Ressources</button>
         <button class="btn outline" id="independentChallengeBtn">🎁 Publier un défi</button>
-                <button class="btn outline teacher-tool-launch" data-target="classRolesBtn">🎖️ Rôles</button>
+        <button class="btn outline teacher-tool-launch" data-target="classRolesBtn">🎖️ Rôles</button>
+        <button class="btn outline" id="zqElectionToolBtn">🗳️ Élections</button>
         <button class="btn outline teacher-tool-launch" data-target="waitingModeBtn">🌙 Mode attente</button>
         <button class="btn outline teacher-tool-launch" data-target="studentCodesBtn">🔑 Codes élèves</button>
         <button class="btn outline teacher-tool-launch" data-target="studentConnectionsBtn">👁️ Connexions élèves</button>
@@ -2510,20 +2526,16 @@ Noah"
     <div class="modal-card" style="width:min(620px,92vw)">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div>
-          <div style="font-size:21px;font-weight:950">⚙️ Configurer l’accueil</div>
-          <div class="muted" style="margin-top:3px">Ces réglages ne sont visibles que lorsque cette fenêtre est ouverte.</div>
+          <div style="font-size:21px;font-weight:950">📣 Accueil personnalisé</div>
+          <div class="muted" style="margin-top:3px">Les accueils enregistrés appartiennent uniquement à la classe sélectionnée.</div>
         </div>
         <button class="btn outline" id="welcomeConfigClose">✕</button>
       </div>
-      <div style="display:block;margin-top:14px;font-weight:850">Messages défilants
-        <div style="margin-top:5px;padding:9px 11px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;font-size:12px;line-height:1.55;color:#475569">
-          🎒 Sortez vos affaires dans le calme. &nbsp;•&nbsp;
-          ✏️ Écrivez la date. &nbsp;•&nbsp;
-          🤫 Restez dans le calme pendant l’appel.<br>
-          <span style="opacity:.8">Puis : messages d’ordre, rappels et encouragements choisis aléatoirement.</span>
-        </div>
-        <textarea id="welcomeMessageInput" style="display:none">Accueil dynamique</textarea>
-      </div>
+      <textarea id="welcomeMessageInput" style="display:none">Accueil dynamique</textarea>
+      <label style="display:block;margin-top:14px;font-weight:900">Message à afficher
+        <textarea id="zqClassAnnouncementInput" maxlength="240" placeholder="Ex. : Bientôt, élection des délégués !" style="margin-top:6px;min-height:84px"></textarea>
+        <span class="muted" style="display:block;font-size:12px;margin-top:4px">Ce message apparaîtra également à la fin du cours si tu lances cet accueil.</span>
+      </label>
       <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-top:12px">
         <label style="font-weight:850">Durée
           <div style="display:flex;align-items:center;gap:5px;margin-top:5px">
@@ -2532,18 +2544,18 @@ Noah"
           </div>
         </label>
         <span style="flex:1"></span>
-        <button class="btn outline" id="welcomeSavePresetBtn">＋ Enregistrer cet accueil</button>
-        <button class="btn green" id="welcomeApplyBtn">✓ Appliquer</button>
+        <button class="btn outline" id="welcomeSavePresetBtn">💾 Enregistrer</button>
+        <button class="btn green" id="welcomeApplyBtn">▶ Lancer maintenant</button>
       </div>
-      <div id="welcomePresets" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px"></div>
-      <div style="font-size:11px;color:#64748b;margin-top:8px">Les accueils enregistrés restent disponibles sur cet appareil.</div>
+      <div style="font-weight:950;margin-top:16px">Accueils enregistrés pour cette classe</div>
+      <div id="welcomePresets" style="display:flex;flex-direction:column;gap:8px;margin-top:9px"></div>
     </div>
   </div>
 
 <div class="modal" id="boardModal">
     <div class="modal-card" style="width:min(1200px,98vw);height:min(92vh,900px);max-height:94vh;overflow:hidden;padding:18px;position:relative">
       <button id="welcomeConfigGear" title="Configurer l’accueil"
-        style="position:absolute;right:64px;top:14px;z-index:80;width:38px;height:38px;border:0;border-radius:50%;background:rgba(255,255,255,.16);color:white;font-size:20px;cursor:pointer;backdrop-filter:blur(4px);box-shadow:0 3px 12px rgba(0,0,0,.16)">⚙️</button>
+        style="display:none;position:absolute;right:64px;top:14px;z-index:80;width:38px;height:38px;border:0;border-radius:50%;background:rgba(255,255,255,.16);color:white;font-size:20px;cursor:pointer;backdrop-filter:blur(4px);box-shadow:0 3px 12px rgba(0,0,0,.16)">⚙️</button>
 
 
       <button class="btn outline" id="closeBoardBtn" title="Fermer l’accueil et revenir à ZenQuest"
@@ -2569,6 +2581,8 @@ Noah"
           <div class="welcome-main-title">Sors ton cahier et écris la date.</div>
           <div class="welcome-main-sub">🤫 Installe-toi calmement.</div>
         </div>
+
+        <div id="zqWelcomeAnnouncement" style="display:none;width:min(980px,92%);margin-top:18px;padding:14px 22px;border-radius:20px;background:#fff7ed;border:3px solid #fb923c;color:#9a3412;font-size:clamp(22px,3vw,38px);font-weight:1000;line-height:1.18;box-shadow:0 10px 28px rgba(154,52,18,.18);white-space:pre-wrap"></div>
 
         <div id="welcomeFixedScores" style="display:none;margin-top:16px;width:min(1120px,94%);text-align:center">
           <div style="font-size:18px;font-weight:900;opacity:.78;margin-bottom:9px">📊 VOS SCORES ACTUELS</div>
@@ -6278,11 +6292,14 @@ Noah"
             </div>
           </div>
         </div>
+        ${zqClassAnnouncement()?`<div style="margin:12px auto;padding:15px 20px;border-radius:18px;background:#fff7ed;border:3px solid #fb923c;color:#9a3412;text-align:center;font-size:clamp(20px,2.7vw,32px);font-weight:1000;line-height:1.2;white-space:pre-wrap">📣 ${escapeHTML(zqClassAnnouncement())}</div>`:""}
         <div style="padding:8px 10px;border-radius:12px;background:#eff6ff;border:1px solid #bfdbfe;text-align:center;font-weight:900;margin-bottom:10px">
           📱 Vous retrouverez votre score et son évolution dans votre espace élève.
         </div>
         ${scoreGrid}
       `;
+      // L'accueil personnalisé ne doit jamais se reporter automatiquement au cours suivant.
+      zqSetActiveClassAnnouncement("");
       document.getElementById("summaryModal").classList.add("show");
       startEndLessonMessages();
     }
@@ -8476,6 +8493,11 @@ Noah"
     function setWelcomeMainInstructionVisible(show){
       const el=document.getElementById("welcomeMainInstruction");
       if(el) el.style.display=show?"block":"none";
+      const announcement=document.getElementById("zqWelcomeAnnouncement");
+      if(announcement){
+        if(show) zqRenderClassAnnouncement();
+        else announcement.style.display="none";
+      }
       if(!show){
         const ticker=document.getElementById("welcomeTicker");
         if(ticker) ticker.style.display="none";
@@ -8543,6 +8565,7 @@ Noah"
       openBoard(false);
       setBoardPreset(preset);
       if(payload.welcome){
+        zqSetActiveClassAnnouncement((payload.customAnnouncement||"").trim());
         setWelcomeMainInstructionVisible(true);
         startWelcomeTicker();
       }else{
@@ -9388,8 +9411,15 @@ Noah"
         label:r==="delegate"?"🗳️ Délégué(e) de classe":r==="substitute"?"🗳️ Suppléant(e)":r==="eco"?"🌱 Éco-délégué(e)":""
       })).filter(x=>x.label);
 
+      const lowScoreAlert=Number(student.points)<10 ? `
+        <div id="zqStudentLowAlert" class="box" style="padding:16px 18px;border:2px solid #f87171;background:#fef2f2;color:#7f1d1d">
+          <div style="font-size:20px;font-weight:950">🚨 Alerte implication : ${Number(student.points)}/20</div>
+          <div style="margin-top:6px;font-weight:750">Ton score est inférieur à 10/20. La situation demande une attention particulière et ta famille peut être contactée.</div>
+          <div style="margin-top:8px">🎯 Premier objectif : repasser à <strong>10/20</strong>, puis retrouver <strong>15/20</strong>.</div>
+        </div>` : "";
       document.getElementById("authenticatedStudentView").innerHTML=`
         <div class="student-dashboard">
+          ${lowScoreAlert}
 
           <div class="mode-switch" style="margin-bottom:16px;width:100%;display:flex;flex-wrap:wrap">
             <button type="button" id="studentCurrentTabBtn" class="active" style="flex:1;min-width:170px;position:relative">
@@ -10459,7 +10489,7 @@ Noah"
             .select("*").in("class_id",classIds).order("created_at",{ascending:false}),
           supabaseClient.from("student_followups")
             .select("id,student_id,class_id,followup_type,note,status,created_at,completed_at")
-            .in("class_id",classIds).eq("status","todo").order("created_at",{ascending:false})
+            .in("class_id",classIds).order("created_at",{ascending:false})
         ]);
         if(studentsRes.error) throw new Error("Impossible de charger les élèves : "+studentsRes.error.message);
         if(periodsRes.error) throw new Error("Impossible de charger les périodes : "+periodsRes.error.message);
@@ -12572,6 +12602,20 @@ Noah"
       return {emoji:"👋",title:"Bonjour !",text,minutes:totalSeconds/60,totalSeconds};
     }
 
+    const ZQ_CUSTOM_WELCOME_PREFIX="zenquest_custom_welcomes_v2_";
+    const ZQ_ACTIVE_WELCOME_PREFIX="zenquest_active_custom_welcome_v2_";
+    function zqCurrentWelcomeClassId(){ return String(currentClass()?.id||"none"); }
+    function zqCustomWelcomeKey(){ return ZQ_CUSTOM_WELCOME_PREFIX+zqCurrentWelcomeClassId(); }
+    function zqActiveWelcomeKey(){ return ZQ_ACTIVE_WELCOME_PREFIX+zqCurrentWelcomeClassId(); }
+    function zqLoadCustomWelcomes(){ try{return JSON.parse(localStorage.getItem(zqCustomWelcomeKey())||"[]")||[]}catch{return []} }
+    function zqSaveCustomWelcomes(items){ localStorage.setItem(zqCustomWelcomeKey(),JSON.stringify(items)); }
+    function zqClassAnnouncement(){ try{return (sessionStorage.getItem(zqActiveWelcomeKey())||"").trim()}catch{return ""} }
+    function zqSetActiveClassAnnouncement(value){ try{if(value)sessionStorage.setItem(zqActiveWelcomeKey(),value);else sessionStorage.removeItem(zqActiveWelcomeKey())}catch{} }
+    function zqRenderClassAnnouncement(){
+      const value=zqClassAnnouncement(),banner=document.getElementById("zqWelcomeAnnouncement"),input=document.getElementById("zqClassAnnouncementInput");
+      if(banner){banner.textContent=value?`📣 ${value}`:"";banner.style.display=value?"block":"none";}
+    }
+
     let welcomeTickerHandle=null;
     let welcomeTickerIndex=0;
     let welcomeTickerItems=[];
@@ -12716,9 +12760,10 @@ Noah"
       welcomeTickerHandle=setInterval(showWelcomeTickerItem,8000);
     }
 
-    function launchWelcome(){
+    function launchWelcome(customMessage=""){
       activateBoardDisplay();
       const preset=getWelcomeConfig();
+      zqSetActiveClassAnnouncement((customMessage||"").trim());
       boardCurrent={...preset};
       document.getElementById("boardEmoji").textContent=preset.emoji;
       document.getElementById("boardTitle").textContent=preset.title;
@@ -12728,59 +12773,39 @@ Noah"
       startWelcomeTicker();
       const endAt=Date.now()+boardRemaining*1000;
       startBoardTimer(false,endAt);
-      sendBoardCommand({action:"show",...preset,endAt,autoStart:true,welcome:true});
+      sendBoardCommand({action:"show",...preset,endAt,autoStart:true,welcome:true,customAnnouncement:zqClassAnnouncement()});
     }
 
-    document.getElementById("boardBtn").onclick=launchWelcome;
+    document.getElementById("boardBtn").onclick=()=>launchWelcome("");
     let welcomePresets=[];
-    try{welcomePresets=JSON.parse(localStorage.getItem("zenquest_welcome_presets")||"[]")||[]}catch{welcomePresets=[]}
 
     function renderWelcomePresets(){
       const box=document.getElementById("welcomePresets");
       if(!box)return;
-      box.innerHTML=welcomePresets.map((p,i)=>`<button class="btn outline welcome-preset-btn" data-i="${i}" style="font-size:10px;padding:4px 7px">${escapeHTML(p.name||("Accueil "+(i+1)))}</button>`).join("");
-      box.querySelectorAll(".welcome-preset-btn").forEach(btn=>btn.onclick=()=>{
-        const p=welcomePresets[Number(btn.dataset.i)];
-        if(!p)return;
-        document.getElementById("welcomeMessageInput").value=p.text||"";
-        document.getElementById("welcomeMinutesInput").value=Math.floor((p.totalSeconds||180)/60);
-        document.getElementById("welcomeSecondsInput").value=(p.totalSeconds||180)%60;
-      });
+      welcomePresets=zqLoadCustomWelcomes();
+      box.innerHTML=welcomePresets.length?welcomePresets.map((p,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid #fed7aa;border-radius:14px;background:#fff7ed"><div style="flex:1;min-width:0"><strong>${escapeHTML(p.name||("Accueil "+(i+1)))}</strong><div class="muted" style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px">${escapeHTML(p.message||"")}</div></div><button class="btn green small" data-launch-welcome="${i}">▶ Lancer</button><button class="btn danger small" data-delete-welcome="${i}" title="Supprimer">🗑</button></div>`).join(""):`<div class="muted" style="padding:12px;border-radius:12px;background:#f8fafc">Aucun accueil personnalisé enregistré pour cette classe.</div>`;
+      box.querySelectorAll("[data-launch-welcome]").forEach(btn=>btn.onclick=()=>{const p=welcomePresets[Number(btn.dataset.launchWelcome)];if(!p)return;document.getElementById("welcomeMinutesInput").value=Math.floor((p.totalSeconds||180)/60);document.getElementById("welcomeSecondsInput").value=(p.totalSeconds||180)%60;document.getElementById("welcomeConfigModal").classList.remove("show");launchWelcome(p.message||"");});
+      box.querySelectorAll("[data-delete-welcome]").forEach(btn=>btn.onclick=()=>{const i=Number(btn.dataset.deleteWelcome);if(!confirm("Supprimer cet accueil personnalisé ?"))return;welcomePresets.splice(i,1);zqSaveCustomWelcomes(welcomePresets);renderWelcomePresets();});
     }
     document.getElementById("welcomeApplyBtn").onclick=()=>{
-      const p=getWelcomeConfig();
-
-      boardCurrent={...p};
-      document.getElementById("boardEmoji").textContent=p.emoji;
-      document.getElementById("boardTitle").textContent=p.title;
-      document.getElementById("boardText").textContent=p.text;
-
-      // Apply the new duration immediately and restart the welcome countdown.
-      stopBoardTimer(false);
-      boardRemaining=p.totalSeconds;
-      const endAt=Date.now()+boardRemaining*1000;
-      startBoardTimer(false,endAt);
-      updateBoardTimer();
-
-      // Mirror the edited welcome to the other connected display.
-      sendBoardCommand({action:"show",...p,endAt,autoStart:true,welcome:true});
-
-      startWelcomeTicker();
-      document.getElementById("welcomeConfigModal").classList.remove("show");
+      const message=(document.getElementById("zqClassAnnouncementInput")?.value||"").trim();
+      if(!message)return alert("Écris le message de l’accueil personnalisé.");
+      document.getElementById("welcomeConfigModal").classList.remove("show");launchWelcome(message);
     };
     document.getElementById("welcomeSavePresetBtn").onclick=()=>{
       try{
-        const p=getWelcomeConfig();
+        const p=getWelcomeConfig(),message=(document.getElementById("zqClassAnnouncementInput")?.value||"").trim();
+        if(!message)return alert("Écris le message à enregistrer.");
         const name=prompt("Nom de cet accueil :",`Accueil ${welcomePresets.length+1}`);
         if(!name || !name.trim()) return;
 
         welcomePresets.push({
           name:name.trim(),
-          text:p.text,
+          message,
           totalSeconds:p.totalSeconds
         });
 
-        localStorage.setItem("zenquest_welcome_presets",JSON.stringify(welcomePresets));
+        zqSaveCustomWelcomes(welcomePresets);
         renderWelcomePresets();
 
         const btn=document.getElementById("welcomeSavePresetBtn");
@@ -12797,11 +12822,14 @@ Noah"
     const welcomeGear=document.getElementById("welcomeConfigGear");
     const welcomeConfigModal=document.getElementById("welcomeConfigModal");
     const welcomeConfigClose=document.getElementById("welcomeConfigClose");
+    const customWelcomeBtn=document.getElementById("customWelcomeBtn");
+    if(customWelcomeBtn && welcomeConfigModal){customWelcomeBtn.onclick=()=>{document.getElementById("zqClassAnnouncementInput").value="";renderWelcomePresets();welcomeConfigModal.classList.add("show");};}
     if(welcomeGear && welcomeConfigModal){
       welcomeGear.addEventListener("click",(e)=>{
         e.preventDefault();
         e.stopPropagation();
         welcomeConfigModal.classList.add("show");
+        zqRenderClassAnnouncement();
       });
     }
     if(welcomeConfigClose && welcomeConfigModal){
@@ -12811,6 +12839,7 @@ Noah"
       });
     }
     renderWelcomePresets();
+    zqRenderClassAnnouncement();
 
     document.getElementById("boardRemoteBtn").onclick=()=>{
       document.getElementById("boardRemoteModal").classList.add("show");
@@ -12991,7 +13020,7 @@ Noah"
 
     // ===== ZenQuest v5.15.0d — Suivi élèves visible =====
     function zqFindStudentFollowup(id){
-      for(const cls of (window.appState?.classes||window.classes||[])){
+      for(const cls of (state?.classes||[])){
         const st=(cls.students||[]).find(x=>String(x.id)===String(id));
         if(st) return {student:st,cls};
       }
@@ -12999,9 +13028,10 @@ Noah"
     }
     function zqLowScoreCandidates(){
       const out=[];
-      for(const cls of (window.appState?.classes||window.classes||[])){
+      for(const cls of (state?.classes||[])){
         for(const st of (cls.students||[])){
-          if(Number(st.points)<=9) out.push({student:st,cls});
+          const score=Number(st.points);
+          if(Number.isFinite(score)&&score<10) out.push({student:st,cls});
         }
       }
       return out.sort((a,b)=>Number(a.student.points)-Number(b.student.points));
@@ -13011,46 +13041,46 @@ Noah"
       zqInjectFollowupBlock();
     }
     function zqCurrentClassForFollowup(){
-      const classes=(window.appState?.classes||window.classes||[]);
-      const activeId=window.appState?.activeClassId||window.appState?.selectedClassId||window.currentClassId;
+      const classes=(state?.classes||[]);
+      const activeId=state?.currentClassId;
       return classes.find(c=>String(c.id)===String(activeId)) || classes[0] || null;
     }
     function zqInjectFollowupBlock(){
       document.getElementById("zqFollowupButton")?.remove();
-      const old=document.getElementById("zqFollowupInlineBlock");
-      const buttons=[...document.querySelectorAll("button")];
-      const reminderBtn=buttons.find(x=>/Gérer les rappels/i.test(x.textContent||""));
-      if(!reminderBtn){ old?.remove(); return; }
-      const reminderBox=reminderBtn.closest(".card,.panel,section")||reminderBtn.parentElement;
-      if(!reminderBox?.parentElement) return;
-
-      let box=old||document.createElement("div");
-      box.id="zqFollowupInlineBlock";
-      box.style.cssText="margin:0 0 12px;padding:12px 14px;border:1px solid #fed7aa;border-radius:16px;background:#fff7ed;box-shadow:0 6px 18px rgba(0,0,0,.06)";
-      reminderBox.parentElement.insertBefore(box,reminderBox);
+      document.getElementById("zqFollowupInlineBlock")?.remove();
+      const box=document.getElementById("zqStudentFollowupPanel");
+      const content=document.getElementById("zqStudentFollowupContent");
+      const count=document.getElementById("zqStudentFollowupCount");
+      if(!box||!content||!count) return;
 
       const cls=zqCurrentClassForFollowup();
-      if(!cls){ box.innerHTML="<b>📞 Suivi élèves</b>"; return; }
-      const low=(cls.students||[]).filter(st=>Number(st.points)<=9).sort((x,y)=>Number(x.points)-Number(y.points));
+      if(!cls){ content.innerHTML="Aucune classe sélectionnée."; count.style.display="none"; return; }
+      const low=(cls.students||[]).filter(st=>Number.isFinite(Number(st.points))&&Number(st.points)<10).sort((x,y)=>Number(x.points)-Number(y.points));
       const active=(window.zqStudentFollowups||[]).filter(f=>String(f.class_id)===String(cls.id)&&f.status==="todo");
-      const activeIds=new Set(active.map(f=>String(f.student_id)));
+      const completed=(window.zqStudentFollowups||[]).filter(f=>String(f.class_id)===String(cls.id)&&f.status==="done");
+      const completedIds=new Set(completed.map(f=>String(f.student_id)));
+      const pendingLow=low.filter(st=>!completedIds.has(String(st.id)));
+      count.textContent=String(pendingLow.length);
+      count.style.display=pendingLow.length?"inline-flex":"none";
 
-      let h=`<div style="display:flex;justify-content:space-between;align-items:center"><div><b>📞 Suivi élèves</b><div style="font-size:12px;color:#9a3412">${escapeHTML(cls.name||"")}</div></div>${low.length?`<span style="background:#dc2626;color:#fff;border-radius:999px;padding:3px 8px;font-weight:900">${low.length}</span>`:""}</div>`;
-      if(!low.length) h+='<div style="font-size:12px;color:#64748b;margin-top:7px">Aucun élève à 9/20 ou moins.</div>';
-      for(const st of low){
+      let h=`<div style="font-size:12px;color:#991b1b;margin-bottom:7px">${escapeHTML(cls.name||"")}</div>`;
+      if(!pendingLow.length) h+='<div style="padding:10px 12px;border-radius:12px;background:#fff;color:#166534;border:1px solid #bbf7d0">✅ Aucun appel aux parents à effectuer dans cette classe.</div>';
+      for(const st of pendingLow){
         const f=active.find(x=>String(x.student_id)===String(st.id));
-        h+=`<div style="margin-top:8px;padding:9px 10px;border-radius:12px;background:${f?"#fff":"#fef2f2"};border:1px solid ${f?"#fdba74":"#fecaca"}"><b>${f?"📞":"🚨"} ${escapeHTML(st.name||st.firstName||"Élève")} — ${Number(st.points)}/20</b><div style="font-size:12px;margin-top:2px">${f?"Famille à contacter":"Contact famille conseillé"}</div><button ${f?`data-zq-done-inline="${f.id}"`:`data-zq-add-inline="${st.id}" data-class-inline="${cls.id}"`} style="margin-top:6px;border:0;border-radius:9px;padding:6px 9px;font-weight:850;cursor:pointer">${f?"✓ Famille contactée":"📞 À contacter"}</button></div>`;
+        h+=`<div style="margin-top:8px;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid ${f?"#fdba74":"#fecaca"};display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><b>🚨 ${escapeHTML(st.name||st.firstName||"Élève")} — ${Number(st.points)}/20</b><div style="font-size:12px;margin-top:2px;color:#991b1b">${f?"Appel aux parents à effectuer":"Appeler les parents"}</div></div><button ${f?`data-zq-done-inline="${f.id}"`:`data-zq-add-inline="${st.id}" data-class-inline="${cls.id}"`} style="border:0;border-radius:9px;padding:7px 10px;font-weight:850;cursor:pointer">${f?"✓ Parents appelés":"📞 Marquer à appeler"}</button></div>`;
       }
-      box.innerHTML=h;
+      content.innerHTML=h;
+      const historyBtn=document.getElementById("zqStudentFollowupHistory");
+      if(historyBtn) historyBtn.onclick=zqOpenFollowupHistory;
       box.querySelectorAll("[data-zq-add-inline]").forEach(x=>x.onclick=async()=>{await zqAddFamilyFollowup(x.dataset.zqAddInline,x.dataset.classInline);zqInjectFollowupBlock()});
       box.querySelectorAll("[data-zq-done-inline]").forEach(x=>x.onclick=async()=>{await zqDoneFamilyFollowup(x.dataset.zqDoneInline);zqInjectFollowupBlock()});
     }
     async function zqRefreshFollowups(){
-      const clsIds=(window.appState?.classes||window.classes||[]).map(c=>c.id).filter(Boolean);
+      const clsIds=(state?.classes||[]).map(c=>c.id).filter(Boolean);
       if(!clsIds.length){ window.zqStudentFollowups=[]; return; }
       const {data,error}=await supabaseClient.from("student_followups")
         .select("id,student_id,class_id,followup_type,note,status,created_at,completed_at")
-        .in("class_id",clsIds).eq("status","todo").order("created_at",{ascending:false});
+        .in("class_id",clsIds).order("created_at",{ascending:false});
       if(error) throw error;
       window.zqStudentFollowups=data||[];
       zqInjectFollowupBlock();
@@ -13061,14 +13091,36 @@ Noah"
         teacher_id:user.id,student_id:studentId,class_id:classId,followup_type:"family_contact",status:"todo"
       });
       if(error && !/duplicate/i.test(error.message||"")) return alert(error.message);
-      await zqRefreshFollowups(); zqOpenFollowupModal();
+      await zqRefreshFollowups();
     }
     async function zqDoneFamilyFollowup(id){
       const {error}=await supabaseClient.from("student_followups").update({
         status:"done",completed_at:new Date().toISOString(),updated_at:new Date().toISOString()
       }).eq("id",id);
       if(error) return alert(error.message);
-      await zqRefreshFollowups(); zqOpenFollowupModal();
+      await zqRefreshFollowups();
+    }
+    function zqOpenFollowupHistory(){
+      document.getElementById("zqFollowupModal")?.remove();
+      const modal=document.createElement("div");
+      modal.id="zqFollowupModal";
+      modal.style.cssText="position:fixed;inset:0;z-index:2147483646;background:rgba(15,23,42,.5);display:flex;align-items:center;justify-content:center;padding:16px";
+      const card=document.createElement("div");
+      card.style.cssText="width:min(650px,100%);max-height:82vh;overflow:auto;background:white;border-radius:22px;padding:20px;box-shadow:0 22px 70px rgba(0,0,0,.28)";
+      const cls=zqCurrentClassForFollowup();
+      const history=(window.zqStudentFollowups||[]).filter(f=>f.status==="done"&&(!cls||String(f.class_id)===String(cls.id))).sort((a,b)=>new Date(b.completed_at||b.created_at)-new Date(a.completed_at||a.created_at));
+      let h='<div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><div><div style="font-size:21px;font-weight:950">🕘 Anciens appels</div><div style="font-size:13px;color:#64748b">Historique des familles déjà contactées.</div></div><button id="zqCloseFollowup" style="border:0;background:#f1f5f9;border-radius:12px;padding:9px 12px;font-weight:900;cursor:pointer">✕</button></div>';
+      if(!history.length) h+='<div style="margin-top:18px;padding:16px;background:#f8fafc;border-radius:15px">Aucun appel enregistré pour cette classe.</div>';
+      history.forEach(f=>{
+        const x=zqFindStudentFollowup(f.student_id);
+        const name=x?.student?.name||x?.student?.firstName||"Élève";
+        const date=f.completed_at||f.created_at;
+        const dateLabel=date?new Date(date).toLocaleString("fr-FR",{dateStyle:"medium",timeStyle:"short"}):"Date inconnue";
+        h+=`<div style="margin-top:10px;padding:12px 14px;border:1px solid #bbf7d0;background:#f0fdf4;border-radius:14px"><b>✅ ${escapeHTML(name)}</b><div style="font-size:13px;margin-top:4px;color:#475569">Parents appelés · ${escapeHTML(dateLabel)}</div></div>`;
+      });
+      card.innerHTML=h; modal.appendChild(card); document.body.appendChild(modal);
+      card.querySelector("#zqCloseFollowup").onclick=()=>modal.remove();
+      modal.onclick=e=>{if(e.target===modal)modal.remove()};
     }
     function zqOpenFollowupModal(){
       document.getElementById("zqFollowupModal")?.remove();
@@ -13121,6 +13173,229 @@ Noah"
     document.addEventListener("visibilitychange",()=>{ if(!document.hidden) setTimeout(zqRefreshFollowupVisibility,80); });
     setTimeout(zqRefreshFollowupVisibility,300);
     setTimeout(zqRefreshFollowupVisibility,1200);
+
+    // ===== ZenQuest — Élections des délégués et éco-délégués =====
+    const ZQ_ELECTION_PREFIX="zenquest_election_v1_";
+    let zqElection=null,zqElectionActiveTab="rules";
+    function zqElectionKey(type,clsId){ return `${ZQ_ELECTION_PREFIX}${clsId}_${type}`; }
+    function zqElectionStudents(){ return [...(currentClass()?.students||[])].sort((a,b)=>(a.name||"").localeCompare(b.name||"","fr")); }
+    function zqElectionLoad(type){
+      const cls=currentClass(); if(!cls) return null;
+      try{ return JSON.parse(localStorage.getItem(zqElectionKey(type,cls.id))||"null"); }catch{return null;}
+    }
+    function zqElectionSave(){
+      const cls=currentClass(); if(!cls||!zqElection)return;
+      localStorage.setItem(zqElectionKey(zqElection.type,cls.id),JSON.stringify(zqElection));
+    }
+    function zqElectionName(id){ return zqElectionStudents().find(s=>String(s.id)===String(id))?.name||"Élève"; }
+    function zqElectionAvatar(id){ return zqElectionStudents().find(s=>String(s.id)===String(id))?.avatar||"🧑🏽‍🎓"; }
+    function zqElectionModal(){
+      let modal=document.getElementById("zqElectionModal");
+      if(modal)return modal;
+      modal=document.createElement("div"); modal.id="zqElectionModal"; modal.className="modal"; modal.style.zIndex="6100000";
+      modal.innerHTML=`<div class="modal-card" style="width:min(1180px,97vw);height:min(92vh,900px);max-height:94vh;overflow:auto;padding:20px;background:linear-gradient(160deg,#f0fdfa,#eff6ff 55%,#fff7ed)">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;position:sticky;top:0;z-index:4;padding:4px 0 12px;background:linear-gradient(160deg,#f0fdfa,#eff6ff)">
+          <div><h2 style="margin:0;font-size:28px">🗳️ Élections</h2><div id="zqElectionSubtitle" class="muted" style="margin-top:3px"></div></div>
+          <button class="btn outline" id="zqElectionClose">✕ Fermer</button>
+        </div><div id="zqElectionBody"></div></div>`;
+      document.body.appendChild(modal);
+      modal.querySelector("#zqElectionClose").onclick=()=>modal.classList.remove("show");
+      modal.onclick=e=>{if(e.target===modal)modal.classList.remove("show")};
+      return modal;
+    }
+    function zqOpenElection(){
+      const modal=zqElectionModal(); modal.classList.add("show");
+      document.getElementById("teacherToolsModal")?.classList.remove("show");
+      zqElection=null; zqElectionActiveTab="rules"; zqElectionRenderHome();
+    }
+    function zqElectionApplicationsKey(){ return `${ZQ_ELECTION_PREFIX}${currentClass()?.id||"none"}_applications`; }
+    function zqElectionApplications(){ try{return JSON.parse(localStorage.getItem(zqElectionApplicationsKey())||"[]");}catch{return [];} }
+    function zqElectionSaveApplications(items){ localStorage.setItem(zqElectionApplicationsKey(),JSON.stringify(items)); }
+    function zqElectionTabs(content){
+      return `<div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 16px"><button class="btn ${zqElectionActiveTab==="rules"?"primary":"outline"}" data-election-tab="rules">📜 Règles</button><button class="btn ${zqElectionActiveTab==="applications"?"primary":"outline"}" data-election-tab="applications">📝 Candidatures</button><button class="btn ${zqElectionActiveTab==="count"?"primary":"outline"}" data-election-tab="count">🗳️ Dépouillement</button></div>${content}`;
+    }
+    function zqElectionWireTabs(){ document.querySelectorAll("[data-election-tab]").forEach(b=>b.onclick=()=>{zqElectionActiveTab=b.dataset.electionTab;zqElectionRenderHome();}); }
+    function zqElectionRenderHome(){
+      const cls=currentClass(),body=document.getElementById("zqElectionBody"),sub=document.getElementById("zqElectionSubtitle");
+      sub.textContent=cls?.name||"Classe";
+      if(zqElectionActiveTab==="rules"){
+        body.innerHTML=zqElectionTabs(`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:14px">
+          <div class="box" style="background:white;border:2px solid #93c5fd"><div style="font-size:42px">🗳️</div><h2>Les délégués de classe</h2><p>La classe élit <strong>2 délégués titulaires</strong>. Chaque candidat se présente avec <strong>un suppléant</strong>.</p><p>Les délégués représentent la classe, recueillent les idées des élèves et participent notamment aux conseils de classe.</p></div>
+          <div class="box" style="background:white;border:2px solid #86efac"><div style="font-size:42px">🌱</div><h2>L’éco-délégué</h2><p>La classe élit <strong>1 éco-délégué titulaire</strong> accompagné de <strong>1 suppléant</strong>.</p><p>Il propose et aide à mener des actions pour protéger l’environnement et améliorer les habitudes de la classe et du collège.</p></div>
+          <div class="box" style="background:white"><div style="font-size:42px">🗳️</div><h2>Comment allons-nous voter ?</h2><p>Chaque élève vote à bulletin secret dans l’urne. Personne ne doit savoir pour qui un autre élève a voté.</p><p>Lors du dépouillement, chaque bulletin sera annoncé et ajouté dans ZenQuest.</p></div>
+          <div class="box" style="background:white"><div style="font-size:42px">⚖️</div><h2>Comment gagne-t-on ?</h2><p>Au premier tour des délégués, il faut obtenir la <strong>majorité absolue</strong>, c’est-à-dire plus de la moitié des suffrages exprimés.</p><p>Au second tour, les candidats ayant le plus de voix sont élus. En cas d’égalité, le candidat le plus jeune est élu.</p></div>
+          <div class="box" style="background:white"><div style="font-size:42px">⬜</div><h2>Bulletins particuliers</h2><p>Un bulletin sans nom est <strong>blanc</strong>. Un bulletin impossible à comprendre ou non conforme est <strong>nul</strong>.</p><p>Les bulletins blancs et nuls sont comptés, mais ils ne font pas partie des suffrages exprimés.</p></div>
+          <div class="box" style="background:white"><div style="font-size:42px">🤝</div><h2>Une responsabilité</h2><p>Être élu, ce n’est pas seulement gagner : c’est écouter les autres, transmettre leurs idées, respecter chacun et tenir ses engagements pendant toute l’année.</p></div>
+        </div>`);zqElectionWireTabs();return;
+      }
+      if(zqElectionActiveTab==="applications"){zqElectionRenderApplications();return;}
+      const delegate=zqElectionLoad("delegate"),eco=zqElectionLoad("eco");
+      const status=x=>!x?"Nouvelle élection":x.phase==="finished"?"Résultats enregistrés":x.phase?.startsWith("count")?`Dépouillement · tour ${x.round}`:"Élection préparée";
+      body.innerHTML=zqElectionTabs(`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-top:14px">
+        <button data-zq-election-type="delegate" style="text-align:left;border:2px solid #93c5fd;background:white;border-radius:24px;padding:24px;cursor:pointer;box-shadow:0 12px 30px #0f172a12"><div style="font-size:52px">🗳️</div><div style="font-size:24px;font-weight:950;margin-top:8px">Délégués de classe</div><div class="muted" style="margin-top:7px">2 titulaires et leurs suppléants · scrutin officiel à deux tours.</div><div style="margin-top:14px;font-weight:900;color:#1d4ed8">${status(delegate)}</div></button>
+        <button data-zq-election-type="eco" style="text-align:left;border:2px solid #86efac;background:white;border-radius:24px;padding:24px;cursor:pointer;box-shadow:0 12px 30px #0f172a12"><div style="font-size:52px">🌱</div><div style="font-size:24px;font-weight:950;margin-top:8px">Éco-délégué</div><div class="muted" style="margin-top:7px">1 titulaire et 1 suppléant · élection indépendante.</div><div style="margin-top:14px;font-weight:900;color:#047857">${status(eco)}</div></button>
+      </div>`);zqElectionWireTabs();
+      body.querySelectorAll("[data-zq-election-type]").forEach(b=>b.onclick=()=>{
+        const type=b.dataset.zqElectionType,existing=zqElectionLoad(type);
+        if(existing){zqElection=existing;zqElectionRender();}else zqElectionSetup(type);
+      });
+    }
+    function zqElectionRenderApplications(){
+      const body=document.getElementById("zqElectionBody"),items=zqElectionApplications();
+      body.innerHTML=zqElectionTabs(`<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><div><h2 style="margin:0">Candidatures validées</h2><div class="muted">Les candidatures apparaîtront automatiquement dans le dépouillement.</div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-new-application="delegate">＋ Fiche délégué</button><button class="btn green" data-new-application="eco">＋ Fiche éco-délégué</button></div></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px;margin-top:16px">${items.length?items.map(x=>`<div class="box" data-open-application="${x.id}" role="button" tabindex="0" title="Afficher cette candidature à la classe" style="background:white;border:2px solid ${x.type==="eco"?"#86efac":"#93c5fd"};cursor:pointer;transition:transform .15s ease,box-shadow .15s ease"><div style="display:flex;justify-content:space-between;gap:8px"><div><span class="pill">${x.type==="eco"?"🌱 Éco-délégué":"🗳️ Délégué"}</span><h3 style="font-size:20px;margin:12px 0 4px">${zqElectionAvatar(x.candidateId)} ${escapeHTML(zqElectionName(x.candidateId))}</h3><div>Suppléant : <strong>${escapeHTML(zqElectionName(x.deputyId))}</strong></div></div><button class="btn danger small" data-delete-application="${x.id}" title="Supprimer">🗑</button></div>${x.motivation?`<div style="margin-top:12px"><strong>Pourquoi je me présente</strong><div class="muted" style="white-space:pre-wrap">${escapeHTML(x.motivation)}</div></div>`:""}${x.ideas?`<div style="margin-top:10px"><strong>Mes idées</strong><div class="muted" style="white-space:pre-wrap">${escapeHTML(x.ideas)}</div></div>`:""}<div style="margin-top:14px;font-weight:900;color:${x.type==="eco"?"#047857":"#1d4ed8"}">👁️ Cliquer pour présenter à la classe</div></div>`).join(""):'<div class="box" style="background:white;grid-column:1/-1;text-align:center;padding:28px"><div style="font-size:44px">📝</div><strong>Aucune candidature validée</strong><div class="muted" style="margin-top:5px">Ajoute la fiche d’un candidat délégué ou éco-délégué.</div></div>'}</div>`);
+      zqElectionWireTabs();
+      body.querySelectorAll("[data-new-application]").forEach(b=>b.onclick=()=>zqElectionApplicationForm(b.dataset.newApplication));
+      body.querySelectorAll("[data-open-application]").forEach(card=>{card.onclick=()=>zqElectionPresentApplication(items.find(x=>x.id===card.dataset.openApplication));card.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();card.click();}}});
+      body.querySelectorAll("[data-delete-application]").forEach(b=>b.onclick=e=>{e.stopPropagation();if(confirm("Supprimer cette candidature ?")){zqElectionSaveApplications(items.filter(x=>x.id!==b.dataset.deleteApplication));zqElectionRenderApplications();}});
+    }
+    function zqElectionPresentApplication(item){
+      if(!item)return;const body=document.getElementById("zqElectionBody"),eco=item.type==="eco",color=eco?"#047857":"#1d4ed8",soft=eco?"#f0fdf4":"#eff6ff";
+      body.innerHTML=`<button class="btn outline" id="zqApplicationPresentationBack">← Toutes les candidatures</button><div style="min-height:62vh;margin-top:14px;padding:clamp(22px,4vw,48px);border-radius:30px;background:${soft};border:4px solid ${eco?"#86efac":"#93c5fd"};display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:center"><div style="font-size:clamp(54px,8vw,96px)">${zqElectionAvatar(item.candidateId)}</div><div class="pill" style="margin-top:8px;font-size:16px">${eco?"🌱 Candidature éco-délégué":"🗳️ Candidature délégué"}</div><h2 style="font-size:clamp(34px,5vw,62px);line-height:1;margin:18px 0 8px;color:${color}">${escapeHTML(zqElectionName(item.candidateId))}</h2><div style="font-size:clamp(18px,2.5vw,30px)">avec <strong>${escapeHTML(zqElectionName(item.deputyId))}</strong> comme suppléant(e)</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;width:min(1000px,100%);margin-top:30px;text-align:left">${item.motivation?`<div style="padding:22px;border-radius:22px;background:white;box-shadow:0 10px 28px #0f172a12"><div style="font-size:21px;font-weight:1000;color:${color}">💬 Pourquoi je me présente</div><div style="font-size:clamp(18px,2vw,25px);line-height:1.45;margin-top:10px;white-space:pre-wrap">${escapeHTML(item.motivation)}</div></div>`:""}${item.ideas?`<div style="padding:22px;border-radius:22px;background:white;box-shadow:0 10px 28px #0f172a12"><div style="font-size:21px;font-weight:1000;color:${color}">💡 Mes idées et mes projets</div><div style="font-size:clamp(18px,2vw,25px);line-height:1.45;margin-top:10px;white-space:pre-wrap">${escapeHTML(item.ideas)}</div></div>`:""}</div></div>`;
+      document.getElementById("zqApplicationPresentationBack").onclick=zqElectionRenderApplications;
+    }
+    function zqElectionApplicationForm(type){
+      const body=document.getElementById("zqElectionBody"),students=zqElectionStudents(),options=students.map(s=>`<option value="${s.id}">${escapeHTML(s.name)}</option>`).join("");
+      body.innerHTML=`<button class="btn outline" id="zqApplicationBack">← Candidatures</button><div class="box" style="background:white;margin-top:14px"><h2 style="margin-top:0">${type==="eco"?"🌱 Fiche de candidature éco-délégué":"🗳️ Fiche de candidature délégué"}</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><label style="font-weight:900">Candidat<select id="zqApplicationCandidate" style="margin-top:5px"><option value="">Choisir…</option>${options}</select></label><label style="font-weight:900">Suppléant<select id="zqApplicationDeputy" style="margin-top:5px"><option value="">Choisir…</option>${options}</select></label></div><label style="display:block;font-weight:900;margin-top:12px">Pourquoi je me présente<textarea id="zqApplicationMotivation" placeholder="Motivations indiquées sur la fiche…" style="margin-top:5px"></textarea></label><label style="display:block;font-weight:900;margin-top:12px">Mes idées / mes projets<textarea id="zqApplicationIdeas" placeholder="Propositions indiquées sur la fiche…" style="margin-top:5px"></textarea></label>
+        <div style="margin-top:14px;padding:14px;border:1px solid #dbeafe;border-radius:16px;background:#eff6ff"><strong>📷 Importer la photo de la fiche papier</strong><div class="muted" style="font-size:12px;margin:4px 0 9px">L’analyse aide à retrouver les noms et le texte. Vérifie toujours les informations avant de valider.</div><input type="file" id="zqApplicationPhoto" accept="image/*" capture="environment"><div id="zqApplicationPhotoArea" style="display:none;margin-top:10px"><img id="zqApplicationPreview" alt="Fiche photographiée" style="max-width:260px;max-height:260px;border-radius:12px;display:block"><button class="btn primary" id="zqApplicationAnalyze" style="margin-top:9px">🔎 Analyser la fiche</button><div id="zqApplicationOcrStatus" class="muted" style="margin-top:7px"></div><textarea id="zqApplicationRawText" placeholder="Texte reconnu…" style="margin-top:8px"></textarea></div></div>
+        <div style="display:flex;justify-content:flex-end;margin-top:16px"><button class="btn green" id="zqApplicationSave">✓ Valider la candidature</button></div></div>`;
+      document.getElementById("zqApplicationBack").onclick=zqElectionRenderApplications;
+      let imageFile=null;const input=document.getElementById("zqApplicationPhoto");
+      input.onchange=()=>{imageFile=input.files?.[0]||null;if(!imageFile)return;document.getElementById("zqApplicationPreview").src=URL.createObjectURL(imageFile);document.getElementById("zqApplicationPhotoArea").style.display="block";};
+      document.getElementById("zqApplicationAnalyze").onclick=async()=>{
+        if(!imageFile)return;const status=document.getElementById("zqApplicationOcrStatus");status.textContent="Analyse de la fiche en cours…";
+        try{
+          if(!window.Tesseract){await new Promise((resolve,reject)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";s.onload=resolve;s.onerror=reject;document.head.appendChild(s);});}
+          const result=await window.Tesseract.recognize(imageFile,"fra",{logger:m=>{if(m.status==="recognizing text")status.textContent=`Lecture de la fiche… ${Math.round((m.progress||0)*100)} %`;}});
+          const text=result?.data?.text||"";document.getElementById("zqApplicationRawText").value=text;
+          const norm=v=>(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();const found=students.filter(s=>norm(text).includes(norm(s.name)));
+          if(found[0])document.getElementById("zqApplicationCandidate").value=found[0].id;if(found[1])document.getElementById("zqApplicationDeputy").value=found[1].id;
+          status.textContent="✅ Analyse terminée. Vérifie les noms et recopie/corrige les réponses si nécessaire.";
+        }catch(e){status.textContent="⚠️ Analyse automatique indisponible. Tu peux saisir les informations manuellement.";}
+      };
+      document.getElementById("zqApplicationSave").onclick=()=>{
+        const candidateId=document.getElementById("zqApplicationCandidate").value,deputyId=document.getElementById("zqApplicationDeputy").value;
+        if(!candidateId||!deputyId)return alert("Choisis le candidat et son suppléant.");if(candidateId===deputyId)return alert("Le candidat et le suppléant doivent être deux élèves différents.");
+        let items=zqElectionApplications();if(items.some(x=>x.type===type&&x.candidateId===candidateId))return alert("Cet élève possède déjà une candidature pour cette élection.");
+        items.push({id:uid(),type,candidateId,deputyId,motivation:document.getElementById("zqApplicationMotivation").value.trim(),ideas:document.getElementById("zqApplicationIdeas").value.trim(),rawText:document.getElementById("zqApplicationRawText")?.value.trim()||"",createdAt:new Date().toISOString()});zqElectionSaveApplications(items);zqElectionRenderApplications();
+      };
+    }
+    function zqElectionSetup(type){
+      const cls=currentClass(),students=zqElectionStudents(),body=document.getElementById("zqElectionBody"),applications=zqElectionApplications().filter(x=>x.type===type);
+      zqElection={type,classId:cls.id,className:cls.name,phase:"setup",round:1,voters:students.length,candidates:[],votes:{},actions:[],elected:[],createdAt:new Date().toISOString()};
+      const title=type==="delegate"?"Délégués de classe":"Éco-délégué";
+      body.innerHTML=`<div style="margin-top:12px"><button class="btn outline" id="zqElectionBack">← Retour</button>
+        <div class="box" style="margin-top:14px;background:white"><h3 style="margin:0 0 6px;font-size:22px">Préparer l’élection · ${title}</h3><div class="muted">Sélectionne les candidatures validées qui participent à cette élection.</div>
+        <label style="display:block;margin-top:14px;font-weight:900">Nombre de votants<input id="zqElectionVoters" type="number" min="1" max="99" value="${students.length}" style="width:120px;margin-left:10px"></label></div>
+        <div id="zqElectionCandidateSetup" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:12px">
+          ${applications.length?applications.map(a=>`<label style="display:flex;gap:10px;align-items:center;padding:12px;background:white;border:1px solid #dbeafe;border-radius:15px;cursor:pointer"><input type="checkbox" class="zq-election-candidate" value="${a.candidateId}" data-deputy="${a.deputyId}" checked style="width:20px"><span style="font-size:25px">${zqElectionAvatar(a.candidateId)}</span><span><strong>${escapeHTML(zqElectionName(a.candidateId))}</strong><br><small>Suppléant : ${escapeHTML(zqElectionName(a.deputyId))}</small></span></label>`).join(""):'<div class="box" style="background:white;grid-column:1/-1">Aucune candidature validée pour cette élection. Va d’abord dans l’onglet <strong>Candidatures</strong>.</div>'}
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:16px"><button class="btn green" id="zqElectionPrepare">Continuer →</button></div></div>`;
+      document.getElementById("zqElectionBack").onclick=zqElectionRenderHome;
+      document.getElementById("zqElectionPrepare").onclick=()=>{
+        const selected=[...document.querySelectorAll(".zq-election-candidate:checked")],ids=selected.map(x=>x.value);
+        if(ids.length<2)return alert("Sélectionne au moins deux candidats.");
+        const usedDeputies=new Set(); let invalid=false;
+        zqElection.candidates=selected.map(input=>{
+          const id=input.value,deputy=input.dataset.deputy||"";
+          if(!deputy||usedDeputies.has(deputy))invalid=true;
+          usedDeputies.add(deputy); return {id,deputyId:deputy};
+        });
+        if(invalid)return alert("Choisis un suppléant différent pour chaque candidat.");
+        zqElection.voters=Math.max(1,Number(document.getElementById("zqElectionVoters").value)||students.length);
+        zqElection.phase="ready"; zqElectionSave(); zqElectionRender();
+      };
+    }
+    function zqElectionCurrentCandidates(){
+      const electedIds=new Set((zqElection.elected||[]).map(x=>String(x.id)));
+      return (zqElection.candidates||[]).filter(c=>!electedIds.has(String(c.id)));
+    }
+    function zqElectionResetRound(){ zqElection.votes={};zqElection.actions=[];zqElection.phase="count";zqElectionSave(); }
+    function zqElectionAddVote(key){
+      if((zqElection.actions||[]).length>=zqElection.voters)return alert("Tous les bulletins prévus ont déjà été dépouillés.");
+      zqElection.votes[key]=(zqElection.votes[key]||0)+1;zqElection.actions.push(key);zqElectionSave();zqElectionRenderCount();
+    }
+    function zqElectionUndo(){ const key=zqElection.actions.pop();if(!key)return;zqElection.votes[key]=Math.max(0,(zqElection.votes[key]||0)-1);zqElectionSave();zqElectionRenderCount(); }
+    function zqElectionRender(){
+      if(!zqElection)return zqElectionRenderHome();
+      if(zqElection.phase==="setup")return zqElectionSetup(zqElection.type);
+      if(zqElection.phase==="ready")return zqElectionRenderReady();
+      if(zqElection.phase==="count")return zqElectionRenderCount();
+      if(zqElection.phase==="roundResult")return zqElectionRenderRoundResult();
+      if(zqElection.phase==="tie")return zqElectionRenderTie();
+      if(zqElection.phase==="finished")return zqElectionRenderFinished();
+    }
+    function zqElectionRenderReady(){
+      const body=document.getElementById("zqElectionBody"),title=zqElection.type==="delegate"?"Délégués de classe":"Éco-délégué";
+      body.innerHTML=`<div class="box" style="margin-top:16px;background:white;text-align:center"><div style="font-size:60px">${zqElection.type==="delegate"?"🗳️":"🌱"}</div><h2>${title} · ${escapeHTML(zqElection.className)}</h2><p><strong>${zqElection.voters}</strong> votants · <strong>${zqElection.candidates.length}</strong> candidats</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px"><button class="btn outline" id="zqElectionEdit">Modifier les candidatures</button><button class="btn green" id="zqElectionStart">Commencer le dépouillement</button></div></div>`;
+      document.getElementById("zqElectionEdit").onclick=()=>zqElectionSetup(zqElection.type);
+      document.getElementById("zqElectionStart").onclick=()=>{zqElectionResetRound();zqElectionRender()};
+    }
+    function zqElectionRenderCount(){
+      const body=document.getElementById("zqElectionBody"),list=zqElectionCurrentCandidates(),done=zqElection.actions.length;
+      body.innerHTML=`<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0"><div><div style="font-size:22px;font-weight:950">Tour ${zqElection.round} · Dépouillement</div><div class="muted">${done} bulletin${done>1?"s":""} sur ${zqElection.voters}</div></div><button class="btn outline" id="zqElectionUndo" ${done?"":"disabled"}>↩️ Annuler la dernière voix</button></div>
+        <div style="height:12px;background:#e2e8f0;border-radius:999px;overflow:hidden"><div style="height:100%;width:${Math.min(100,done/zqElection.voters*100)}%;background:#0f766e"></div></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:16px">${list.map(c=>`<button data-vote="${c.id}" style="border:2px solid #bfdbfe;background:white;border-radius:20px;padding:18px;cursor:pointer;text-align:center"><div style="font-size:42px">${zqElectionAvatar(c.id)}</div><div style="font-size:19px;font-weight:950;margin-top:5px">${escapeHTML(zqElectionName(c.id))}</div><div class="muted" style="font-size:12px;margin-top:3px">Suppléant : ${escapeHTML(zqElectionName(c.deputyId))}</div><div style="font-size:36px;font-weight:1000;color:#1d4ed8;margin-top:10px">${zqElection.votes[c.id]||0}</div><div style="font-weight:900">＋ 1 voix</div></button>`).join("")}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px"><button class="btn outline" data-vote="blank" style="padding:16px">⬜ Bulletin blanc · <strong>${zqElection.votes.blank||0}</strong></button><button class="btn outline" data-vote="null" style="padding:16px">❌ Bulletin nul · <strong>${zqElection.votes.null||0}</strong></button></div>
+        <div style="display:flex;justify-content:flex-end;margin-top:18px"><button class="btn primary" id="zqElectionCloseCount" ${done===zqElection.voters?"":"disabled"}>Clore le tour et calculer</button></div>`;
+      body.querySelectorAll("[data-vote]").forEach(b=>b.onclick=()=>zqElectionAddVote(b.dataset.vote));
+      document.getElementById("zqElectionUndo").onclick=zqElectionUndo;
+      document.getElementById("zqElectionCloseCount").onclick=()=>{zqElection.phase="roundResult";zqElectionSave();zqElectionRender()};
+    }
+    function zqElectionRanking(){ return zqElectionCurrentCandidates().map(c=>({...c,score:zqElection.votes[c.id]||0})).sort((a,b)=>b.score-a.score||zqElectionName(a.id).localeCompare(zqElectionName(b.id),"fr")); }
+    function zqElectionRenderRoundResult(){
+      const body=document.getElementById("zqElectionBody"),rank=zqElectionRanking(),expressed=rank.reduce((s,x)=>s+x.score,0),majority=Math.floor(expressed/2)+1;
+      let message="",nextLabel="",action="";
+      if(zqElection.type==="eco"){
+        const top=rank[0]?.score||0,tied=rank.filter(x=>x.score===top);
+        if(tied.length>1){zqElection.tieIds=tied.map(x=>x.id);zqElection.tiePurpose="eco";action="tie";message="Égalité en tête : il faut désigner le plus jeune candidat.";nextLabel="Résoudre l’égalité";}
+        else {zqElection.elected=[rank[0]];action="finish";message=`${zqElectionName(rank[0].id)} est élu(e) éco-délégué(e).`;nextLabel="Afficher le résultat final";}
+      }else if(zqElection.round===1){
+        const winner=rank.find(x=>x.score>=majority);
+        if(winner){zqElection.elected=[winner];message=`${zqElectionName(winner.id)} obtient la majorité absolue et est élu(e). Un second tour désignera le deuxième délégué.`;}
+        else message=`Personne n’atteint la majorité absolue de ${majority} voix. Le second tour départagera les candidats.`;
+        action="round2";nextLabel="Passer au second tour";
+      }else{
+        const seats=2-zqElection.elected.length,cutoff=rank[Math.max(0,seats-1)]?.score??0,tied=rank.filter(x=>x.score===cutoff),above=rank.filter(x=>x.score>cutoff);
+        if(above.length<seats&&tied.length>seats-above.length){zqElection.tieIds=tied.map(x=>x.id);zqElection.tiePurpose="delegate";zqElection.tieAbove=above;action="tie";message="Égalité pour la dernière place : le plus jeune candidat doit être élu.";nextLabel="Résoudre l’égalité";}
+        else {zqElection.elected=[...zqElection.elected,...rank.slice(0,seats)];action="finish";message="Les deux délégués sont élus.";nextLabel="Afficher le résultat final";}
+      }
+      zqElection._nextAction=action;zqElectionSave();
+      body.innerHTML=`<div class="box" style="margin-top:16px;background:white"><h2 style="margin-top:0">Résultats du tour ${zqElection.round}</h2><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px"><span class="pill">Votants : ${zqElection.voters}</span><span class="pill">Exprimés : ${expressed}</span><span class="pill">Blancs : ${zqElection.votes.blank||0}</span><span class="pill">Nuls : ${zqElection.votes.null||0}</span>${zqElection.round===1&&zqElection.type==="delegate"?`<span class="pill">Majorité absolue : ${majority}</span>`:""}</div>${rank.map((x,i)=>`<div style="display:flex;justify-content:space-between;padding:11px 13px;margin-top:7px;border-radius:13px;background:${i<2?"#eff6ff":"#f8fafc"}"><strong>${i+1}. ${escapeHTML(zqElectionName(x.id))}</strong><strong>${x.score} voix</strong></div>`).join("")}<div style="margin-top:16px;padding:14px;border-radius:14px;background:#f0fdfa;font-weight:900">${escapeHTML(message)}</div><div style="display:flex;justify-content:flex-end;margin-top:16px"><button class="btn green" id="zqElectionNext">${nextLabel}</button></div></div>`;
+      document.getElementById("zqElectionNext").onclick=()=>{
+        if(action==="round2"){zqElection.round=2;zqElectionResetRound();zqElectionRender();}
+        else if(action==="tie"){zqElection.phase="tie";zqElectionSave();zqElectionRender();}
+        else {zqElection.phase="finished";zqElection.finishedAt=new Date().toISOString();zqElectionSave();zqElectionRender();}
+      };
+    }
+    function zqElectionRenderTie(){
+      const body=document.getElementById("zqElectionBody");
+      body.innerHTML=`<div class="box" style="margin-top:18px;background:white;text-align:center"><div style="font-size:55px">⚖️</div><h2>Égalité de voix</h2><p>Sélectionne le candidat le plus jeune parmi les élèves à égalité.</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px">${(zqElection.tieIds||[]).map(id=>`<button class="btn outline" data-tie-winner="${id}" style="padding:15px 20px;font-weight:950">${zqElectionAvatar(id)} ${escapeHTML(zqElectionName(id))}</button>`).join("")}</div></div>`;
+      body.querySelectorAll("[data-tie-winner]").forEach(b=>b.onclick=()=>{
+        const id=b.dataset.tieWinner,winner=zqElection.candidates.find(x=>String(x.id)===String(id));
+        if(zqElection.tiePurpose==="eco")zqElection.elected=[winner];
+        else zqElection.elected=[...zqElection.elected,...(zqElection.tieAbove||[]),winner].slice(0,2);
+        zqElection.phase="finished";zqElection.finishedAt=new Date().toISOString();zqElectionSave();zqElectionRender();
+      });
+    }
+    function zqElectionRenderFinished(){
+      const body=document.getElementById("zqElectionBody"),eco=zqElection.type==="eco";
+      body.innerHTML=`<div style="text-align:center;padding:24px 0"><div style="font-size:80px">🎉</div><h2 style="font-size:34px;margin:8px 0">Résultats officiels</h2><div class="muted">${escapeHTML(zqElection.className)}</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:15px;margin-top:24px">${(zqElection.elected||[]).map((x,i)=>`<div style="padding:24px;background:white;border:3px solid ${eco?"#86efac":"#93c5fd"};border-radius:24px;box-shadow:0 12px 30px #0f172a14"><div style="font-size:58px">${zqElectionAvatar(x.id)}</div><div style="font-size:22px;font-weight:1000;margin-top:7px">${escapeHTML(zqElectionName(x.id))}</div><div style="font-weight:900;color:${eco?"#047857":"#1d4ed8"};margin-top:5px">${eco?"Éco-délégué(e)":`Délégué(e) titulaire ${i+1}`}</div><div style="margin-top:10px;padding-top:10px;border-top:1px solid #e2e8f0">Suppléant(e) : <strong>${escapeHTML(zqElectionName(x.deputyId))}</strong></div></div>`).join("")}</div><div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:24px"><button class="btn outline" id="zqElectionHome">Retour aux élections</button><button class="btn danger" id="zqElectionRestart">Recommencer cette élection</button></div></div>`;
+      document.getElementById("zqElectionHome").onclick=zqElectionRenderHome;
+      document.getElementById("zqElectionRestart").onclick=()=>{if(confirm("Effacer cette élection et recommencer ?")){localStorage.removeItem(zqElectionKey(zqElection.type,zqElection.classId));zqElectionSetup(zqElection.type)}};
+      zqElectionCelebrate();
+    }
+    function zqElectionCelebrate(){
+      const key=`${zqElection.type}:${zqElection.classId}:${zqElection.finishedAt||"done"}`;
+      if(zqElectionCelebrate.last===key||window.matchMedia?.("(prefers-reduced-motion: reduce)").matches)return;
+      zqElectionCelebrate.last=key;
+      const layer=document.createElement("div");layer.setAttribute("aria-hidden","true");layer.style.cssText="position:fixed;inset:0;z-index:2147483646;pointer-events:none;overflow:hidden";
+      if(!document.getElementById("zqElectionConfettiStyle")){const style=document.createElement("style");style.id="zqElectionConfettiStyle";style.textContent="@keyframes zqElectionFall{0%{transform:translate3d(0,-12vh,0) rotate(0);opacity:1}100%{transform:translate3d(var(--drift),110vh,0) rotate(760deg);opacity:.15}}";document.head.appendChild(style)}
+      const colors=["#f43f5e","#fbbf24","#22c55e","#3b82f6","#a855f7","#f97316"];
+      for(let i=0;i<72;i++){const bit=document.createElement("i");bit.style.cssText=`position:absolute;left:${Math.random()*100}vw;top:-25px;width:${6+Math.random()*8}px;height:${9+Math.random()*12}px;border-radius:${Math.random()>.5?"50%":"2px"};background:${colors[i%colors.length]};--drift:${-90+Math.random()*180}px;animation:zqElectionFall ${1.8+Math.random()*1.8}s ${Math.random()*.7}s ease-in forwards`;layer.appendChild(bit)}
+      document.body.appendChild(layer);setTimeout(()=>layer.remove(),4300);
+    }
+    document.getElementById("zqElectionToolBtn").onclick=zqOpenElection;
 </script>
 
   <footer class="zenquest-footer-fixed">
@@ -13130,5 +13405,5 @@ Noah"
 
 <button type="button" id="zqUndoFloatingBtn" title="Actions récentes"
 style="display:none;position:fixed;right:18px;bottom:18px;z-index:5100000;border:0;border-radius:999px;padding:12px 16px;background:#0f172a;color:white;font-weight:1000;box-shadow:0 10px 30px rgba(15,23,42,.28);cursor:pointer;touch-action:manipulation">↩️ Annuler</button>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3ed196c0bc39675',t:'MTc5MDAzNTk1OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
