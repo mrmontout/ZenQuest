@@ -1376,6 +1376,7 @@ Noah"
         <button class="btn outline" id="independentChallengeBtn">🎁 Publier un défi</button>
         <button class="btn outline teacher-tool-launch" data-target="classRolesBtn">🎖️ Rôles</button>
         <button class="btn outline" id="zqElectionToolBtn">🗳️ Élections</button>
+        <button class="btn outline" id="zqNotebookToolBtn">📒 Vérification des cahiers</button>
         <button class="btn outline teacher-tool-launch" data-target="waitingModeBtn">🌙 Mode attente</button>
         <button class="btn outline teacher-tool-launch" data-target="studentCodesBtn">🔑 Codes élèves</button>
         <button class="btn outline teacher-tool-launch" data-target="studentConnectionsBtn">👁️ Connexions élèves</button>
@@ -1392,6 +1393,22 @@ Noah"
         <button id="studentCodesBtn"></button><button id="studentConnectionsBtn"></button>
         <button id="establishmentAccessBtn"></button><button id="classMessagesBtn"></button><button id="zqScheduleBtn"></button><button id="zqRemindersBtn"></button>
       </div>
+    </div>
+  </div>
+
+  <div class="modal" id="zqNotebookModal" style="z-index:3900000">
+    <div class="modal-card" style="width:min(1180px,96vw);max-height:92vh;overflow:auto">
+      <div class="modal-header"><div><h2 style="margin:0">📒 Vérification des cahiers</h2><div class="muted" id="zqNotebookSubtitle">Classe</div></div><button class="btn outline" id="zqNotebookClose">Fermer</button></div>
+      <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-top:14px;padding:12px;border-radius:16px;background:#f8fafc">
+        <label style="font-weight:900">Date<input id="zqNotebookDate" type="date" style="display:block;margin-top:5px"></label>
+        <button class="btn primary" id="zqNotebookShowAll">👥 Toute la classe</button>
+        <button class="btn outline" id="zqNotebookOnlyReview">⚠️ À revoir uniquement</button>
+        <button class="btn outline" id="zqNotebookAllFive">✨ Mettre 5/5 à tous</button>
+        <span class="muted" style="flex:1">La note sur 5 est facultative et ne modifie pas le score ZenQuest.</span>
+      </div>
+      <div id="zqNotebookReviewSummary" style="margin-top:12px"></div>
+      <div id="zqNotebookRows" style="display:flex;flex-direction:column;gap:10px;margin-top:12px"></div>
+      <div style="position:sticky;bottom:0;display:flex;justify-content:flex-end;padding:14px 0 4px;background:linear-gradient(transparent,#fff 24%)"><button class="btn green" id="zqNotebookSave">💾 Enregistrer les vérifications</button></div>
     </div>
   </div>
 
@@ -2700,10 +2717,10 @@ Noah"
     const AVATARS = ['👦','👦🏻','👦🏼','👦🏽','👦🏾','👦🏿','👧','👧🏻','👧🏼','👧🏽','👧🏾','👧🏿','🧑','🧑🏻','🧑🏼','🧑🏽','🧑🏾','🧑🏿','👨','👨🏻','👨🏼','👨🏽','👨🏾','👨🏿','👩','👩🏻','👩🏼','👩🏽','👩🏾','👩🏿','🧒','🧒🏻','🧒🏼','🧒🏽','🧒🏾','🧒🏿','👱','👱🏻','👱🏼','👱🏽','👱🏾','👱🏿','👱\u200d♀️','👱🏻\u200d♀️','👱🏼\u200d♀️','👱🏽\u200d♀️','👱🏾\u200d♀️','👱🏿\u200d♀️','👱\u200d♂️','👱🏻\u200d♂️','👱🏼\u200d♂️','👱🏽\u200d♂️','👱🏾\u200d♂️','👱🏿\u200d♂️','🧑\u200d🦱','🧑🏻\u200d🦱','🧑🏼\u200d🦱','🧑🏽\u200d🦱','🧑🏾\u200d🦱','🧑🏿\u200d🦱','👩\u200d🦱','👩🏻\u200d🦱','👩🏼\u200d🦱','👩🏽\u200d🦱','👩🏾\u200d🦱','👩🏿\u200d🦱','👨\u200d🦱','👨🏻\u200d🦱','👨🏼\u200d🦱','👨🏽\u200d🦱','👨🏾\u200d🦱','👨🏿\u200d🦱','🧑\u200d🦰','🧑🏻\u200d🦰','🧑🏼\u200d🦰','🧑🏽\u200d🦰','🧑🏾\u200d🦰','🧑🏿\u200d🦰','👩\u200d🦰','👩🏻\u200d🦰','👩🏼\u200d🦰','👩🏽\u200d🦰','👩🏾\u200d🦰','👩🏿\u200d🦰','👨\u200d🦰','👨🏻\u200d🦰','👨🏼\u200d🦰','👨🏽\u200d🦰','👨🏾\u200d🦰','👨🏿\u200d🦰','🧑\u200d🦳','🧑🏻\u200d🦳','🧑🏼\u200d🦳','🧑🏽\u200d🦳','🧑🏾\u200d🦳','🧑🏿\u200d🦳'];
 
     function uid(){ return `${Date.now()}_${Math.random().toString(36).slice(2,9)}`; }
-    function createStudent(name,index=0){ return {id:uid(),name,avatar:AVATARS[index%AVATARS.length],points:15,progress:0,level:1,stars:0,diamonds:0,homeworks:0,isAbsent:false,isAutoAbsent:false,lostThisLesson:false,lostStarThisLesson:false,pointsLostThisLesson:0,homeworkAddedThisLesson:false,totalLessons:0,perfectLessons:0,totalPointsLost:0,currentStreak:0,history:[],notes:"",teacherRemarks:[],engagementEvents:[],lastAction:null,group:null,periodScores:[],archivedPeriods:[],authUsername:"",authPassword:""}; }
+    function createStudent(name,index=0){ return {id:uid(),name,avatar:AVATARS[index%AVATARS.length],points:15,progress:0,level:1,stars:0,diamonds:0,homeworks:0,isAbsent:false,isAutoAbsent:false,lostThisLesson:false,lostStarThisLesson:false,pointsLostThisLesson:0,homeworkAddedThisLesson:false,totalLessons:0,perfectLessons:0,totalPointsLost:0,currentStreak:0,history:[],notes:"",teacherRemarks:[],notebookChecks:[],engagementEvents:[],lastAction:null,group:null,periodScores:[],archivedPeriods:[],authUsername:"",authPassword:""}; }
     function createClass(name,names=[]){ return {id:uid(),name,students:names.map((n,i)=>createStudent(n,i)),collectiveStars:0,collectiveDiamonds:0,groupStars:{g1:0,g2:0},groupDiamonds:{g1:0,g2:0},currentPeriodName:"Période 1",periodArchive:[],history:[],classMessages:[],boardPresets:[]}; }
     function getDefaultData(){ return {currentClassId:null,viewMode:"all",selectionMode:false,selectedStudentIds:[],appMode:"prof",periodView:"current",classes:[createClass("Classe exemple",["Paul","Clara","Emma","Lucas","Alya","Yanis","Lina","Noah"])]}; }
-    function loadData(){ try{ const raw=localStorage.getItem(STORAGE_KEY); if(!raw) return getDefaultData(); const parsed=JSON.parse(raw); if(!parsed.classes||!parsed.classes.length) return getDefaultData(); if(!("viewMode" in parsed)) parsed.viewMode="all"; if(!("selectionMode" in parsed)) parsed.selectionMode=false; if(!("selectedStudentIds" in parsed)) parsed.selectedStudentIds=[]; if(!("appMode" in parsed)) parsed.appMode="prof"; if(!("periodView" in parsed)) parsed.periodView="current"; parsed.classes.forEach(c=>{ if(!c.groupStars) c.groupStars={g1:0,g2:0}; if(!c.groupDiamonds) c.groupDiamonds={g1:0,g2:0}; if(!("collectiveDiamonds" in c)) c.collectiveDiamonds=0; if(!c.currentPeriodName) c.currentPeriodName="Période 1"; if(!Array.isArray(c.periodArchive)) c.periodArchive=[]; if(!Array.isArray(c.classMessages)) c.classMessages=[]; if(!Array.isArray(c.boardPresets)) c.boardPresets=[]; c.students.forEach(s=>{ if(!("group" in s)) s.group=null; if(!("isAutoAbsent" in s)) s.isAutoAbsent=false; if(!Array.isArray(s.periodScores)) s.periodScores=[]; if(!Array.isArray(s.archivedPeriods)) s.archivedPeriods=[]; if(typeof s.points!=="number") s.points=15; }); }); return parsed; }catch{ return getDefaultData(); } }
+    function loadData(){ try{ const raw=localStorage.getItem(STORAGE_KEY); if(!raw) return getDefaultData(); const parsed=JSON.parse(raw); if(!parsed.classes||!parsed.classes.length) return getDefaultData(); if(!("viewMode" in parsed)) parsed.viewMode="all"; if(!("selectionMode" in parsed)) parsed.selectionMode=false; if(!("selectedStudentIds" in parsed)) parsed.selectedStudentIds=[]; if(!("appMode" in parsed)) parsed.appMode="prof"; if(!("periodView" in parsed)) parsed.periodView="current"; parsed.classes.forEach(c=>{ if(!c.groupStars) c.groupStars={g1:0,g2:0}; if(!c.groupDiamonds) c.groupDiamonds={g1:0,g2:0}; if(!("collectiveDiamonds" in c)) c.collectiveDiamonds=0; if(!c.currentPeriodName) c.currentPeriodName="Période 1"; if(!Array.isArray(c.periodArchive)) c.periodArchive=[]; if(!Array.isArray(c.classMessages)) c.classMessages=[]; if(!Array.isArray(c.boardPresets)) c.boardPresets=[]; c.students.forEach(s=>{ if(!("group" in s)) s.group=null; if(!("isAutoAbsent" in s)) s.isAutoAbsent=false; if(!Array.isArray(s.periodScores)) s.periodScores=[]; if(!Array.isArray(s.archivedPeriods)) s.archivedPeriods=[]; if(!Array.isArray(s.notebookChecks)) s.notebookChecks=[]; if(typeof s.points!=="number") s.points=15; }); }); return parsed; }catch{ return getDefaultData(); } }
     let state=loadData(); if(!state.currentClassId) state.currentClassId=state.classes[0]?.id||null;
     let classSelectionRevision=0;
     let latestUserSelectedClassId=state.currentClassId;
@@ -3661,7 +3678,33 @@ Noah"
       return state;
     }
 
-    function schoolMaterialsStudentHTML(rows){
+    function zqNotebookRecords(source){
+      const direct=Array.isArray(source?.notebookChecks)?source.notebookChecks:[];
+      const remarks=Array.isArray(source)?source:(source?.teacherRemarks||[]);
+      const cloud=remarks.map(r=>{
+        const e=decodeZQData(r.remark??r.text);
+        if(e?.type!=="notebook_check") return null;
+        return {...(e.data||{}),id:e.data?.id||r.id,createdAt:e.data?.createdAt||r.created_at||r.createdAt||r.date};
+      }).filter(Boolean);
+      const merged=new Map();
+      [...cloud,...direct].forEach(r=>{if(r?.id)merged.set(String(r.id),r);});
+      return [...merged.values()].sort((a,b)=>String(b.createdAt||b.date||"").localeCompare(String(a.createdAt||a.date||"")));
+    }
+    function zqNotebookForPeriod(source,periodId,periodName){
+      return zqNotebookRecords(source).filter(r=>{
+        if(periodId&&r.periodId) return String(r.periodId)===String(periodId);
+        return periodName&&r.periodName?String(r.periodName)===String(periodName):false;
+      });
+    }
+    function zqNotebookMaterialHTML(source,periodId=null,periodName=null){
+      const all=zqNotebookRecords(source);
+      const rows=(periodId||periodName)?zqNotebookForPeriod(source,periodId,periodName):all;
+      if(!rows.length)return `<div style="margin-top:14px;padding:14px;border-radius:15px;background:#f8fafc;border:1px dashed #cbd5e1"><strong>📒 Tenue du cahier</strong><div class="muted" style="margin-top:4px">Aucune vérification enregistrée pour cette période.</div></div>`;
+      const scores=rows.map(r=>Number(r.score)).filter(Number.isFinite),avg=scores.length?round1(scores.reduce((a,b)=>a+b,0)/scores.length):null;
+      return `<div style="margin-top:14px;padding:14px;border-radius:17px;background:#fff;border:2px solid #bfdbfe"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><div><strong style="font-size:18px">📒 Tenue du cahier</strong><div class="muted" style="font-size:12px">${rows.length} vérification${rows.length>1?"s":""}${periodName?` • ${escapeHTML(periodName)}`:""}</div></div>${avg===null?"":`<span style="padding:7px 11px;border-radius:999px;background:#eff6ff;font-weight:1000">Moyenne ${String(avg).replace(".",",")}/5</span>`}</div>${zqNotebookHistoryHTML({notebookChecks:rows})}</div>`;
+    }
+
+    function schoolMaterialsStudentHTML(rows,student=null){
       const state=materialStateFromRemarks(rows);
       const known=SCHOOL_MATERIALS.filter(([code])=>state[code]!==undefined);
       const missing=SCHOOL_MATERIALS.filter(([code])=>state[code]===false);
@@ -3670,7 +3713,7 @@ Noah"
           <div style="font-size:34px">🎒</div>
           <div style="font-weight:950;margin-top:5px">Matériel pas encore vérifié</div>
           <div class="muted" style="margin-top:4px">Le professeur indiquera ici le matériel nécessaire pour le cours de mathématiques.</div>
-        </div>`;
+        </div>${zqNotebookMaterialHTML(student||rows)}`;
       }
       const complete=missing.length===0;
       return `<div style="display:grid;gap:12px">
@@ -3694,7 +3737,7 @@ Noah"
           ${missing.some(([code])=>code==="pen")?`<div style="margin-top:7px;font-size:12px">🖊️ Pour les stylos, cela peut simplement signifier qu’une couleur nécessaire manque, par exemple le rouge.</div>`:""}
           <div style="margin-top:7px;font-size:13px">Merci de penser à compléter le matériel de l’élève afin qu’il puisse travailler dans de bonnes conditions. 🙂</div>
         </div>`:""}
-      </div>`;
+      </div>${zqNotebookMaterialHTML(student||rows)}`;
     }
 
     let materialsSelectedStudentId=null;
@@ -6033,7 +6076,8 @@ Noah"
         const prev=i?periods[i-1].average:null;
         let d="";
         if(p.average!==null&&prev!==null){const delta=round1(p.average-prev);d=delta>0?`📈 +${delta}`:delta<0?`📉 ${delta}`:"➡️ 0";}
-        return `<div style="display:grid;grid-template-columns:1fr auto auto;gap:10px;padding:9px 0;border-bottom:1px solid #e2e8f0"><strong>${p.name}</strong><span>${p.average===null?"—":p.average+"/20"}</span><span>${d}</span></div>`;
+        const checks=zqNotebookForPeriod(student,p.id,p.name),scores=checks.map(x=>Number(x.score)).filter(Number.isFinite),nav=scores.length?round1(scores.reduce((a,b)=>a+b,0)/scores.length):null;
+        return `<div style="padding:10px 0;border-bottom:1px solid #e2e8f0"><div style="display:grid;grid-template-columns:1fr auto auto;gap:10px"><strong>${p.name}</strong><span>${p.average===null?"—":p.average+"/20"}</span><span>${d}</span></div><div class="muted" style="font-size:12px;margin-top:5px">📒 Cahier : ${checks.length?`${checks.length} vérification${checks.length>1?"s":""}${nav===null?"":` • moyenne ${String(nav).replace(".",",")}/5`}`:"aucune vérification"}</div></div>`;
       }).join("");
     }
 
@@ -6067,6 +6111,12 @@ Noah"
     }
     function bindCollectionButtons(root,student,key,rerender){
       root.querySelectorAll('.collection-equip').forEach(btn=>btn.onclick=()=>{zenEquipped[key]=btn.dataset.collectionId;rerender();});
+    }
+
+    function zqNotebookHistoryHTML(student){
+      const rows=zqNotebookRecords(student);
+      if(!rows.length)return `<div class="muted" style="padding:12px;border-radius:12px;background:#f8fafc">Aucune vérification du cahier enregistrée.</div>`;
+      return `<div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">${rows.map(r=>`<div style="padding:11px 13px;border-radius:13px;background:${r.toReview?"#fff7ed":"#f8fafc"};border:1px solid ${r.toReview?"#fdba74":"#e2e8f0"}"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><strong>${escapeHTML(r.appreciation||"Cahier vérifié")}</strong><span><strong>${r.score===null||r.score===undefined?"—":Number(r.score)+"/5"}</strong> · ${escapeHTML(r.date?new Date(r.date+"T12:00:00").toLocaleDateString("fr-FR"):"")}</span></div>${r.remark?`<div style="margin-top:5px;white-space:pre-wrap">${escapeHTML(r.remark)}</div>`:""}${r.toReview?`<div style="margin-top:5px;font-weight:900;color:#c2410c">⚠️ Cahier à revoir</div>`:""}</div>`).join("")}</div>`;
     }
 
     function openStudentView(studentId){
@@ -6209,6 +6259,12 @@ Noah"
             <div style="font-size:20px;font-weight:800">💬 Remarques du professeur</div>
             <div class="muted" style="margin:4px 0 8px">Suivi communiqué à l’élève et à sa famille.</div>
             ${remarksHTML(student,false)}
+          </div>
+
+          <div class="box">
+            <div style="font-size:20px;font-weight:800">📒 Historique du cahier</div>
+            <div class="muted" style="margin:4px 0 8px">Toutes les notes et appréciations, classées avec leur période.</div>
+            ${zqNotebookHistoryHTML(student)}
           </div>
 
           <div class="box">
@@ -7431,6 +7487,8 @@ Noah"
               <span class="toolbar-chip">💎 ${diamondCount}</span>
               <span class="toolbar-chip">📚 ${Number(h.lesson_count||scores.length)} cours</span>
             </div>
+
+            ${zqNotebookMaterialHTML(successStudent,h.period_id,h.name)}
 
             <div style="margin-top:13px;padding:12px;border-radius:15px;background:#f8fafc;border:1px solid #e2e8f0">
               <div style="font-size:15px;font-weight:950">🏆 Collection de la période</div>
@@ -9858,7 +9916,7 @@ Noah"
               <div class="muted" style="margin-top:5px">Tout le matériel doit être présent dans le sac pour le cours de mathématiques.</div>
             </div>
             <div class="box">
-              ${schoolMaterialsStudentHTML(remarks)}
+${schoolMaterialsStudentHTML(remarks,remarks)}
             </div>
           </div>
 
@@ -10373,6 +10431,7 @@ Noah"
           text:r.remark||"",
           createdAt:r.created_at||null
         })),
+        notebookChecks:zqNotebookRecords((row._teacherRemarks||[]).map(r=>({id:r.id,remark:r.remark,created_at:r.created_at}))),
         lastAction:null,
         group:row.group_name==="g1"||row.group_name==="g2"?row.group_name:null,
         periodScores:(row._currentScores||[]).map(x=>({date:x.created_at?new Date(x.created_at).toLocaleString():"",score:Number(x.score)})),
@@ -11853,10 +11912,12 @@ Noah"
                   ? (cls.periods||[]).filter(p=>!p.is_current).map(p=>{
                       const pav=establishmentPeriodAverage(student,p);
                       const count=establishmentPeriodScores(student,p).length;
+                      const notebook=zqNotebookForPeriod(fake,p.id,p.name),notebookScores=notebook.map(x=>Number(x.score)).filter(Number.isFinite),notebookAvg=notebookScores.length?round1(notebookScores.reduce((a,b)=>a+b,0)/notebookScores.length):null;
                       return `<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 13px;border:1px solid #e2e8f0;border-radius:15px;background:#f8fafc">
                         <div>
                           <strong>${escapeHTML(p.name||"Période")}</strong>
                           <div class="muted" style="font-size:11px;margin-top:2px">${count} séance${count>1?"s":""} enregistrée${count>1?"s":""}</div>
+                          <div class="muted" style="font-size:11px;margin-top:2px">📒 Cahier : ${notebook.length?`${notebook.length} vérification${notebook.length>1?"s":""}${notebookAvg===null?"":` • ${String(notebookAvg).replace(".",",")}/5`}`:"aucune vérification"}</div>
                         </div>
                         <span style="font-size:18px;font-weight:1000">${pav===null?"—":pav.toFixed(1)+"/20"}</span>
                       </div>`;
@@ -11935,7 +11996,7 @@ Noah"
             <div class="replica-panel">
               <div class="replica-section-title">🎒 Mon matériel scolaire</div>
               <div class="muted" style="margin-bottom:10px">Matériel suivi dans ZenQuest pour les cours de mathématiques.</div>
-              ${schoolMaterialsStudentHTML(fake.teacherRemarks||[])}
+${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
             </div>
           </div>
         </div>
@@ -13395,6 +13456,36 @@ Noah"
       for(let i=0;i<72;i++){const bit=document.createElement("i");bit.style.cssText=`position:absolute;left:${Math.random()*100}vw;top:-25px;width:${6+Math.random()*8}px;height:${9+Math.random()*12}px;border-radius:${Math.random()>.5?"50%":"2px"};background:${colors[i%colors.length]};--drift:${-90+Math.random()*180}px;animation:zqElectionFall ${1.8+Math.random()*1.8}s ${Math.random()*.7}s ease-in forwards`;layer.appendChild(bit)}
       document.body.appendChild(layer);setTimeout(()=>layer.remove(),4300);
     }
+    const ZQ_NOTEBOOK_APPRECIATIONS=["Très bien tenu","Cahier satisfaisant","À améliorer","Cahier incomplet","Cahier non présenté"];
+    let zqNotebookReviewOnly=false;
+    function zqNotebookLatest(student){return zqNotebookRecords(student)[0]||null;}
+    function zqNotebookNeedsReview(student){return !!zqNotebookLatest(student)?.toReview;}
+    function zqNotebookRender(){
+      const cls=currentClass(),wrap=document.getElementById("zqNotebookRows"),summary=document.getElementById("zqNotebookReviewSummary");if(!cls||!wrap)return;
+      document.getElementById("zqNotebookSubtitle").textContent=cls.name;
+      const due=cls.students.filter(zqNotebookNeedsReview);
+      const checked=cls.students.filter(s=>zqNotebookForPeriod(s,cls.currentPeriodId,cls.currentPeriodName).length).length;
+      summary.innerHTML=`<div style="padding:12px 14px;border-radius:14px;background:${due.length?"#fff7ed":"#f0fdf4"};border:1px solid ${due.length?"#fdba74":"#86efac"}"><strong>📒 ${checked}/${cls.students.length} élève${cls.students.length>1?"s":""} évalué${checked>1?"s":""} cette période.</strong>${due.length?`<div style="margin-top:5px">⚠️ À revoir : ${due.map(s=>escapeHTML(s.name)).join(", ")}</div>`:`<div style="margin-top:5px">✅ Aucun cahier en attente de nouvelle vérification.</div>`}</div>`;
+      const students=cls.students.filter(s=>!zqNotebookReviewOnly||zqNotebookNeedsReview(s));
+      wrap.innerHTML=students.length?students.map(s=>{const last=zqNotebookLatest(s),current=zqNotebookForPeriod(s,cls.currentPeriodId,cls.currentPeriodName)[0]||null,due=zqNotebookNeedsReview(s);return `<div class="zq-notebook-row" data-student-id="${s.id}" style="padding:13px;border:2px solid ${due?"#fdba74":"#e2e8f0"};border-radius:17px;background:${due?"#fff7ed":"white"}"><div style="display:grid;grid-template-columns:minmax(150px,1.2fr) minmax(165px,1.2fr) 90px minmax(190px,1.8fr) auto;gap:9px;align-items:center"><div style="font-size:17px;font-weight:950">${s.avatar} ${escapeHTML(s.name)}${current?`<div style="font-size:11px;color:#2563eb;margin-top:3px">✓ ${current.score==null?"noté":current.score+"/5"} cette période</div>`:due?`<div style="font-size:11px;color:#c2410c;margin-top:3px">⚠️ À revoir depuis ${escapeHTML(last?.date?new Date(last.date+"T12:00:00").toLocaleDateString("fr-FR"):"")}</div>`:`<div class="muted" style="font-size:11px;margin-top:3px">Pas encore évalué cette période</div>`}</div><select class="zq-notebook-appreciation"><option value="">Appréciation…</option>${ZQ_NOTEBOOK_APPRECIATIONS.map(x=>`<option ${current?.appreciation===x?"selected":""}>${x}</option>`).join("")}</select><select class="zq-notebook-score"><option value="">— /5</option>${[0,1,2,3,4,5].map(n=>`<option value="${n}" ${Number(current?.score)===n?"selected":""}>${n}/5</option>`).join("")}</select><input class="zq-notebook-remark" type="text" value="${escapeHTML(current?.remark||"")}" placeholder="Remarque facultative…"><label style="display:flex;gap:6px;align-items:center;font-weight:900;white-space:nowrap"><input class="zq-notebook-review" type="checkbox" style="width:19px;height:19px" ${(current?current.toReview:due)?"checked":""}> À revoir</label></div></div>`}).join(""):`<div class="muted" style="padding:18px;text-align:center">Aucun cahier à revoir dans cette classe.</div>`;
+      wrap.querySelectorAll(".zq-notebook-row").forEach(row=>row.querySelectorAll("select,input").forEach(el=>el.onchange=()=>{row.dataset.dirty="1";row.style.borderColor="#60a5fa";}));
+    }
+    function zqOpenNotebook(){document.getElementById("teacherToolsModal")?.classList.remove("show");const d=document.getElementById("zqNotebookDate");d.value=new Date().toISOString().slice(0,10);zqNotebookReviewOnly=false;document.getElementById("zqNotebookShowAll")?.classList.add("primary");document.getElementById("zqNotebookOnlyReview")?.classList.remove("primary");zqNotebookRender();document.getElementById("zqNotebookModal").classList.add("show");}
+    async function zqSaveNotebookChecks(){
+      const cls=currentClass(),date=document.getElementById("zqNotebookDate").value||new Date().toISOString().slice(0,10),rows=[...document.querySelectorAll(".zq-notebook-row[data-dirty='1']")];
+      if(!rows.length)return alert("Choisis au moins une appréciation, une note ou une remarque.");
+      const teacher_id=await currentTeacherId(),now=new Date().toISOString(),prepared=[];
+      rows.forEach(row=>{const student=cls.students.find(s=>String(s.id)===String(row.dataset.studentId));if(!student)return;const appreciation=row.querySelector(".zq-notebook-appreciation").value,scoreValue=row.querySelector(".zq-notebook-score").value,remark=row.querySelector(".zq-notebook-remark").value.trim(),toReview=row.querySelector(".zq-notebook-review").checked;if(!appreciation&&scoreValue===""&&!remark&&!toReview)return;const record={id:uid(),date,appreciation:appreciation||"Cahier vérifié",score:scoreValue===""?null:Number(scoreValue),remark,toReview,periodId:cls.currentPeriodId||null,periodName:cls.currentPeriodName||"Période en cours",classId:cls.id,createdAt:now};prepared.push({student,record,payload:{teacher_id,student_id:student.id,remark:encodeZQData("notebook_check",record)}});});
+      if(!prepared.length)return alert("Aucune nouvelle vérification à enregistrer.");
+      const btn=document.getElementById("zqNotebookSave");btn.disabled=true;btn.textContent="Enregistrement…";
+      try{const {data:stored,error}=await supabaseClient.from("teacher_remarks").insert(prepared.map(x=>x.payload)).select("id,student_id,remark,created_at");if(error)throw error;(stored||[]).forEach(db=>{const item=prepared.find(x=>String(x.student.id)===String(db.student_id));if(!item)return;item.student.teacherRemarks=item.student.teacherRemarks||[];item.student.teacherRemarks.unshift({id:db.id,text:db.remark,createdAt:db.created_at,date:db.created_at});item.student.notebookChecks=item.student.notebookChecks||[];item.student.notebookChecks.unshift({...item.record,id:item.record.id});});save();zqNotebookRender();alert(`${prepared.length} vérification${prepared.length>1?"s":""} enregistrée${prepared.length>1?"s":""} pour ${cls.currentPeriodName||"la période"}.`);}catch(err){console.error(err);alert("Impossible d’enregistrer les vérifications : "+(err?.message||"erreur inconnue"));}finally{btn.disabled=false;btn.textContent="💾 Enregistrer les vérifications";}
+    }
+    document.getElementById("zqNotebookToolBtn").onclick=zqOpenNotebook;
+    document.getElementById("zqNotebookClose").onclick=()=>document.getElementById("zqNotebookModal").classList.remove("show");
+    document.getElementById("zqNotebookShowAll").onclick=()=>{zqNotebookReviewOnly=false;document.getElementById("zqNotebookShowAll").classList.add("primary");document.getElementById("zqNotebookOnlyReview").classList.remove("primary");zqNotebookRender();};
+    document.getElementById("zqNotebookOnlyReview").onclick=()=>{zqNotebookReviewOnly=true;document.getElementById("zqNotebookOnlyReview").classList.add("primary");document.getElementById("zqNotebookShowAll").classList.remove("primary");zqNotebookRender();};
+    document.getElementById("zqNotebookAllFive").onclick=()=>{document.querySelectorAll(".zq-notebook-row").forEach(row=>{row.querySelector(".zq-notebook-score").value="5";if(!row.querySelector(".zq-notebook-appreciation").value)row.querySelector(".zq-notebook-appreciation").value="Très bien tenu";row.querySelector(".zq-notebook-review").checked=false;row.dataset.dirty="1";row.style.borderColor="#60a5fa";});};
+    document.getElementById("zqNotebookSave").onclick=zqSaveNotebookChecks;
     document.getElementById("zqElectionToolBtn").onclick=zqOpenElection;
 </script>
 
@@ -13405,5 +13496,5 @@ Noah"
 
 <button type="button" id="zqUndoFloatingBtn" title="Actions récentes"
 style="display:none;position:fixed;right:18px;bottom:18px;z-index:5100000;border:0;border-radius:999px;padding:12px 16px;background:#0f172a;color:white;font-weight:1000;box-shadow:0 10px 30px rgba(15,23,42,.28);cursor:pointer;touch-action:manipulation">↩️ Annuler</button>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3ed196c0bc39675',t:'MTc5MDAzNTk1OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
