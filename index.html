@@ -2672,7 +2672,7 @@ Noah"
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
           <div>
             <div style="font-size:20px;font-weight:1000">☁️ Mes fichiers de projection</div>
-            <div class="muted" style="font-size:11px;margin-top:2px">Synchronisés entre tes appareils.</div>
+            <div class="muted" style="font-size:11px;margin-top:2px">Synchronisés entre tes appareils • ouvrables et téléchargeables partout.</div>
           </div>
           <button class="btn outline small" id="pdfCloudCloseBtn">✕</button>
         </div>
@@ -8346,12 +8346,14 @@ Noah"
           <div style="font-weight:950;overflow-wrap:anywhere">📄 ${escapeHTML(f.name||"PDF")}</div>
           <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
             <button class="btn green small cloud-project-btn" data-id="${f.id}">▶ Projeter</button>
+            <button class="btn primary small cloud-download-btn" data-id="${f.id}">⬇️ Télécharger</button>
             <button class="btn outline small cloud-rename-btn" data-id="${f.id}">✏️ Renommer</button>
             <button class="btn danger small cloud-delete-btn" data-id="${f.id}">🗑️</button>
           </div>
         </div>`).join("");
 
       list.querySelectorAll(".cloud-project-btn").forEach(b=>b.onclick=()=>openCloudProjectionFile(b.dataset.id));
+      list.querySelectorAll(".cloud-download-btn").forEach(b=>b.onclick=()=>downloadCloudProjectionFile(b.dataset.id,b));
       list.querySelectorAll(".cloud-rename-btn").forEach(b=>b.onclick=()=>renameCloudProjectionFile(b.dataset.id));
       list.querySelectorAll(".cloud-delete-btn").forEach(b=>b.onclick=()=>deleteCloudProjectionFile(b.dataset.id));
     }
@@ -8413,6 +8415,32 @@ Noah"
       }catch(err){
         console.error("CLOUD PDF OPEN",err);
         alert("❌ Impossible d’ouvrir ce PDF.");
+      }
+    }
+
+    async function downloadCloudProjectionFile(id,button){
+      const f=projectionFilesCache.find(x=>String(x.id)===String(id));
+      if(!f)return;
+      const previousLabel=button?.textContent||"⬇️ Télécharger";
+      if(button){button.disabled=true;button.textContent="⏳ Téléchargement…";}
+      try{
+        const {data,error}=await supabaseClient.storage.from(PROJECTION_BUCKET).download(f.storage_path);
+        if(error)throw error;
+        const url=URL.createObjectURL(data);
+        const link=document.createElement("a");
+        link.href=url;
+        link.download=f.name||"document.pdf";
+        link.style.display="none";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(()=>URL.revokeObjectURL(url),15000);
+        if(button)button.textContent="✅ Téléchargé";
+        window.setTimeout(()=>{if(button){button.disabled=false;button.textContent=previousLabel;}},1600);
+      }catch(err){
+        console.error("CLOUD PDF DOWNLOAD",err);
+        alert("❌ Impossible de télécharger ce PDF. Vérifie ta connexion puis réessaie.");
+        if(button){button.disabled=false;button.textContent=previousLabel;}
       }
     }
 
@@ -13879,7 +13907,7 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.21.0 PP • Accueil élève animé et états corrigés</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.22.0 • PDF de projection téléchargeables</span>.
   </footer>
 
 <button type="button" id="zqUndoFloatingBtn" title="Actions récentes"
