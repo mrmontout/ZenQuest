@@ -13538,10 +13538,10 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
       sub.textContent=cls?.name||"Classe";
       if(zqElectionActiveTab==="rules"){
         const campaign=zqElectionCampaign();body.innerHTML=zqElectionTabs(`<div class="zq-election-callout ${campaign?.status==="active"?"eco":""}"><span class="pill">${campaign?.status==="active"?"🟢 CANDIDATURES OUVERTES":"📣 PRÊT À COMMENCER"}</span><h3>${campaign?.status==="active"?"L’élection est lancée pour cette classe":"Lancer l’élection sur l’espace élèves"}</h3><p>${campaign?.status==="active"?"Les élèves voient maintenant les règles, les candidats validés et le bouton pour remplir leur fiche en ligne.":"Cela fera apparaître le bloc temporaire sur l’accueil des élèves. Ils pourront lire les règles et candidater dans ZenQuest ou sur la feuille papier."}</p><div class="zq-election-actions"><button class="btn" id="zqElectionLaunchCampaign">${campaign?.status==="active"?"⏹ Fermer les candidatures":"🚀 Lancer l’élection"}</button></div></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:14px">
-          <div class="box" style="background:white;border:2px solid #93c5fd"><div style="font-size:42px">🗳️</div><h2>Les délégués de classe</h2><p>La classe élit <strong>1 délégué titulaire</strong> accompagné de <strong>1 suppléant</strong>.</p><p>Le délégué représente la classe, recueille les idées des élèves et participe notamment aux conseils de classe.</p></div>
+          <div class="box" style="background:white;border:2px solid #93c5fd"><div style="font-size:42px">🗳️</div><h2>Les délégués de classe</h2><p>La classe élit <strong>2 délégués titulaires</strong>. Chacun est accompagné de <strong>son suppléant</strong> : il y aura donc <strong>2 titulaires et 2 suppléants</strong>.</p><p>Les délégués représentent la classe, recueillent les idées des élèves et participent notamment aux conseils de classe.</p></div>
           <div class="box" style="background:white;border:2px solid #86efac"><div style="font-size:42px">🌱</div><h2>L’éco-délégué</h2><p>La classe élit <strong>1 éco-délégué titulaire</strong> accompagné de <strong>1 suppléant</strong>.</p><p>Il propose et aide à mener des actions pour protéger l’environnement et améliorer les habitudes de la classe et du collège.</p></div>
           <div class="box" style="background:white"><div style="font-size:42px">🗳️</div><h2>Comment allons-nous voter ?</h2><p>Chaque élève vote à bulletin secret dans l’urne. Personne ne doit savoir pour qui un autre élève a voté.</p><p>Lors du dépouillement, chaque bulletin sera annoncé et ajouté dans ZenQuest.</p></div>
-          <div class="box" style="background:white"><div style="font-size:42px">⚖️</div><h2>Comment gagne-t-on ?</h2><p>Au premier tour des délégués, il faut obtenir la <strong>majorité absolue</strong>, c’est-à-dire plus de la moitié des suffrages exprimés.</p><p>Au second tour, les candidats ayant le plus de voix sont élus. En cas d’égalité, le candidat le plus jeune est élu.</p></div>
+          <div class="box" style="background:white"><div style="font-size:42px">⚖️</div><h2>Comment gagne-t-on ?</h2><p>Au premier tour des délégués, il faut obtenir la <strong>majorité absolue</strong>, c’est-à-dire plus de la moitié des suffrages exprimés.</p><p>S’il reste un ou deux postes à pourvoir, un second tour est organisé. Les candidats ayant le plus de voix complètent alors les <strong>2 binômes élus</strong>. En cas d’égalité pour la dernière place, le candidat le plus jeune est élu.</p></div>
           <div class="box" style="background:white"><div style="font-size:42px">⬜</div><h2>Bulletins particuliers</h2><p>Un bulletin sans nom est <strong>blanc</strong>. Un bulletin impossible à comprendre ou non conforme est <strong>nul</strong>.</p><p>Les bulletins blancs et nuls sont comptés, mais ils ne font pas partie des suffrages exprimés.</p></div>
           <div class="box" style="background:white"><div style="font-size:42px">🤝</div><h2>Une responsabilité</h2><p>Être élu, ce n’est pas seulement gagner : c’est écouter les autres, transmettre leurs idées, respecter chacun et tenir ses engagements pendant toute l’année.</p></div>
         </div>`);zqElectionWireTabs();document.getElementById("zqElectionLaunchCampaign").onclick=zqElectionToggleCampaign;return;
@@ -13550,7 +13550,7 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
       const delegate=zqElectionLoad("delegate"),eco=zqElectionLoad("eco");
       const status=x=>!x?"Nouvelle élection":x.phase==="finished"?"Résultats enregistrés":x.phase?.startsWith("count")?`Dépouillement · tour ${x.round}`:"Élection préparée";
       body.innerHTML=zqElectionTabs(`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-top:14px">
-        <button data-zq-election-type="delegate" style="text-align:left;border:2px solid #93c5fd;background:white;border-radius:24px;padding:24px;cursor:pointer;box-shadow:0 12px 30px #0f172a12"><div style="font-size:52px">🗳️</div><div style="font-size:24px;font-weight:950;margin-top:8px">Délégué de classe</div><div class="muted" style="margin-top:7px">1 titulaire et 1 suppléant · scrutin officiel à deux tours.</div><div style="margin-top:14px;font-weight:900;color:#1d4ed8">${status(delegate)}</div></button>
+        <button data-zq-election-type="delegate" style="text-align:left;border:2px solid #93c5fd;background:white;border-radius:24px;padding:24px;cursor:pointer;box-shadow:0 12px 30px #0f172a12"><div style="font-size:52px">🗳️</div><div style="font-size:24px;font-weight:950;margin-top:8px">Délégués de classe</div><div class="muted" style="margin-top:7px"><strong>2 titulaires et 2 suppléants</strong> · scrutin à deux tours.</div><div style="margin-top:14px;font-weight:900;color:#1d4ed8">${status(delegate)}</div></button>
         <button data-zq-election-type="eco" style="text-align:left;border:2px solid #86efac;background:white;border-radius:24px;padding:24px;cursor:pointer;box-shadow:0 12px 30px #0f172a12"><div style="font-size:52px">🌱</div><div style="font-size:24px;font-weight:950;margin-top:8px">Éco-délégué</div><div class="muted" style="margin-top:7px">1 titulaire et 1 suppléant · élection indépendante.</div><div style="margin-top:14px;font-weight:900;color:#047857">${status(eco)}</div></button>
       </div>`);zqElectionWireTabs();
       body.querySelectorAll("[data-zq-election-type]").forEach(b=>b.onclick=()=>{
@@ -13605,7 +13605,7 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
     }
     function zqElectionSetup(type){
       const cls=currentClass(),students=zqElectionStudents(),body=document.getElementById("zqElectionBody"),applications=zqElectionApplications().filter(x=>x.type===type);
-      zqElection={type,classId:cls.id,className:cls.name,phase:"setup",round:1,voters:students.length,candidates:[],votes:{},actions:[],elected:[],createdAt:new Date().toISOString()};
+      zqElection={type,classId:cls.id,className:cls.name,phase:"setup",round:1,seats:type==="delegate"?2:1,voters:students.length,candidates:[],votes:{},actions:[],elected:[],createdAt:new Date().toISOString()};
       const title=type==="delegate"?"Délégués de classe":"Éco-délégué";
       body.innerHTML=`<div style="margin-top:12px"><button class="btn outline" id="zqElectionBack">← Retour</button>
         <div class="box" style="margin-top:14px;background:white"><h3 style="margin:0 0 6px;font-size:22px">Préparer l’élection · ${title}</h3><div class="muted">Sélectionne les candidatures validées qui participent à cette élection.</div>
@@ -13633,6 +13633,8 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
       const electedIds=new Set((zqElection.elected||[]).map(x=>String(x.id)));
       return (zqElection.candidates||[]).filter(c=>!electedIds.has(String(c.id)));
     }
+    function zqElectionSeatCount(){return zqElection?.type==="delegate"?2:1;}
+    function zqElectionSeatsLeft(){return Math.max(0,zqElectionSeatCount()-(zqElection?.elected||[]).length);}
     function zqElectionResetRound(){ zqElection.votes={};zqElection.actions=[];zqElection.phase="count";zqElectionCloseCampaignSilently();zqElectionSave(); }
     function zqElectionAddVote(key){
       if((zqElection.actions||[]).length>=zqElection.voters)return alert("Tous les bulletins prévus ont déjà été dépouillés.");
@@ -13650,7 +13652,7 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
     }
     function zqElectionRenderReady(){
       const body=document.getElementById("zqElectionBody"),title=zqElection.type==="delegate"?"Délégués de classe":"Éco-délégué";
-      body.innerHTML=`<div class="box" style="margin-top:16px;background:white;text-align:center"><div style="font-size:60px">${zqElection.type==="delegate"?"🗳️":"🌱"}</div><h2>${title} · ${escapeHTML(zqElection.className)}</h2><p><strong>${zqElection.voters}</strong> votants · <strong>${zqElection.candidates.length}</strong> candidats</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px"><button class="btn outline" id="zqElectionEdit">Modifier les candidatures</button><button class="btn green" id="zqElectionStart">Commencer le dépouillement</button></div></div>`;
+      body.innerHTML=`<div class="box" style="margin-top:16px;background:white;text-align:center"><div style="font-size:60px">${zqElection.type==="delegate"?"🗳️":"🌱"}</div><h2>${title} · ${escapeHTML(zqElection.className)}</h2><p><strong>${zqElection.voters}</strong> votants · <strong>${zqElection.candidates.length}</strong> candidats</p><p class="muted"><strong>${zqElectionSeatCount()}</strong> binôme${zqElectionSeatCount()>1?"s":""} à élire : ${zqElection.type==="delegate"?"2 titulaires + leurs 2 suppléants":"1 éco-délégué + son suppléant"}.</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px"><button class="btn outline" id="zqElectionEdit">Modifier les candidatures</button><button class="btn green" id="zqElectionStart">Commencer le dépouillement</button></div></div>`;
       document.getElementById("zqElectionEdit").onclick=()=>zqElectionSetup(zqElection.type);
       document.getElementById("zqElectionStart").onclick=()=>{zqElectionResetRound();zqElectionRender()};
     }
@@ -13674,14 +13676,18 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
         if(tied.length>1){zqElection.tieIds=tied.map(x=>x.id);zqElection.tiePurpose="eco";action="tie";message="Égalité en tête : il faut désigner le plus jeune candidat.";nextLabel="Résoudre l’égalité";}
         else {zqElection.elected=[rank[0]];action="finish";message=`${zqElectionName(rank[0].id)} est élu(e) éco-délégué(e).`;nextLabel="Afficher le résultat final";}
       }else if(zqElection.round===1){
-        const winner=rank.find(x=>x.score>=majority);
-        if(winner){zqElection.elected=[winner];action="finish";message=`${zqElectionName(winner.id)} obtient la majorité absolue et est élu(e).`;nextLabel="Afficher le résultat final";}
-        else message=`Personne n’atteint la majorité absolue de ${majority} voix. Le second tour départagera les candidats.`;
-        if(!winner){action="round2";nextLabel="Passer au second tour";}
+        const absolute=rank.filter(x=>x.score>=majority).slice(0,zqElectionSeatCount());
+        zqElection.elected=absolute;
+        const left=zqElectionSeatsLeft();
+        if(!left){action="finish";message="Les deux binômes ont obtenu la majorité absolue et sont élus.";nextLabel="Afficher les résultats officiels";}
+        else {action="round2";message=absolute.length?`${zqElectionName(absolute[0].id)} est élu(e) au premier tour. Il reste 1 binôme à élire au second tour.`:`Personne n’atteint la majorité absolue de ${majority} voix. Les 2 binômes seront élus au second tour.`;nextLabel="Passer au second tour";}
       }else{
-        const top=rank[0]?.score||0,tied=rank.filter(x=>x.score===top);
-        if(tied.length>1){zqElection.tieIds=tied.map(x=>x.id);zqElection.tiePurpose="delegate";action="tie";message="Égalité en tête : le plus jeune candidat doit être élu.";nextLabel="Résoudre l’égalité";}
-        else {zqElection.elected=[rank[0]];action="finish";message=`${zqElectionName(rank[0].id)} est élu(e) délégué(e).`;nextLabel="Afficher le résultat final";}
+        const seatsLeft=zqElectionSeatsLeft(),cutoff=rank[Math.max(0,seatsLeft-1)]?.score??0;
+        const clear=rank.filter(x=>x.score>cutoff).slice(0,seatsLeft),tiedAtCutoff=rank.filter(x=>x.score===cutoff);
+        zqElection.elected=[...(zqElection.elected||[]),...clear];
+        const stillLeft=zqElectionSeatsLeft();
+        if(stillLeft>0&&tiedAtCutoff.length>stillLeft){zqElection.tieIds=tiedAtCutoff.map(x=>x.id);zqElection.tiePurpose="delegate";zqElection.tieSeatsLeft=stillLeft;action="tie";message=`Égalité pour ${stillLeft===1?"la dernière place":`les ${stillLeft} dernières places`} : sélectionne ${stillLeft===1?"le candidat le plus jeune":"les candidats les plus jeunes"}.`;nextLabel="Résoudre l’égalité";}
+        else {zqElection.elected=[...(zqElection.elected||[]),...tiedAtCutoff.slice(0,stillLeft)];action="finish";message="Les 2 délégués titulaires et leurs 2 suppléants sont élus.";nextLabel="Afficher les résultats officiels";}
       }
       zqElection._nextAction=action;zqElectionSave();
       body.innerHTML=`<div class="box" style="margin-top:16px;background:white"><h2 style="margin-top:0">Résultats du tour ${zqElection.round}</h2><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px"><span class="pill">Votants : ${zqElection.voters}</span><span class="pill">Exprimés : ${expressed}</span><span class="pill">Blancs : ${zqElection.votes.blank||0}</span><span class="pill">Nuls : ${zqElection.votes.null||0}</span>${zqElection.round===1&&zqElection.type==="delegate"?`<span class="pill">Majorité absolue : ${majority}</span>`:""}</div>${rank.map((x,i)=>`<div style="display:flex;justify-content:space-between;padding:11px 13px;margin-top:7px;border-radius:13px;background:${i<2?"#eff6ff":"#f8fafc"}"><strong>${i+1}. ${escapeHTML(zqElectionName(x.id))}</strong><strong>${x.score} voix</strong></div>`).join("")}<div style="margin-top:16px;padding:14px;border-radius:14px;background:#f0fdfa;font-weight:900">${escapeHTML(message)}</div><div style="display:flex;justify-content:flex-end;margin-top:16px"><button class="btn green" id="zqElectionNext">${nextLabel}</button></div></div>`;
@@ -13693,11 +13699,15 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
     }
     function zqElectionRenderTie(){
       const body=document.getElementById("zqElectionBody");
-      body.innerHTML=`<div class="box" style="margin-top:18px;background:white;text-align:center"><div style="font-size:55px">⚖️</div><h2>Égalité de voix</h2><p>Sélectionne le candidat le plus jeune parmi les élèves à égalité.</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px">${(zqElection.tieIds||[]).map(id=>`<button class="btn outline" data-tie-winner="${id}" style="padding:15px 20px;font-weight:950">${zqElectionAvatar(id)} ${escapeHTML(zqElectionName(id))}</button>`).join("")}</div></div>`;
+      const remaining=Math.max(1,zqElection.tieSeatsLeft||1);
+      body.innerHTML=`<div class="box" style="margin-top:18px;background:white;text-align:center"><div style="font-size:55px">⚖️</div><h2>Égalité de voix</h2><p>Sélectionne ${remaining===1?"le candidat le plus jeune":`les ${remaining} candidats les plus jeunes`} parmi les élèves à égalité.</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px">${(zqElection.tieIds||[]).map(id=>`<button class="btn outline" data-tie-winner="${id}" style="padding:15px 20px;font-weight:950">${zqElectionAvatar(id)} ${escapeHTML(zqElectionName(id))}</button>`).join("")}</div><div class="muted" style="margin-top:12px">${remaining>1?`Encore ${remaining} places à attribuer.`:"Le clic valide la dernière place."}</div></div>`;
       body.querySelectorAll("[data-tie-winner]").forEach(b=>b.onclick=()=>{
         const id=b.dataset.tieWinner,winner=zqElection.candidates.find(x=>String(x.id)===String(id));
         if(zqElection.tiePurpose==="eco")zqElection.elected=[winner];
-        else zqElection.elected=[winner];
+        else zqElection.elected=[...(zqElection.elected||[]),winner];
+        zqElection.tieIds=(zqElection.tieIds||[]).filter(x=>String(x)!==String(id));
+        zqElection.tieSeatsLeft=Math.max(0,(zqElection.tieSeatsLeft||1)-1);
+        if(zqElection.tiePurpose==="delegate"&&zqElection.tieSeatsLeft>0){zqElectionSave();zqElectionRenderTie();return;}
         zqElection.phase="finished";zqElection.finishedAt=new Date().toISOString();zqElectionSave();zqElectionRender();
       });
     }
@@ -13907,7 +13917,7 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.22.0 • PDF de projection téléchargeables</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.23.0 • 2 délégués, 2 suppléants et binôme éco</span>.
   </footer>
 
 <button type="button" id="zqUndoFloatingBtn" title="Actions récentes"
