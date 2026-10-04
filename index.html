@@ -13484,6 +13484,7 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
     }
     function zqElectionSave(){
       const cls=currentClass(); if(!cls||!zqElection)return;
+      zqElection.updatedAt=new Date().toISOString();
       localStorage.setItem(zqElectionKey(zqElection.type,cls.id),JSON.stringify(zqElection));
       zqElectionScheduleCloudSync();
     }
@@ -13491,17 +13492,51 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
     function zqElectionCampaignKey(){return `${ZQ_ELECTION_PREFIX}${currentClass()?.id||"none"}_campaign`;}
     function zqElectionCampaign(){try{return JSON.parse(localStorage.getItem(zqElectionCampaignKey())||"null");}catch{return null;}}
     function zqElectionIsHidden(){return localStorage.getItem(zqElectionVisibilityKey())==="1";}
+    function zqElectionApplicationsUpdatedKey(){return `${zqElectionApplicationsKey()}_updated_at`;}
+    function zqElectionApplicationsUpdatedAt(){return localStorage.getItem(zqElectionApplicationsUpdatedKey())||"";}
+    function zqElectionStateTime(x){return Date.parse(x?.updatedAt||x?.finishedAt||x?.createdAt||"")||0;}
+    function zqElectionTeacherState(){return {version:1,applications:zqElectionApplications(),applicationsUpdatedAt:zqElectionApplicationsUpdatedAt(),elections:{delegate:zqElectionLoad("delegate"),eco:zqElectionLoad("eco")}};}
     function zqElectionScheduleCloudSync(){clearTimeout(zqElectionSyncTimer);zqElectionSyncTimer=setTimeout(()=>zqElectionSyncStudentEvent().catch(err=>console.error("ELECTION SYNC",err)),300);}
     function zqElectionPublicApplication(a){const students=zqElectionStudents(),candidate=students.find(s=>String(s.id)===String(a.candidateId)),deputy=students.find(s=>String(s.id)===String(a.deputyId));return {id:a.id,type:a.type,candidateName:candidate?.name||"Élève",candidateAvatar:candidate?.avatar||"🧑🏽‍🎓",deputyName:deputy?.name||"Élève",deputyAvatar:deputy?.avatar||"🧑🏽‍🎓",intro:a.intro||"",motivation:a.motivation||"",qualities:a.qualities||[],ideas:a.ideas||"",ideasList:a.ideasList||String(a.ideas||"").split("\n").filter(Boolean),deputyIntro:a.deputyIntro||""};}
     function zqElectionPublicState(type){const election=zqElectionLoad(type);if(!election)return {phase:"applications",elected:[]};return {phase:election.phase||"applications",round:election.round||1,elected:(election.elected||[]).map(x=>({id:x.id,name:zqElectionStudents().find(s=>String(s.id)===String(x.id))?.name||"Élève",avatar:zqElectionStudents().find(s=>String(s.id)===String(x.id))?.avatar||"🧑🏽‍🎓",deputyName:zqElectionStudents().find(s=>String(s.id)===String(x.deputyId))?.name||"Élève"}))};}
     async function zqElectionSyncStudentEvent(){
       const cls=currentClass();if(!cls?.id||!supabaseClient)return;
-      const publicState={version:2,hidden:zqElectionIsHidden(),campaign:zqElectionCampaign(),roster:zqElectionStudents().map(s=>({id:s.id,name:s.name||s.first_name||"Élève"})),applications:zqElectionApplications().map(zqElectionPublicApplication),elections:{delegate:zqElectionPublicState("delegate"),eco:zqElectionPublicState("eco")}};
+      const publicState={version:3,hidden:zqElectionIsHidden(),campaign:zqElectionCampaign(),roster:zqElectionStudents().map(s=>({id:s.id,name:s.name||s.first_name||"Élève"})),applications:zqElectionApplications().map(zqElectionPublicApplication),elections:{delegate:zqElectionPublicState("delegate"),eco:zqElectionPublicState("eco")},teacherState:zqElectionTeacherState()};
       const signature=JSON.stringify(publicState);if(signature===zqElectionLastPublicState)return;zqElectionLastPublicState=signature;
       const payload={...publicState,updatedAt:new Date().toISOString()},row={class_id:cls.id,type:"message",text:"[ZQELECTION] "+JSON.stringify(payload),due_date:null};
       const {data:existing,error:readError}=await supabaseClient.from("class_messages").select("id").eq("class_id",cls.id).like("text","[ZQELECTION]%").limit(1);if(readError)throw readError;
       let saved,error;if(existing?.[0])({data:saved,error}=await supabaseClient.from("class_messages").update(row).eq("id",existing[0].id).select().single());else ({data:saved,error}=await supabaseClient.from("class_messages").insert(row).select().single());if(error)throw error;
       const mapped=mapSupabaseClassMessage(saved);cls.classMessages=(cls.classMessages||[]).filter(m=>m.type!=="election_event");cls.classMessages.push(mapped);
+    }
+    function zqElectionMergeApplications(localItems,cloudItems){
+      const merged=[...(localItems||[])];
+      for(const item of cloudItems||[]){
+        const key=item.sourceId||item.id;
+        const index=merged.findIndex(x=>String(x.sourceId||x.id)===String(key)||(x.type===item.type&&String(x.candidateId)===String(item.candidateId)));
+        if(index<0)merged.push(item);else if(zqElectionStateTime(item)>=zqElectionStateTime(merged[index]))merged[index]={...merged[index],...item};
+      }
+      return merged;
+    }
+    async function zqElectionPullCloudState(){
+      const cls=currentClass();if(!cls?.id||!supabaseClient)return false;
+      const {data,error}=await supabaseClient.from("class_messages").select("id,text,created_at").eq("class_id",cls.id).like("text","[ZQELECTION]%").order("created_at",{ascending:false}).limit(1).maybeSingle();
+      if(error)throw error;
+      let payload=null;try{payload=data?.text?JSON.parse(data.text.slice(13)):null;}catch{}
+      const cloud=payload?.teacherState;if(!cloud)return false;
+      let changed=false;
+      for(const type of ["delegate","eco"]){const remote=cloud.elections?.[type],local=zqElectionLoad(type);if(remote&&zqElectionStateTime(remote)>zqElectionStateTime(local)){localStorage.setItem(zqElectionKey(type,cls.id),JSON.stringify(remote));changed=true;}}
+      const localApps=zqElectionApplications(),merged=zqElectionMergeApplications(localApps,cloud.applications||[]);
+      if(JSON.stringify(merged)!==JSON.stringify(localApps)){localStorage.setItem(zqElectionApplicationsKey(),JSON.stringify(merged));changed=true;}
+      if(cloud.applicationsUpdatedAt&&Date.parse(cloud.applicationsUpdatedAt)>Date.parse(zqElectionApplicationsUpdatedAt()||0))localStorage.setItem(zqElectionApplicationsUpdatedKey(),cloud.applicationsUpdatedAt);
+      return changed;
+    }
+    async function zqElectionHydrateApprovedApplications(){
+      const cls=currentClass(),campaign=zqElectionCampaign();if(!cls?.id||!campaign?.id)return false;
+      const {data,error}=await supabaseClient.from("election_applications").select("*").eq("campaign_id",campaign.id).eq("status","approved").order("submitted_at",{ascending:true});
+      if(error)throw error;
+      const online=(data||[]).map(x=>({id:x.id,sourceId:x.id,type:x.election_type,candidateId:x.candidate_student_id,deputyId:x.deputy_student_id,intro:x.candidate_intro||"",motivation:x.motivation||"",qualities:x.qualities||[],ideas:(x.ideas||[]).join("\n"),ideasList:x.ideas||[],deputyIntro:x.deputy_intro||"",createdAt:x.submitted_at,updatedAt:x.reviewed_at||x.submitted_at}));
+      const local=zqElectionApplications(),merged=zqElectionMergeApplications(local,online);if(JSON.stringify(local)===JSON.stringify(merged))return false;
+      localStorage.setItem(zqElectionApplicationsKey(),JSON.stringify(merged));localStorage.setItem(zqElectionApplicationsUpdatedKey(),new Date().toISOString());return true;
     }
     function zqElectionName(id){ return zqElectionStudents().find(s=>String(s.id)===String(id))?.name||"Élève"; }
     function zqElectionAvatar(id){ return zqElectionStudents().find(s=>String(s.id)===String(id))?.avatar||"🧑🏽‍🎓"; }
@@ -13522,15 +13557,24 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
     async function zqOpenElection(){
       const modal=zqElectionModal(); modal.classList.add("show");
       document.getElementById("teacherToolsModal")?.classList.remove("show");
-      zqElection=null; zqElectionActiveTab="rules";try{const cls=currentClass(),{data}=await supabaseClient.from("election_campaigns").select("*").eq("class_id",cls.id).order("created_at",{ascending:false}).limit(1).maybeSingle();if(data)localStorage.setItem(zqElectionCampaignKey(),JSON.stringify({id:data.id,status:data.status,createdAt:data.created_at}));}catch{}zqElectionRenderHome();
+      zqElection=null; zqElectionActiveTab="rules";
+      try{
+        const cls=currentClass(),{data}=await supabaseClient.from("election_campaigns").select("*").eq("class_id",cls.id).order("created_at",{ascending:false}).limit(1).maybeSingle();
+        if(data)localStorage.setItem(zqElectionCampaignKey(),JSON.stringify({id:data.id,status:data.status,createdAt:data.created_at}));
+        await zqElectionPullCloudState();
+        await zqElectionHydrateApprovedApplications();
+        zqElectionLastPublicState="";
+        await zqElectionSyncStudentEvent();
+      }catch(err){console.warn("Synchronisation élections",err);}
+      zqElectionRenderHome();
     }
     function zqElectionApplicationsKey(){ return `${ZQ_ELECTION_PREFIX}${currentClass()?.id||"none"}_applications`; }
     function zqElectionApplications(){ try{return JSON.parse(localStorage.getItem(zqElectionApplicationsKey())||"[]");}catch{return [];} }
-    function zqElectionSaveApplications(items){localStorage.setItem(zqElectionApplicationsKey(),JSON.stringify(items));localStorage.removeItem(zqElectionVisibilityKey());zqElectionLastPublicState="";zqElectionScheduleCloudSync();}
+    function zqElectionSaveApplications(items){const now=new Date().toISOString();items=(items||[]).map(x=>({...x,updatedAt:x.updatedAt||now}));localStorage.setItem(zqElectionApplicationsKey(),JSON.stringify(items));localStorage.setItem(zqElectionApplicationsUpdatedKey(),now);localStorage.removeItem(zqElectionVisibilityKey());zqElectionLastPublicState="";zqElectionScheduleCloudSync();}
     function zqElectionTabs(content){
-      return `<div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 16px"><button class="btn ${zqElectionActiveTab==="rules"?"primary":"outline"}" data-election-tab="rules">📜 Règles</button><button class="btn ${zqElectionActiveTab==="applications"?"primary":"outline"}" data-election-tab="applications">📝 Candidatures</button><button class="btn ${zqElectionActiveTab==="count"?"primary":"outline"}" data-election-tab="count">🗳️ Dépouillement</button></div>${content}`;
+      return `<div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 16px;align-items:center"><button class="btn ${zqElectionActiveTab==="rules"?"primary":"outline"}" data-election-tab="rules">📜 Règles</button><button class="btn ${zqElectionActiveTab==="applications"?"primary":"outline"}" data-election-tab="applications">📝 Candidatures</button><button class="btn ${zqElectionActiveTab==="count"?"primary":"outline"}" data-election-tab="count">🗳️ Dépouillement</button><button class="btn outline" data-election-sync style="margin-left:auto">☁️ Synchroniser</button></div>${content}`;
     }
-    function zqElectionWireTabs(){ document.querySelectorAll("[data-election-tab]").forEach(b=>b.onclick=()=>{zqElectionActiveTab=b.dataset.electionTab;zqElectionRenderHome();}); }
+    function zqElectionWireTabs(){ document.querySelectorAll("[data-election-tab]").forEach(b=>b.onclick=()=>{zqElectionActiveTab=b.dataset.electionTab;zqElectionRenderHome();});document.querySelectorAll("[data-election-sync]").forEach(b=>b.onclick=async()=>{b.disabled=true;b.textContent="⏳ Synchronisation…";try{await zqElectionPullCloudState();await zqElectionHydrateApprovedApplications();zqElectionLastPublicState="";await zqElectionSyncStudentEvent();b.textContent="✅ Synchronisé";setTimeout(()=>zqElectionRenderHome(),900);}catch(err){console.error(err);b.disabled=false;b.textContent="⚠️ Réessayer";alert("Impossible de synchroniser les élections pour le moment.");}}); }
     async function zqElectionToggleCampaign(){const cls=currentClass(),current=zqElectionCampaign(),btn=document.getElementById("zqElectionLaunchCampaign");btn.disabled=true;try{if(current?.status==="active"){const {error}=await supabaseClient.from("election_campaigns").update({status:"closed",closed_at:new Date().toISOString()}).eq("id",current.id);if(error)throw error;localStorage.setItem(zqElectionCampaignKey(),JSON.stringify({...current,status:"closed"}));}else{const teacher_id=await currentTeacherId();await supabaseClient.from("election_campaigns").update({status:"closed",closed_at:new Date().toISOString()}).eq("class_id",cls.id).eq("status","active");const {data,error}=await supabaseClient.from("election_campaigns").insert({class_id:cls.id,teacher_id,status:"active"}).select().single();if(error)throw error;localStorage.setItem(zqElectionCampaignKey(),JSON.stringify({id:data.id,status:"active",createdAt:data.created_at}));localStorage.removeItem(zqElectionVisibilityKey());}zqElectionLastPublicState="";await zqElectionSyncStudentEvent();zqElectionRenderHome();}catch(err){alert("Impossible de modifier la campagne : "+err.message);btn.disabled=false;}}
     async function zqElectionCloseCampaignSilently(){const current=zqElectionCampaign();if(!current?.id||current.status!=="active")return;localStorage.setItem(zqElectionCampaignKey(),JSON.stringify({...current,status:"closed"}));zqElectionLastPublicState="";zqElectionScheduleCloudSync();const {error}=await supabaseClient.from("election_campaigns").update({status:"closed",closed_at:new Date().toISOString()}).eq("id",current.id);if(error)console.warn("Fermeture candidatures",error);}
     function zqElectionRenderHome(){
@@ -13665,7 +13709,7 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
         <div style="display:flex;justify-content:flex-end;margin-top:18px"><button class="btn primary" id="zqElectionCloseCount" ${done===zqElection.voters?"":"disabled"}>Clore le tour et calculer</button></div>`;
       body.querySelectorAll("[data-vote]").forEach(b=>b.onclick=()=>zqElectionAddVote(b.dataset.vote));
       document.getElementById("zqElectionUndo").onclick=zqElectionUndo;
-      document.getElementById("zqElectionCloseCount").onclick=()=>{zqElection.phase="roundResult";zqElectionSave();zqElectionRender()};
+      document.getElementById("zqElectionCloseCount").onclick=()=>{const votes={...zqElection.votes},ranked=zqElectionCurrentCandidates().map(c=>({id:c.id,deputyId:c.deputyId,score:votes[c.id]||0})).sort((a,b)=>b.score-a.score);const snapshot={round:zqElection.round,voters:zqElection.voters,votes,ranking:ranked,blank:votes.blank||0,nullVotes:votes.null||0,expressed:ranked.reduce((sum,x)=>sum+x.score,0),recordedAt:new Date().toISOString()};zqElection.roundHistory=[...(zqElection.roundHistory||[]).filter(x=>Number(x.round)!==Number(zqElection.round)),snapshot];zqElection.phase="roundResult";zqElectionSave();zqElectionRender()};
     }
     function zqElectionRanking(){ return zqElectionCurrentCandidates().map(c=>({...c,score:zqElection.votes[c.id]||0})).sort((a,b)=>b.score-a.score||zqElectionName(a.id).localeCompare(zqElectionName(b.id),"fr")); }
     function zqElectionRenderRoundResult(){
@@ -13711,9 +13755,16 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
         zqElection.phase="finished";zqElection.finishedAt=new Date().toISOString();zqElectionSave();zqElectionRender();
       });
     }
+    function zqElectionReportRounds(){
+      if(zqElection?.roundHistory?.length)return [...zqElection.roundHistory].sort((a,b)=>a.round-b.round);
+      const votes=zqElection?.votes||{},ranking=(zqElection?.candidates||[]).map(c=>({id:c.id,deputyId:c.deputyId,score:votes[c.id]||0})).sort((a,b)=>b.score-a.score);
+      return [{round:zqElection?.round||1,voters:zqElection?.voters||0,votes,ranking,blank:votes.blank||0,nullVotes:votes.null||0,expressed:ranking.reduce((sum,x)=>sum+x.score,0),legacy:true}];
+    }
+    function zqElectionReportText(){const title=zqElection.type==="eco"?"Élection de l’éco-délégué":"Élection des délégués";return `${title} — ${zqElection.className}\n`+zqElectionReportRounds().map(r=>`Tour ${r.round} : ${r.voters} votants ; ${r.expressed} suffrages exprimés ; ${r.blank} blanc(s) ; ${r.nullVotes} nul(s).\n${(r.ranking||[]).map(x=>`${zqElectionName(x.id)} : ${x.score} voix`).join("\n")}`).join("\n\n")+`\n\nÉlus :\n${(zqElection.elected||[]).map(x=>`${zqElectionName(x.id)} (titulaire) — ${zqElectionName(x.deputyId)} (suppléant)`).join("\n")}`;}
     function zqElectionRenderFinished(){
       const body=document.getElementById("zqElectionBody"),eco=zqElection.type==="eco";
       body.innerHTML=`<div style="text-align:center;padding:24px 0"><div style="font-size:80px">🎉</div><h2 style="font-size:34px;margin:8px 0">Résultats officiels</h2><div class="muted">${escapeHTML(zqElection.className)}</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:15px;margin-top:24px">${(zqElection.elected||[]).map(x=>`<div style="padding:24px;background:white;border:3px solid ${eco?"#86efac":"#93c5fd"};border-radius:24px;box-shadow:0 12px 30px #0f172a14"><div style="font-size:58px">${zqElectionAvatar(x.id)}</div><div style="font-size:22px;font-weight:1000;margin-top:7px">${escapeHTML(zqElectionName(x.id))}</div><div style="font-weight:900;color:${eco?"#047857":"#1d4ed8"};margin-top:5px">${eco?"Éco-délégué(e)":"Délégué(e) titulaire"}</div><div style="margin-top:10px;padding-top:10px;border-top:1px solid #e2e8f0">Suppléant(e) : <strong>${escapeHTML(zqElectionName(x.deputyId))}</strong></div></div>`).join("")}</div><div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:24px"><button class="btn outline" id="zqElectionHome">Retour aux élections</button><button class="btn outline" id="zqElectionStudentVisibility">${zqElectionIsHidden()?"👁️ Réafficher sur l’espace élèves":"🙈 Masquer sur l’espace élèves"}</button><button class="btn danger" id="zqElectionRestart">Recommencer cette élection</button></div></div>`;
+      const report=document.createElement("div");report.style.cssText="margin:24px auto 0;width:min(820px,100%);padding:20px;border:2px solid #cbd5e1;border-radius:20px;background:white;text-align:left";report.innerHTML=`<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><div><h3 style="margin:0">📋 Récapitulatif pour la CPE</h3><div class="muted" style="margin-top:4px">Les chiffres restent consultables après l’élection.</div></div><button class="btn primary" id="zqElectionCopyReport">📋 Copier le récapitulatif</button></div>${zqElectionReportRounds().map(r=>`<div style="margin-top:15px;padding:14px;border-radius:14px;background:#f8fafc"><strong>Tour ${r.round}</strong><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><span class="pill">Votants : ${r.voters}</span><span class="pill">Exprimés : ${r.expressed}</span><span class="pill">Blancs : ${r.blank}</span><span class="pill">Nuls : ${r.nullVotes}</span></div><div style="margin-top:10px;display:grid;gap:5px">${(r.ranking||[]).map(x=>`<div style="display:flex;justify-content:space-between;gap:12px"><span>${escapeHTML(zqElectionName(x.id))}</span><strong>${x.score} voix</strong></div>`).join("")}</div>${r.legacy?'<div class="muted" style="font-size:12px;margin-top:8px">Données récupérées depuis le dernier tour enregistré sur cet ordinateur.</div>':""}</div>`).join("")}`;document.getElementById("zqElectionHome").parentElement.before(report);document.getElementById("zqElectionCopyReport").onclick=async()=>{const text=zqElectionReportText();try{await navigator.clipboard.writeText(text);document.getElementById("zqElectionCopyReport").textContent="✅ Copié";}catch{prompt("Copie ce récapitulatif :",text);}};
       document.getElementById("zqElectionHome").onclick=zqElectionRenderHome;
       document.getElementById("zqElectionStudentVisibility").onclick=()=>{if(zqElectionIsHidden())localStorage.removeItem(zqElectionVisibilityKey());else localStorage.setItem(zqElectionVisibilityKey(),"1");zqElectionLastPublicState="";zqElectionScheduleCloudSync();zqElectionRenderFinished();};
       document.getElementById("zqElectionRestart").onclick=()=>{if(confirm("Effacer cette élection et recommencer ?")){localStorage.removeItem(zqElectionKey(zqElection.type,zqElection.classId));zqElectionLastPublicState="";zqElectionScheduleCloudSync();zqElectionSetup(zqElection.type)}};
@@ -13917,7 +13968,7 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.23.0 • 2 délégués, 2 suppléants et binôme éco</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.24.0 • Élections synchronisées et procès-verbal conservé</span>.
   </footer>
 
 <button type="button" id="zqUndoFloatingBtn" title="Actions récentes"
