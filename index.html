@@ -3298,7 +3298,7 @@ Noah"
       return null;
     }
     function getDecoration(stars){ if(stars>=6) return "crown"; if(stars>=4) return "sparkles"; if(stars>=2) return "fire"; return "none"; }
-    function getDiamondsForLevel(level){ if(level<8) return 0; return 1+Math.floor((level-8)/2); }
+    function getDiamondsForLevel(level){ if(level<7) return 0; return 1+Math.floor((level-7)/2); }
     function round1(n){ return Math.round(n*10)/10; }
     function engagementIndexTheme(value){
       const v=Number(value);
@@ -4737,15 +4737,19 @@ Noah"
     function visibleTeacherRemarks(rows){
       return (rows||[]).filter(r=>!parseZQEventRemark(r.remark ?? r.text));
     }
+    const ZQ_TRACKING_EVENT_TYPES=new Set(["minus","plus","star_minus","success_card","success_card_legendary","merit_special","merit_distinguished","homework_done","homework_missed"]);
     function zqEventsFromRemarks(rows){
+      const seen=new Set();
       return (rows||[]).map(r=>{
         const e=parseZQEventRemark(r.remark ?? r.text);
-        if(!e) return null;
+        if(!e||!ZQ_TRACKING_EVENT_TYPES.has(e.type)) return null;
+        const key=r.id?`id:${r.id}`:`${e.type}|${e.code}|${e.label}|${e.scoreAfter}|${r.created_at||r.date||""}`;
+        if(seen.has(key))return null;seen.add(key);
         return {...e,id:r.id,date:r.created_at||r.date||null};
       }).filter(Boolean);
     }
     function zqReasonHistoryHTML(rows,limit=10){
-      const events=zqEventsFromRemarks(rows).filter(e=>!["star_sync","school_material","resource","resource_update","resource_deleted","announcement","class_role"].includes(e.type)).slice(0,limit);
+      const events=zqEventsFromRemarks(rows).slice(0,limit);
       if(!events.length) return '<div style="padding:14px;border-radius:14px;background:#f0fdf4;border:1px solid #bbf7d0;text-align:center"><strong>✅ Rien à signaler</strong></div>';
 
       return `<div style="display:grid;gap:8px">${events.map(e=>{
@@ -5453,7 +5457,7 @@ Noah"
       4:{emoji:"🌿",name:"Éclaireur",message:"Ta régularité commence à se voir. Continue à donner le meilleur.",unlock:"✨ Effet scintillant débloqué"},
       5:{emoji:"🐆",name:"Pisteur",message:"Tu fais partie des élèves qui se démarquent par leur implication.",unlock:"🐆 Statut Pisteur"},
       6:{emoji:"🔥",name:"Expert",message:"Tu maîtrises de mieux en mieux les bons réflexes de classe.",unlock:"🔥 Aura Expert"},
-      7:{emoji:"💎",name:"Maître",message:"Tu es très proche du sommet. Continue à rester régulier.",unlock:"💎 Statut Maître"},
+      7:{emoji:"💎",name:"Maître",message:"Tu es très proche du sommet. Continue à rester régulier.",unlock:"💎 Premier diamant gagné"},
       8:{emoji:"👑",name:"Légende",message:"Peu d’élèves atteignent ce niveau. Continue à faire vivre cette progression.",unlock:"✨ Halo lumineux débloqué"}
     };
 
@@ -5479,8 +5483,8 @@ Noah"
 
       const next=levelInfo(n+1);
       const remain=Math.max(0,3-(Number(progress)||0));
-      const currentDiamonds=Math.max(0,Number(diamonds)||getDiamondsForLevel(n));
-      const nextDiamondLevel=n<8?8:n+(n%2===0?2:1);
+      const currentDiamonds=Math.max(0,Number(diamonds)||0,getDiamondsForLevel(n));
+      const nextDiamondLevel=n<7?7:n+(n%2===1?2:1);
 
       document.getElementById("levelDetailNext").innerHTML=
         `Encore <strong>${remain} cours réussi${remain>1?"s":""}</strong> pour viser le niveau <strong>${n+1} — ${next.name}</strong>.<br>`+
@@ -6278,7 +6282,7 @@ Noah"
       const g=student.group==="g1"?"g1":student.group==="g2"?"g2":null;
       const groupName=g==="g1"?"Groupe 1":g==="g2"?"Groupe 2":"Aucun groupe";
       const remain=Math.max(0,3-(student.progress||0));
-      const nextDiamond=student.level<8?8:student.level+(student.level%2===0?2:1);
+      const nextDiamond=student.level<7?7:student.level+(student.level%2===1?2:1);
 
       const previewMeritRows=currentPeriodTeacherRows(student);
       document.getElementById("studentViewContent").innerHTML=`
@@ -6632,7 +6636,7 @@ Noah"
           s.progress=Number(row.progress??s.progress);
           s.level=Number(row.level??s.level);
           s.stars=Number(row.stars??s.stars);
-          s.diamonds=Number(row.diamonds??s.diamonds);
+          s.diamonds=Math.max(Number(row.diamonds??s.diamonds),getDiamondsForLevel(Number(row.level??s.level??1)));
           s.currentStreak=Number(row.current_streak??s.currentStreak);
         }
 
@@ -6741,7 +6745,7 @@ Noah"
           let newProgress=Number(student.progress||0);
           let newLevel=Number(student.level||1);
           let newStars=Number(student.stars||0);
-          let newDiamonds=Number(student.diamonds||0);
+          let newDiamonds=Math.max(Number(student.diamonds||0),getDiamondsForLevel(newLevel));
           let newStreak=Number(student.currentStreak||0);
 
           if(!student.lostThisLesson){
@@ -7462,7 +7466,7 @@ Noah"
     function trackingVisibleEvents(rows){
       return (rows||[]).map(r=>{
         const e=parseZQEventRemark(r.remark ?? r.text);
-        if(!e || ["star_sync","school_material"].includes(e.type)) return null;
+        if(!e || !ZQ_TRACKING_EVENT_TYPES.has(e.type)) return null;
         const rawDate=r.created_at||r.createdAt||r.date||null;
         const time=rawDate?new Date(rawDate).getTime():0;
         return {...e,time};
@@ -9557,12 +9561,12 @@ Noah"
       const trend=studentTrend(scores);
       const avatar=student.avatar||"🧑🏽‍🎓";
       const stars=Number(student.stars||0);
-      const diamonds=Number(student.diamonds||0);
       const level=Number(student.level||1);
+      const diamonds=Math.max(Number(student.diamonds||0),getDiamondsForLevel(level));
       const progressStep=Math.max(0,Math.min(3,Number(student.progress||0)));
       const progressPct=(progressStep/3)*100;
       const remain=Math.max(0,3-progressStep);
-      const nextDiamond=level<8?8:level+(level%2===0?2:1);
+      const nextDiamond=level<7?7:level+(level%2===1?2:1);
       const group=student.group_name==="g1"?"g1":student.group_name==="g2"?"g2":null;
       const groupName=group==="g1"?"Groupe 1":group==="g2"?"Groupe 2":"Aucun groupe";
 
@@ -10619,7 +10623,7 @@ ${schoolMaterialsStudentHTML(remarks,remarks)}
         progress:Number(row.progress??0),
         level:Number(row.level??1),
         stars:Number(row.stars??0),
-        diamonds:Number(row.diamonds??0),
+        diamonds:Math.max(Number(row.diamonds??0),getDiamondsForLevel(Number(row.level??1))),
         homeworks:Number(row.homeworks??0),
         isAbsent:false,
         isAutoAbsent:false,
@@ -13968,7 +13972,7 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.24.0 • Élections synchronisées et procès-verbal conservé</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.25.0 • Suivi élève corrigé et premier diamant au niveau 7</span>.
   </footer>
 
 <button type="button" id="zqUndoFloatingBtn" title="Actions récentes"
