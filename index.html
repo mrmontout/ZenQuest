@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest v5.15.0d</title>
+  <title>ZenQuest</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230f766e'/%3E%3Cpath d='M18 19h30L24 45h25' fill='none' stroke='white' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <style>
     :root{
@@ -1411,14 +1411,28 @@ Noah"
       </div>
 
       <div class="box" style="margin-top:14px">
+        <div style="font-size:18px;font-weight:900;margin-bottom:5px">1. Choisir les périodes</div>
+        <div class="muted" style="margin-bottom:10px">
+          Coche une ou plusieurs périodes. La moyenne générale est calculée uniquement avec les périodes sélectionnées pour lesquelles l’élève possède une note.
+        </div>
+        <div id="averagesPeriodChoices" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+      </div>
+
+      <div class="box" style="margin-top:14px">
+        <div style="font-size:18px;font-weight:900;margin-bottom:5px">2. Indices par période et moyenne</div>
+        <div id="averagesPeriodTable" style="overflow-x:auto"></div>
+      </div>
+
+      <div class="box" style="margin-top:14px">
+        <div style="font-size:18px;font-weight:900;margin-bottom:5px">3. Liste prête pour Pronote</div>
         <div class="muted" style="margin-bottom:8px">
-          L’indice utilise les 5 derniers cours et donne davantage de poids aux cours les plus récents.
+          Le texte ci-dessous contient la moyenne des périodes cochées pour chaque élève.
         </div>
         <textarea id="averagesText" rows="18" readonly
           style="width:100%;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;line-height:1.55"></textarea>
 
         <div class="row wrap" style="margin-top:12px">
-          <button class="btn primary" id="copyAveragesBtn">📋 Copier tout</button>
+          <button class="btn primary" id="copyAveragesBtn">📋 Copier pour Pronote</button>
           <button class="btn outline" id="downloadAveragesBtn">⬇️ Télécharger .txt</button>
         </div>
       </div>
@@ -7049,28 +7063,137 @@ Noah"
       document.getElementById("classAnalyticsModal").classList.add("show");
     }
 
+    const zqAveragePeriodSelections=new Map();
+
+    function zqAveragePeriodOptions(cls){
+      if(!cls) return [];
+      const archived=(cls.periodArchive||[]).map(p=>({
+        id:String(p.id),
+        name:p.name||"Ancienne période",
+        current:false
+      }));
+      return [
+        ...archived,
+        {
+          id:String(cls.currentPeriodId||"current"),
+          name:cls.currentPeriodName||"Période actuelle",
+          current:true
+        }
+      ];
+    }
+
+    function zqSelectedAveragePeriodIds(cls){
+      const options=zqAveragePeriodOptions(cls);
+      const available=new Set(options.map(p=>p.id));
+      const classKey=String(cls?.id||"");
+      let selected=zqAveragePeriodSelections.get(classKey);
+      if(!selected){
+        selected=new Set(options.map(p=>p.id));
+        zqAveragePeriodSelections.set(classKey,selected);
+      }else{
+        selected=new Set([...selected].filter(id=>available.has(id)));
+        options.forEach(p=>{ if(!zqAveragePeriodSelections.get(classKey)?.has(p.id) && !zqAveragePeriodSelections.has(classKey)) selected.add(p.id); });
+        zqAveragePeriodSelections.set(classKey,selected);
+      }
+      return selected;
+    }
+
+    function zqPeriodAverageForStudent(student,period){
+      if(period.current){
+        const value=periodStats(student).average;
+        return value===null||value===undefined?null:Number(value);
+      }
+      const archived=(student.archivedPeriods||[]).find(p=>String(p.id)===String(period.id));
+      const value=archived?.average;
+      return value===null||value===undefined||!Number.isFinite(Number(value))?null:Number(value);
+    }
+
+    function zqAverageAcrossPeriods(student,periods){
+      const values=periods.map(p=>zqPeriodAverageForStudent(student,p)).filter(Number.isFinite);
+      return values.length?round1(values.reduce((sum,value)=>sum+value,0)/values.length):null;
+    }
+
+    function zqFormatMark(value){
+      return value===null||value===undefined||!Number.isFinite(Number(value))
+        ? "—"
+        : String(round1(Number(value))).replace(".",",")+"/20";
+    }
+
+    function zqSelectedAveragePeriods(cls){
+      const selected=zqSelectedAveragePeriodIds(cls);
+      return zqAveragePeriodOptions(cls).filter(p=>selected.has(p.id));
+    }
+
     function averagesTextForCurrentClass(){
       const cls=currentClass();
       if(!cls) return "";
-
+      const periods=zqSelectedAveragePeriods(cls);
       const rows=[...(cls.students||[])].sort((a,b)=>
         (a.name||"").localeCompare(b.name||"","fr",{sensitivity:"base"})
       );
-
       const lines=[
-        "ZENQUEST — INDICES D’IMPLICATION",
+        "ZENQUEST — MOYENNES D’IMPLICATION",
         `Classe : ${cls.name||"—"}`,
-        `Période : ${cls.currentPeriodName||"Période actuelle"}`,
+        `Périodes : ${periods.length?periods.map(p=>p.name).join(" + "):"aucune période sélectionnée"}`,
         ""
       ];
-
       rows.forEach(student=>{
-        const ps=periodStats(student);
-        const avg=ps.index===null ? "—" : String(ps.index).replace(".",",")+"/20";
-        lines.push(`${student.name} : ${avg}`);
+        lines.push(`${student.name} : ${zqFormatMark(zqAverageAcrossPeriods(student,periods))}`);
       });
-
       return lines.join("\n");
+    }
+
+    function zqRenderAveragePeriodChoices(cls){
+      const root=document.getElementById("averagesPeriodChoices");
+      if(!root) return;
+      const selected=zqSelectedAveragePeriodIds(cls);
+      const options=zqAveragePeriodOptions(cls);
+      root.innerHTML=options.map(period=>`
+        <label style="display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border-radius:999px;border:1px solid ${selected.has(period.id)?"#0f766e":"#cbd5e1"};background:${selected.has(period.id)?"#ecfdf5":"white"};font-weight:850;cursor:pointer">
+          <input type="checkbox" data-average-period-id="${escapeHTML(period.id)}" ${selected.has(period.id)?"checked":""} style="width:auto">
+          ${escapeHTML(period.name)}${period.current?" • actuelle":""}
+        </label>
+      `).join("");
+      root.querySelectorAll("[data-average-period-id]").forEach(input=>{
+        input.onchange=()=>{
+          const classKey=String(cls.id||"");
+          const next=new Set(zqSelectedAveragePeriodIds(cls));
+          if(input.checked) next.add(input.dataset.averagePeriodId);
+          else next.delete(input.dataset.averagePeriodId);
+          zqAveragePeriodSelections.set(classKey,next);
+          refreshAveragesModal();
+        };
+      });
+    }
+
+    function zqRenderAveragePeriodTable(cls){
+      const root=document.getElementById("averagesPeriodTable");
+      if(!root) return;
+      const periods=zqSelectedAveragePeriods(cls);
+      const students=[...(cls.students||[])].sort((a,b)=>
+        (a.name||"").localeCompare(b.name||"","fr",{sensitivity:"base"})
+      );
+      if(!periods.length){
+        root.innerHTML='<div style="padding:14px;border-radius:14px;background:#fff7ed;color:#9a3412;font-weight:850">Choisis au moins une période pour calculer les moyennes.</div>';
+        return;
+      }
+      root.innerHTML=`
+        <table style="width:100%;border-collapse:separate;border-spacing:0 7px;min-width:${Math.max(560,300+periods.length*125)}px">
+          <thead><tr>
+            <th style="text-align:left;padding:8px 10px">Élève</th>
+            ${periods.map(p=>`<th style="text-align:center;padding:8px 10px">${escapeHTML(p.name)}</th>`).join("")}
+            <th style="text-align:center;padding:8px 10px;color:#0f766e">Moyenne</th>
+          </tr></thead>
+          <tbody>
+            ${students.map(student=>`
+              <tr style="background:#f8fafc">
+                <td style="padding:10px;border-radius:12px 0 0 12px;font-weight:900">${escapeHTML(student.name||"Élève")}</td>
+                ${periods.map(p=>`<td style="padding:10px;text-align:center">${zqFormatMark(zqPeriodAverageForStudent(student,p))}</td>`).join("")}
+                <td style="padding:10px;text-align:center;border-radius:0 12px 12px 0;font-weight:1000;color:#0f766e">${zqFormatMark(zqAverageAcrossPeriods(student,periods))}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>`;
     }
 
     function refreshAveragesModal(){
@@ -7078,9 +7201,11 @@ Noah"
       const text=document.getElementById("averagesText");
       const subtitle=document.getElementById("averagesSubtitle");
       if(!text || !subtitle || !cls) return;
-
+      zqRenderAveragePeriodChoices(cls);
+      zqRenderAveragePeriodTable(cls);
       text.value=averagesTextForCurrentClass();
-      subtitle.textContent=`${cls.name||"Classe"} • ${cls.currentPeriodName||"Période actuelle"} • ${(cls.students||[]).length} élève${(cls.students||[]).length>1?"s":""}`;
+      const selectedCount=zqSelectedAveragePeriods(cls).length;
+      subtitle.textContent=`${cls.name||"Classe"} • ${selectedCount} période${selectedCount>1?"s":""} sélectionnée${selectedCount>1?"s":""} • ${(cls.students||[]).length} élève${(cls.students||[]).length>1?"s":""}`;
     }
 
     function openAveragesModal(){
@@ -13988,7 +14113,7 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.25.0 • Suivi élève corrigé et premier diamant au niveau 7</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.26.0</span>.
   </footer>
 
 <button type="button" id="zqUndoFloatingBtn" title="Actions récentes"
