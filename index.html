@@ -10749,7 +10749,7 @@ ${schoolMaterialsStudentHTML(remarks,remarks)}
       if(classError) throw new Error("Impossible de charger tes classes Supabase : "+classError.message);
 
       const classIds=(classes||[]).map(c=>c.id);
-      let zqAllStudents=[], zqAllPeriods=[], zqAllRemarks=[], zqAllScores=[], zqAllMessages=[], zqAllFollowups=[];
+      let zqAllStudents=[], zqAllPeriods=[], zqAllRemarks=[], zqAllScores=[], zqAllPeriodResults=[], zqAllMessages=[], zqAllFollowups=[];
 
       if(classIds.length){
         const [studentsRes,periodsRes,messagesRes,followupsRes]=await Promise.all([
@@ -10791,11 +10791,17 @@ ${schoolMaterialsStudentHTML(remarks,remarks)}
                 .in("period_id",currentPeriodIds)
                 .order("created_at",{ascending:true})
             : Promise.resolve({data:[],error:null});
-          const [remarksRes,scoresRes]=await Promise.all([remarksPromise,scoresPromise]);
+          const periodResultsPromise=supabaseClient.from("period_results")
+            .select("student_id,period_id,average,lesson_count,best_score,worst_score,final_level,final_stars,final_diamonds,homeworks,created_at")
+            .in("student_id",allStudentIds)
+            .order("created_at",{ascending:true});
+          const [remarksRes,scoresRes,periodResultsRes]=await Promise.all([remarksPromise,scoresPromise,periodResultsPromise]);
           if(remarksRes.error) throw new Error("Impossible de charger les remarques : "+remarksRes.error.message);
           if(scoresRes.error) throw new Error("Impossible de charger les scores : "+scoresRes.error.message);
+          if(periodResultsRes.error) throw new Error("Impossible de charger les anciennes périodes : "+periodResultsRes.error.message);
           zqAllRemarks=remarksRes.data||[];
           zqAllScores=scoresRes.data||[];
+          zqAllPeriodResults=periodResultsRes.data||[];
         }
       }
 
@@ -10831,10 +10837,20 @@ ${schoolMaterialsStudentHTML(remarks,remarks)}
           s._pointsLostThisLesson=lessonLoss.pointsLostThisLesson;
           s._archivedPeriods=(periods||[]).filter(p=>!p.is_current).map(p=>{
             const vals=allLessonScores.filter(x=>x.student_id===s.id&&x.period_id===p.id).map(x=>Number(x.score)).filter(Number.isFinite);
+            const archivedResult=zqAllPeriodResults.find(r=>String(r.student_id)===String(s.id)&&String(r.period_id)===String(p.id))||null;
+            const archivedAverage=archivedResult?.average;
             return {
               id:p.id,name:p.name,closedAt:p.closed_at?new Date(p.closed_at).toLocaleString():"",
-              average:vals.length?round1(vals.reduce((a,b)=>a+b,0)/vals.length):null,
-              count:vals.length,best:vals.length?Math.max(...vals):null,worst:vals.length?Math.min(...vals):null
+              average:archivedAverage!==null&&archivedAverage!==undefined&&Number.isFinite(Number(archivedAverage))
+                ? round1(Number(archivedAverage))
+                : (vals.length?round1(vals.reduce((a,b)=>a+b,0)/vals.length):null),
+              count:Number(archivedResult?.lesson_count??vals.length),
+              best:archivedResult?.best_score!==null&&archivedResult?.best_score!==undefined?Number(archivedResult.best_score):(vals.length?Math.max(...vals):null),
+              worst:archivedResult?.worst_score!==null&&archivedResult?.worst_score!==undefined?Number(archivedResult.worst_score):(vals.length?Math.min(...vals):null),
+              level:Number(archivedResult?.final_level??0),
+              stars:Number(archivedResult?.final_stars??0),
+              diamonds:Number(archivedResult?.final_diamonds??0),
+              homeworks:Number(archivedResult?.homeworks??0)
             };
           });
         });
@@ -10885,7 +10901,7 @@ ${schoolMaterialsStudentHTML(remarks,remarks)}
         mappedClass.periodArchive=(periods||[]).filter(p=>!p.is_current).map(p=>{
           const rankingRows=mappedClass.students.map(s=>{
             const ap=(s.archivedPeriods||[]).find(a=>a.id===p.id)||{};
-            return {id:s.id,name:s.name,avatar:s.avatar,average:ap.average??null,count:ap.count||0,best:ap.best??null,worst:ap.worst??null,diamonds:s.diamonds,stars:s.stars,homeworks:s.homeworks};
+            return {id:s.id,name:s.name,avatar:s.avatar,average:ap.average??null,count:ap.count||0,best:ap.best??null,worst:ap.worst??null,diamonds:ap.diamonds??0,stars:ap.stars??0,homeworks:ap.homeworks??0,level:ap.level??0};
           });
           const avgs=rankingRows.filter(r=>r.average!==null).map(r=>r.average);
           return {id:p.id,name:p.name,closedAt:p.closed_at?new Date(p.closed_at).toLocaleString():"",classAverage:avgs.length?round1(avgs.reduce((a,b)=>a+b,0)/avgs.length):null,rankingRows,collectiveSnapshot:collectiveSnapshot(mappedClass)};
