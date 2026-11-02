@@ -8331,28 +8331,47 @@ Noah"
       return `<section class="zq-student-current-event"><div class="zq-current-event-head"><div><span>📣 EN CE MOMENT DANS LA CLASSE</span><h2>Les élections de la classe</h2><p>Découvre les candidatures et suis le déroulement du vote.</p></div><div class="zq-event-ballot">🗳️</div></div>${invitation}${content}</section>`;
     }
 
-    function studentRepresentativesHTML(classMessages=[],student=null){
+    function studentRepresentativesHTML(classMessages=[],student=null,studentClass=null){
+      const normalizeName=value=>String(value||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,"");
+      const className=normalizeName(studentClass?.name);
+      const fixed6B=className==="6b"||className==="6eb";
+      const fixedRepresentatives=fixed6B?{
+        delegates:[
+          {name:"SULKER Shanica",deputyName:"EUSTACHE Rebeca",holderAliases:["SULKER Shanica","Shanica"],deputyAliases:["EUSTACHE Rebeca","Rebeca"]},
+          {name:"MIRANDA DECHESNE Seen'dy",deputyName:"BUZARE Lyvahn",holderAliases:["MIRANDA DECHESNE Seen'dy","Seen'dy"],deputyAliases:["BUZARE Lyvahn","Lyvahn"]}
+        ],
+        ecos:[
+          {name:"HUCHINSON Maria",deputyName:"ALEXIS Wedjina",holderAliases:["HUCHINSON Maria","Maria"],deputyAliases:["ALEXIS Wedjina","Wedjina"]}
+        ]
+      }:null;
+
       const event=zqLatestStudentElectionEvent(classMessages);
-      if(!event)return "";
-      const delegates=event.elections?.delegate?.phase==="finished"?(event.elections.delegate.elected||[]):[];
-      const ecos=event.elections?.eco?.phase==="finished"?(event.elections.eco.elected||[]):[];
+      const delegates=fixedRepresentatives?.delegates||
+        (event?.elections?.delegate?.phase==="finished"?(event.elections.delegate.elected||[]):[]);
+      const ecos=fixedRepresentatives?.ecos||
+        (event?.elections?.eco?.phase==="finished"?(event.elections.eco.elected||[]):[]);
       if(!delegates.length&&!ecos.length)return "";
 
-      const roster=event.roster||[];
+      const roster=event?.roster||[];
       const studentId=String(student?.id||"");
+      const studentName=normalizeName(student?.name||student?.first_name);
       const deputyIdFor=winner=>{
         if(winner?.deputyId)return String(winner.deputyId);
         const byName=roster.find(s=>(s.name||"").localeCompare(winner?.deputyName||"","fr",{sensitivity:"base"})===0);
         return byName?String(byName.id):"";
       };
+      const nameMatches=(aliases=[])=>aliases.some(alias=>{
+        const normalized=normalizeName(alias);
+        return normalized&&studentName&&(normalized===studentName||normalized.endsWith(studentName)||studentName.endsWith(normalized));
+      });
       const personalRoles=[];
       delegates.forEach(w=>{
-        if(String(w.id)===studentId)personalRoles.push("délégué(e) titulaire");
-        if(deputyIdFor(w)===studentId)personalRoles.push("suppléant(e) des délégués");
+        if(String(w.id||"")===studentId&&studentId || nameMatches(w.holderAliases||[w.name]))personalRoles.push("délégué(e) titulaire");
+        if(deputyIdFor(w)===studentId&&studentId || nameMatches(w.deputyAliases||[w.deputyName]))personalRoles.push("suppléant(e) des délégués");
       });
       ecos.forEach(w=>{
-        if(String(w.id)===studentId)personalRoles.push("éco-délégué(e) titulaire");
-        if(deputyIdFor(w)===studentId)personalRoles.push("suppléant(e) de l’éco-délégué");
+        if(String(w.id||"")===studentId&&studentId || nameMatches(w.holderAliases||[w.name]))personalRoles.push("éco-délégué(e) titulaire");
+        if(deputyIdFor(w)===studentId&&studentId || nameMatches(w.deputyAliases||[w.deputyName]))personalRoles.push("suppléant(e) de l’éco-délégué");
       });
 
       const cards=(rows,type)=>rows.map(w=>{
@@ -10293,7 +10312,7 @@ Noah"
             </div>
           </div>
 
-          ${studentRepresentativesHTML(classMessages,student)}
+          ${studentRepresentativesHTML(classMessages,student,cls)}
           <div style="margin-top:18px">${collectionHTML(student,"auth-"+student.id)}</div>
           <div style="height:32px"></div>
           </div>
@@ -14188,7 +14207,7 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.26.2</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.26.3</span>.
   </footer>
 
 <button type="button" id="zqUndoFloatingBtn" title="Actions récentes"
