@@ -8300,10 +8300,12 @@ Noah"
         .sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""))[0]?.electionData||null;
     }
 
-    function studentElectionEventHTML(classMessages=[]){
+    function studentElectionEventHTML(classMessages=[],studentClass=null){
       const event=zqLatestStudentElectionEvent(classMessages);
       zqStudentElectionPayload=event||null;
-      if(!event||event.hidden)return "";
+      const normalizedClassName=String(studentClass?.name||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,"");
+      const forceCampaignClosed=normalizedClassName==="6b"||normalizedClassName==="6eb";
+      if(!event||event.hidden||forceCampaignClosed)return "";
 
       const section=(type,label,icon,color)=>{
         const apps=(event.applications||[]).filter(a=>a.type===type);
@@ -10165,7 +10167,7 @@ Noah"
             </div>
           </div>
 
-          ${studentElectionEventHTML(classMessages)}
+          ${studentElectionEventHTML(classMessages,cls)}
           ${studentClassMessagesHTML({classMessages},classMessageSeenSet)}
 
           <div class="box" style="border:2px solid #bfdbfe">
@@ -14186,7 +14188,7 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
 
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.26.1</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.26.2</span>.
   </footer>
 
 <button type="button" id="zqUndoFloatingBtn" title="Actions récentes"
