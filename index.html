@@ -16,6 +16,8 @@
     }
     *{box-sizing:border-box}
     body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);background:linear-gradient(180deg,var(--bg1) 0%,var(--bg2) 34%,var(--bg3) 68%,var(--bg4) 100%);min-height:100vh}
+    .zq-v6-test-banner{position:fixed;inset:0 0 auto 0;z-index:6000000;min-height:38px;display:flex;align-items:center;justify-content:center;gap:10px;padding:7px 14px;background:linear-gradient(90deg,#7c3aed,#2563eb,#0891b2);color:#fff;font-size:13px;font-weight:950;letter-spacing:.04em;text-align:center;box-shadow:0 5px 18px rgba(37,99,235,.25)}
+    .zq-v6-test-banner span{padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3)}
     .wrap{max-width:1720px;margin:0 auto;padding:20px}
     .topbar,.panel,.card,.modal-card{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:28px}
     .topbar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;padding:14px 18px;margin-bottom:16px}
@@ -1115,7 +1117,14 @@
 .zq-student-candidate-sheet{width:min(760px,94vw);max-height:92vh;overflow:auto}.zq-candidate-hero{margin-top:15px;padding:26px;border-radius:22px;color:white;text-align:center;background:linear-gradient(135deg,var(--candidate-color),#4338ca)}.zq-candidate-avatar{font-size:72px}.zq-candidate-hero h2{font-size:30px;margin:7px 0}.zq-candidate-hero p{margin:0}.zq-candidate-details{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:14px}.zq-candidate-details>div{padding:17px;border:1px solid #dbeafe;border-radius:17px;background:#f8fafc}.zq-candidate-details h3{margin:0 0 8px}.zq-candidate-details p{margin:0;white-space:pre-wrap;line-height:1.55}@keyframes zqEventIn{from{opacity:0;transform:translateY(25px) scale(.98)}to{opacity:1;transform:none}}@keyframes zqBallotFloat{50%{transform:translateY(-7px) rotate(3deg)}}@keyframes zqWinnerIn{from{opacity:0;transform:scale(.72) translateY(22px)}to{opacity:1;transform:none}}@media(max-width:640px){.zq-current-event-head{padding:18px}.zq-current-event-head h2{font-size:23px}.zq-event-ballot{font-size:48px}.zq-candidate-details{grid-template-columns:1fr}}@media(prefers-reduced-motion:reduce){.zq-student-current-event,.zq-event-ballot,.zq-event-voting>span,.zq-event-winner{animation:none!important}.zq-student-candidate{transition:none!important}}
 .zq-election-callout{position:relative;overflow:hidden;margin:16px;padding:20px;border-radius:22px;color:white;background:linear-gradient(125deg,#1d4ed8,#4338ca 58%,#0f766e);box-shadow:0 15px 35px #1e3a8a2d}.zq-election-callout.eco{background:linear-gradient(125deg,#047857,#059669 58%,#65a30d)}.zq-election-callout::after{content:"🌿";position:absolute;right:-8px;bottom:-24px;font-size:105px;opacity:.13;transform:rotate(-15deg)}.zq-election-callout h3{font-size:25px;margin:7px 0}.zq-election-callout p{font-size:16px;line-height:1.5;max-width:760px}.zq-election-actions{display:flex;gap:9px;flex-wrap:wrap;position:relative;z-index:2}.zq-election-actions .btn{background:white;color:#1e3a8a;border:0}.zq-election-rules{display:grid;gap:12px}.zq-election-rule{display:flex;gap:13px;align-items:flex-start;padding:14px;border-radius:17px;background:white;border:1px solid #dbeafe;animation:zqRuleIn .45s both}.zq-election-rule:nth-child(2){animation-delay:.07s}.zq-election-rule:nth-child(3){animation-delay:.14s}.zq-election-rule:nth-child(4){animation-delay:.21s}.zq-election-rule>span{font-size:31px}.zq-election-rule strong{display:block;font-size:17px;margin-bottom:3px}.zq-application-form{display:grid;gap:14px}.zq-application-step{position:relative;padding:17px;border-radius:19px;background:white;border:2px solid #dbeafe;box-shadow:0 7px 20px #0f172a0c}.zq-application-step>label>strong,.zq-application-step>strong{font-size:17px}.zq-step-number{position:absolute;right:12px;top:10px;width:31px;height:31px;display:grid;place-items:center;border-radius:11px;color:white;background:linear-gradient(135deg,#2563eb,#7c3aed);font-weight:1000}.zq-application-step textarea,.zq-application-step select{width:100%;margin-top:8px}.zq-quality-row,.zq-idea-row{display:grid;grid-template-columns:1fr;gap:6px;margin-top:8px}.zq-quality-row input,.zq-idea-row input{width:100%}.zq-election-form-progress{height:10px;border-radius:99px;background:#e2e8f0;overflow:hidden}.zq-election-form-progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,#22c55e,#0ea5e9);transition:width .25s ease}.zq-election-status{padding:13px 15px;border-radius:15px;font-weight:850}.zq-election-status.pending{background:#fff7ed;border:1px solid #fdba74;color:#9a3412}.zq-election-status.approved{background:#f0fdf4;border:1px solid #86efac;color:#166534}.zq-election-status.rejected{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}@keyframes zqRuleIn{from{opacity:0;transform:translateX(22px)}to{opacity:1;transform:none}}
 .zq-election-field-meter{margin-top:7px;padding:8px 10px;border-radius:12px;background:#fff7ed;color:#9a3412;font-size:13px;font-weight:850}.zq-election-field-meter.ok{background:#f0fdf4;color:#166534}.zq-election-field-meter-track{height:7px;margin-top:6px;border-radius:99px;background:#e2e8f0;overflow:hidden}.zq-election-field-meter-track span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#f97316,#facc15);transition:width .2s ease}.zq-election-field-meter.ok .zq-election-field-meter-track span{background:linear-gradient(90deg,#22c55e,#14b8a6)}#authenticatedStudentView .student-dashboard{animation:zqStudentPageIn .5s ease both}#authenticatedStudentView .student-hero{animation:zqStudentHeroIn .65s cubic-bezier(.16,1,.3,1) both}#authenticatedStudentView .student-big-avatar{animation:zqStudentAvatarFloat 3.2s ease-in-out infinite;filter:drop-shadow(0 10px 12px #0f172a22)}#authenticatedStudentView .student-kpis>*{animation:zqStudentCardIn .5s both;transition:transform .18s ease,box-shadow .18s ease}#authenticatedStudentView .student-kpis>*:nth-child(2){animation-delay:.07s}#authenticatedStudentView .student-kpis>*:nth-child(3){animation-delay:.14s}#authenticatedStudentView .student-kpis>*:nth-child(4){animation-delay:.21s}#authenticatedStudentView .student-kpis>*:hover,#authenticatedStudentView .student-columns>.box:hover{transform:translateY(-3px);box-shadow:0 12px 25px #0f172a14}#authenticatedStudentView .student-columns>.box{transition:transform .18s ease,box-shadow .18s ease}#authenticatedStudentView .toolbar-chip.active{animation:zqStudentTabPulse 2.8s ease-in-out infinite}@keyframes zqStudentPageIn{from{opacity:0}to{opacity:1}}@keyframes zqStudentHeroIn{from{opacity:0;transform:translateY(20px) scale(.985)}to{opacity:1;transform:none}}@keyframes zqStudentAvatarFloat{50%{transform:translateY(-7px) rotate(2deg)}}@keyframes zqStudentCardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}@keyframes zqStudentTabPulse{50%{box-shadow:0 0 0 5px #14b8a61a}}@media(prefers-reduced-motion:reduce){#authenticatedStudentView .student-dashboard,#authenticatedStudentView .student-hero,#authenticatedStudentView .student-big-avatar,#authenticatedStudentView .student-kpis>*,#authenticatedStudentView .toolbar-chip.active{animation:none!important}#authenticatedStudentView .student-kpis>*,#authenticatedStudentView .student-columns>.box{transition:none!important}}
+  /* L'annulation est un outil de conduite de cours réservé au professeur. */
+  body[data-zq-role="student"] #zqUndoFloatingBtn,
+  body[data-zq-role="establishment"] #zqUndoFloatingBtn,
+  body:not([data-zq-role="teacher"]) #zqUndoFloatingBtn{
+    display:none!important;
+  }
 </style>
+<link rel="stylesheet" href="./v6.css">
 </head>
 <body>
 <div id="zqTeacherEventToastStack"></div>
@@ -1124,18 +1133,29 @@
      IDs statiques, flux Supabase/Storage, navigation prof et notifications. -->
   <div id="globalBoardPointToastStack" style="position:fixed;top:18px;right:18px;z-index:4950000;width:min(470px,92vw);display:flex;flex-direction:column;gap:9px;pointer-events:none"></div>
   
-  <div id="authScreen" style="min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(180deg,#ecfeff,#f0fdf4,#fff7ed)">
-    <div class="panel" style="width:min(460px,100%);padding:26px">
-      <div style="font-size:38px;font-weight:900;text-align:center">ZenQuest</div>
-      <div style="text-align:center;margin:6px auto 18px;max-width:390px;font-size:13px;line-height:1.45;color:#64748b">
-        ZenQuest permet de suivre la progression et l’implication de l’élève en cours de mathématiques.
+  <div id="authScreen">
+    <div class="zq-v6-login-world" aria-hidden="true">
+      <i class="zq-v6-login-sun"></i><span class="zq-v6-login-cloud cloud-a">☁</span><span class="zq-v6-login-cloud cloud-b">☁</span>
+      <span class="zq-v6-login-bird">🕊️</span><span class="zq-v6-login-canoe">🛶</span>
+      <div class="zq-v6-login-story">
+        <span class="zq-v6-eyebrow">EXPÉDITION 2026–2027</span>
+        <h1>Chaque cours<br>fait avancer l’aventure.</h1>
+        <p>Progresse, relève des défis et construis ton parcours avec toute ta classe.</p>
+        <div class="zq-v6-login-route"><i></i><b>🏕️</b><b>🌊</b><b>🌿</b><b>⛰️</b><b>🏆</b></div>
+        <div class="zq-v6-login-promises"><span>⭐ Progression visible</span><span>🤝 Aventure collective</span><span>💎 Récompenses</span></div>
       </div>
+    </div>
+    <div class="panel zq-v6-login-card">
+      <div class="zq-v6-login-compass">🧭</div>
+      <div class="zq-v6-login-brand">ZenQuest</div>
+      <div class="zq-v6-login-subtitle">Ouvre ton carnet d’expédition</div>
+      <div class="zq-v6-login-intro">Retrouve ta progression et ton implication en cours de mathématiques.</div>
       <label style="display:block;font-weight:700;margin-bottom:6px">Identifiant</label>
       <input id="loginUsername" type="text" autocomplete="username" placeholder="Ex. jade6b" style="width:100%;margin-bottom:12px">
       <label style="display:block;font-weight:700;margin-bottom:6px">Mot de passe</label>
       <input id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••" style="width:100%;margin-bottom:14px">
       <button class="btn primary" id="loginBtn" style="width:100%;font-size:16px">🔐 Se connecter</button>
-      <div style="margin-top:12px;padding:10px 12px;border-radius:12px;background:#f0fdf4;border:1px solid #bbf7d0;text-align:center;font-size:13px;font-weight:800;color:#166534">
+      <div class="zq-v6-login-help">
         📒 Les codes de connexion sont disponibles sur la première page du cahier de mathématiques de l’élève.
       </div>
       <div id="loginMessage" class="muted" style="margin-top:12px;text-align:center"></div>
@@ -1194,6 +1214,11 @@
             <button class="btn outline" id="studentLogoutBtn">🔒 Déconnexion</button>
           </div>
         </div>
+        <div class="zq-v6-expedition-scene" aria-hidden="true">
+          <div class="zq-v6-scene-copy"><strong>🌿 Ton aventure continue</strong><span>Progresse, collectionne et découvre tes réussites.</span></div>
+          <i class="zq-v6-sun"></i><span class="zq-v6-bird">🕊️</span><span class="zq-v6-canoe">🛶</span><span class="zq-v6-compass">🧭</span>
+          <i class="zq-v6-firefly f1"></i><i class="zq-v6-firefly f2"></i><i class="zq-v6-firefly f3"></i>
+        </div>
         <div id="authenticatedStudentView"></div>
       </div>
     </div>
@@ -1210,6 +1235,7 @@
           <button class="btn primary" id="endLessonBtn">Fin d'heure</button>
         </div>
         <div class="teacher-nav-row teacher-nav-tools">
+          <button class="btn outline" id="studentArrivalBtn">🚪 Accueil des élèves</button>
           <button class="btn outline" id="boardBtn">👋 Accueil</button>
           <button class="btn outline" id="customWelcomeBtn">📣 Accueil personnalisé</button>
           <button class="btn outline" id="boardRemoteBtn">📱 Télécommande</button>
@@ -1226,6 +1252,47 @@
         </div>
       </div>
     </div>
+    <div class="zq-v6-expedition-scene" aria-hidden="true">
+      <div class="zq-v6-scene-copy"><strong>🌿 Poste d’expédition</strong><span>Une classe sereine, une progression visible, un cap clair.</span></div>
+      <i class="zq-v6-sun"></i><span class="zq-v6-bird">🕊️</span><span class="zq-v6-canoe">🛶</span><span class="zq-v6-compass">🧭</span>
+      <i class="zq-v6-firefly f1"></i><i class="zq-v6-firefly f2"></i><i class="zq-v6-firefly f3"></i>
+    </div>
+    <nav class="zq-v6-main-nav" id="zqV6MainNav" aria-label="Navigation professeur">
+      <button type="button" class="active" data-zq-v6-nav="home">🏕️ <span>Accueil</span></button>
+      <button type="button" data-zq-v6-nav="course">📚 <span>Cours</span></button>
+      <button type="button" data-zq-v6-nav="followup">🧭 <span>Suivi</span><b id="zqV6FollowupBadge">0</b></button>
+      <button type="button" data-zq-v6-nav="projection">📺 <span>Projection</span></button>
+      <button type="button" data-zq-v6-nav="classlife">🏫 <span>Vie de classe</span></button>
+      <button type="button" data-zq-v6-nav="tools">🧰 <span>Outils</span></button>
+      <button type="button" data-zq-v6-nav="student">🧑🏽‍🎓 <span>Vue élève</span></button>
+    </nav>
+    <section class="zq-v6-home-dashboard" id="zqV6HomeDashboard">
+      <div class="zq-v6-home-heading">
+        <div><span class="zq-v6-eyebrow">TABLEAU DE BORD</span><h2>Prêt pour la classe ?</h2><p id="zqV6HomeSubtitle">Sélectionne une classe pour préparer la séance.</p></div>
+        <div class="zq-v6-home-orbit" aria-hidden="true"><span>✦</span><b>🧭</b></div>
+      </div>
+      <div class="zq-v6-kpi-grid">
+        <button type="button" class="zq-v6-kpi kpi-class" data-zq-v6-action="course"><span>Classe active</span><strong id="zqV6ClassName">—</strong><small id="zqV6StudentCount">0 élève</small></button>
+        <button type="button" class="zq-v6-kpi kpi-average" data-zq-v6-action="course"><span>Moyenne d’implication</span><strong id="zqV6Average">—</strong><small>sur 20</small></button>
+        <button type="button" class="zq-v6-kpi kpi-alert" data-zq-v6-action="followup"><span>À accompagner</span><strong id="zqV6AlertCount">0</strong><small>élève sous 10</small></button>
+        <button type="button" class="zq-v6-kpi kpi-sync" data-zq-v6-action="sync"><span>Synchronisation</span><strong id="zqV6SyncState">…</strong><small>Supabase</small></button>
+      </div>
+      <div class="zq-v6-class-deck">
+        <div class="zq-v6-class-deck-head"><div><span class="zq-v6-eyebrow">MES CLASSES</span><h3>Choisis ton expédition</h3></div><span id="zqV6ClassDeckHint">Clique sur une classe pour l’ouvrir</span></div>
+        <div class="zq-v6-class-cards" id="zqV6ClassCards"></div>
+      </div>
+      <div class="zq-v6-launchpad">
+        <div><span class="zq-v6-eyebrow">LANCER LE COURS</span><h3>Choisis ton écran d’accueil</h3></div>
+        <div class="zq-v6-launch-actions">
+          <button type="button" class="zq-v6-launch arrival" data-zq-v6-action="arrival"><span>🚪</span><b>Accueil des élèves</b><small>Entrée calme avant le chrono</small></button>
+          <button type="button" class="zq-v6-launch primary" data-zq-v6-action="welcome"><span>👋</span><b>Accueil classique</b><small>Notes et consignes</small></button>
+          <button type="button" class="zq-v6-launch blue" data-zq-v6-action="custom"><span>📣</span><b>Accueil personnalisé</b><small>Ton propre message</small></button>
+          <button type="button" class="zq-v6-launch amber" data-zq-v6-action="notebooks"><span>📒</span><b>Sortez vos cahiers</b><small>Rituel immédiat</small></button>
+          <button type="button" class="zq-v6-launch coral" data-zq-v6-action="end"><span>🏁</span><b>Fin d’heure</b><small>Bilan de la séance</small></button>
+        </div>
+      </div>
+    </section>
+<div class="zq-v6-section-heading"><span>⛺ CAMP DE BASE</span><h2>Préparer et piloter la séance</h2><p>Tout ce qu’il faut avant d’embarquer la classe.</p></div>
 <div id="zqCurrentCourseBar">
       <div><strong id="zqCurrentCourseTitle">🗓️ Prochain cours</strong><div id="zqCurrentCourseSub" class="muted" style="margin-top:3px">Chargement de l’emploi du temps…</div></div>
       <div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn green" id="zqGoCurrentCourseBtn">▶ Aller au cours</button><button class="btn outline" id="zqDismissCourseBtn">✕</button></div>
@@ -1251,7 +1318,8 @@
       </div>
       <div id="zqStudentFollowupContent" class="muted" style="margin-top:9px;font-weight:750">Chargement du suivi…</div>
     </div>
-<div id="supabaseTeacherStatus" class="panel" style="margin-bottom:12px;border:1px solid #a7f3d0;background:#ecfdf5;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+<div class="zq-v6-command-heading"><span>⚙️ POSTE DE COMMANDE</span><h2>Organiser la classe</h2><p>Élèves, groupes et période au même endroit.</p></div>
+<div id="supabaseTeacherStatus" class="panel zq-v6-sync-strip" style="margin-bottom:12px;border:1px solid #a7f3d0;background:#ecfdf5;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
       <div>
         <strong>☁️ Supabase actif</strong>
         <div class="muted" style="margin-top:4px">Les classes et élèves affichés ici viennent maintenant de Supabase.</div>
@@ -1263,7 +1331,7 @@
     </div>
 
     <div class="controls">
-      <div class="panel">
+      <div class="panel zq-v6-control-card control-student">
         <h3>Ajouter un élève</h3>
         <div class="row wrap">
           <input id="newStudentInput" placeholder="Prénom de l'élève" />
@@ -1272,7 +1340,7 @@
         </div>
       </div>
 
-      <div class="panel">
+      <div class="panel zq-v6-control-card control-class">
         <h3>Ajouter une classe</h3>
         <div class="row">
           <input id="newClassInput" placeholder="Ex. 6e B, 6e C, 6e D" />
@@ -1280,7 +1348,7 @@
         </div>
       </div>
 
-      <div class="panel">
+      <div class="panel zq-v6-control-card control-active">
         <h3>Classe active</h3>
         <div class="row">
           <select id="classSelect" style="width:100%;border:1px solid #e2e8f0;background:rgba(255,255,255,.9);border-radius:999px;padding:10px 14px;"></select>
@@ -1289,7 +1357,7 @@
     </div>
 
     <div class="filters">
-      <div class="panel">
+      <div class="panel zq-v6-control-card control-groups">
         <h3>Gestion des groupes</h3>
         <div class="row wrap">
           <button class="btn outline small" id="selectModeBtn">Sélection : off</button>
@@ -1299,7 +1367,7 @@
           <button class="btn outline small" id="clearSelectionBtn">Effacer sélection</button>
         </div>
       </div>
-      <div class="panel">
+      <div class="panel zq-v6-control-card control-view">
         <h3>Vue du cours</h3>
         <div class="row wrap">
           <button class="toolbar-chip active" id="viewAllBtn">Classe entière</button>
@@ -1328,7 +1396,7 @@
       </div>
     </div>
 
-    <div class="panel" style="margin-bottom:16px">
+    <div class="panel zq-v6-period-card" style="margin-bottom:16px">
       <h3>Période de notation</h3>
       <div class="row wrap">
         <div class="toolbar-chip active" id="periodLabel">Période 1</div>
@@ -1337,8 +1405,35 @@
       </div>
     </div>
 
-    <div class="layout">
+    <div class="zq-v6-roster-heading">
+      <div><span>🧑🏽‍🎓 ÉQUIPE EN MISSION</span><h2>La classe en direct</h2><p>Présence et points restent accessibles en un seul geste.</p></div>
+      <div class="zq-v6-roster-legend"><span class="good">16–20</span><span class="watch">13–15</span><span class="alert">10–12</span><span class="danger">Sous 10</span></div>
+    </div>
+    <div class="layout zq-v6-live-class">
       <div><div class="grid" id="studentsGrid"></div></div>
+    </div>
+  </div>
+
+
+  <div class="modal" id="zqV6ProjectionHub">
+    <div class="modal-card zq-v6-hub-card">
+      <div class="zq-v6-hub-head"><div><span>📺 MODE PROJECTION</span><h2>Qu’est-ce que la classe doit voir ?</h2><p>Choisis un écran et ZenQuest passe en mode présentation.</p></div><button type="button" class="btn outline" id="zqV6CloseProjection">Fermer</button></div>
+      <div class="zq-v6-projection-grid">
+        <button type="button" data-zq-v6-action="welcome"><span>👋</span><strong>Accueil du cours</strong><small>Notes, classe et consignes</small></button>
+        <button type="button" data-zq-v6-action="custom"><span>📣</span><strong>Accueil personnalisé</strong><small>Annonce particulière</small></button>
+        <button type="button" data-zq-v6-action="notebooks"><span>📒</span><strong>Sortez vos cahiers</strong><small>Lancer immédiatement le rituel</small></button>
+        <button type="button" data-zq-v6-action="pdf"><span>📄</span><strong>Projection PDF</strong><small>Leçons, exercices et documents</small></button>
+        <button type="button" data-zq-v6-action="classreport"><span>📊</span><strong>Bilan de la classe</strong><small>Graphiques et évolution collective</small></button>
+        <button type="button" data-zq-v6-action="end"><span>🏁</span><strong>Fin d’heure</strong><small>Résultats et récompenses</small></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="zqV6StudentExplorer">
+    <div class="modal-card zq-v6-student-explorer-card">
+      <div class="zq-v6-hub-head"><div><span>🧑🏽‍🎓 EXPLORATEUR ÉLÈVE</span><h2>Entre dans leur univers</h2><p>Choisis un élève pour afficher exactement ce qu’il voit.</p></div><button type="button" class="btn outline" id="zqV6CloseStudentExplorer">Fermer</button></div>
+      <div class="zq-v6-explorer-class" id="zqV6ExplorerClass"></div>
+      <div class="zq-v6-student-cards" id="zqV6StudentCards"></div>
     </div>
   </div>
 
@@ -2359,8 +2454,8 @@ Noah"
     </div>
   </div>
 
-  <div class="modal" id="summaryModal">
-    <div class="modal-card" style="width:min(1120px,97vw);max-height:94vh;overflow:auto">
+  <div class="modal zq-v6-summary-modal" id="summaryModal">
+    <div class="modal-card zq-v6-summary-shell" style="width:min(1120px,97vw);max-height:94vh;overflow:auto">
       <div id="summaryContent"></div>
       <div style="text-align:center;margin-top:16px">
         <button class="btn primary" id="closeSummaryBtn">Continuer</button>
@@ -2368,7 +2463,7 @@ Noah"
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-js.min.js" onload="window.__zqSupabaseScript='loaded'" onerror="window.__zqSupabaseScript='error'"></script>
   <div class="modal" id="studentConnectionsModal">
     <div class="modal-card" style="width:min(900px,95vw)">
       <div class="modal-header">
@@ -2661,6 +2756,7 @@ Noah"
         <button class="btn outline" id="pdfCloudBtn" style="background:white">☁️ Mes fichiers</button>
         <button class="btn outline" id="pdfCloudUploadBtn" style="background:white">＋ Enregistrer</button>
         <input id="pdfFileInput" type="file" accept="application/pdf,.pdf" style="display:none">
+        <button class="btn outline" id="pdfPointsBtn" style="background:#fef3c7;color:#78350f;border-color:#fbbf24">👥 Points</button>
         <input id="pdfCloudFileInput" type="file" accept="application/pdf,.pdf" style="display:none">
         <b id="pdfFileName">Aucun PDF</b><span style="flex:1"></span>
         <button class="btn outline" id="pdfPrevBtn" style="background:white">⬅️</button>
@@ -2681,6 +2777,14 @@ Noah"
         <div><div id="pdfOverlayEmoji" style="font-size:100px"></div><div id="pdfOverlayTitle" style="font-size:72px;font-weight:950"></div><div id="pdfOverlayText" style="font-size:34px;font-weight:800;white-space:pre-wrap;margin-top:16px"></div><div id="pdfOverlayTimer" style="font-size:105px;font-weight:950;margin-top:22px"></div></div>
       </div>
       <div id="pdfPointToastStack" style="position:absolute;left:50%;top:78px;transform:translateX(-50%);z-index:30;width:min(480px,84vw);display:flex;flex-direction:column;gap:7px;pointer-events:none"></div>
+
+      <section id="pdfPointsDrawer" aria-hidden="true">
+        <div class="pdf-points-head">
+          <div><span>RÉGIE PROFESSEUR</span><strong id="pdfPointsClassName">Points de la classe</strong></div>
+          <button type="button" id="pdfPointsCloseBtn" aria-label="Masquer les élèves">✕</button>
+        </div>
+        <div id="pdfPointsStudents" class="pdf-points-students"></div>
+      </section>
 
       <div id="pdfCloudDrawer" style="display:none;position:absolute;left:12px;top:66px;bottom:12px;z-index:900;width:min(430px,92vw);background:rgba(255,255,255,.98);border-radius:18px;box-shadow:0 18px 55px rgba(0,0,0,.4);padding:14px;overflow:auto;color:#0f172a">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
@@ -2728,8 +2832,62 @@ Noah"
     </div>
   </div>
 
-<div class="modal" id="boardModal">
-    <div class="modal-card" style="width:min(1200px,98vw);height:min(92vh,900px);max-height:94vh;overflow:hidden;padding:18px;position:relative">
+<div class="modal zq-arrival-modal" id="zqArrivalModal" aria-hidden="true">
+  <div class="zq-arrival-screen">
+    <div class="zq-arrival-backdrop" aria-hidden="true"></div>
+    <div class="zq-arrival-top-life" aria-hidden="true">
+      <i class="zq-arrival-top-sun"></i>
+      <span class="zq-arrival-top-bird bird-one">🕊️</span>
+      <span class="zq-arrival-top-bird bird-two">🕊️</span>
+      <span class="zq-arrival-top-leaf leaf-one">🌿</span>
+      <span class="zq-arrival-top-leaf leaf-two">🌿</span>
+    </div>
+    <button type="button" id="zqArrivalClose" class="zq-arrival-close" aria-label="Fermer">✕</button>
+    <main class="zq-arrival-content">
+      <div class="zq-arrival-kicker">ZENQUEST · AVANT LE COURS</div>
+      <h1>Bonjour <span class="zq-arrival-wave" aria-hidden="true">👋</span></h1>
+      <p class="zq-arrival-lead">Entre calmement. Prépare-toi pour le cours.</p>
+      <div class="zq-arrival-rules">
+        <div><span>1</span><strong>Installe-toi</strong></div>
+        <div><span>2</span><strong>Reste en silence</strong></div>
+        <div><span>3</span><strong>Sors tes affaires</strong></div>
+        <div><span>4</span><strong>Patiente</strong></div>
+      </div>
+    </main>
+    <section class="zq-arrival-dock">
+      <div class="zq-arrival-dock-head"><div><span>PRÊT À COMMENCER ?</span><strong>Choisis ta classe</strong></div><div class="zq-arrival-dock-tools"><small>Le chronomètre démarrera ensuite</small><button type="button" id="zqArrivalManageClasses">👁 Classes affichées</button></div></div>
+      <div id="zqArrivalClasses" class="zq-arrival-classes"></div>
+    </section>
+    <div id="zqArrivalClassManager" class="zq-arrival-class-manager" aria-hidden="true">
+      <div class="zq-arrival-manager-card">
+        <div class="zq-arrival-manager-head"><div><span>AFFICHAGE DU SAS</span><strong>Quelles classes montrer ?</strong><small>Les classes masquées restent disponibles partout ailleurs dans ZenQuest.</small></div><button type="button" id="zqArrivalManagerClose" aria-label="Fermer">✕</button></div>
+        <div id="zqArrivalManagerList" class="zq-arrival-manager-list"></div>
+        <button type="button" id="zqArrivalManagerDone" class="zq-arrival-manager-done">Terminé</button>
+      </div>
+    </div>
+    <div id="zqArrivalChoice" class="zq-arrival-choice" aria-hidden="true">
+      <button type="button" id="zqArrivalChoiceBack" class="zq-arrival-choice-back">← Retour</button>
+      <div class="zq-arrival-choice-copy"><span>PRÊT À COMMENCER</span><h2 id="zqArrivalChoiceTitle">Lancer la classe</h2><p>Le chronomètre démarrera après ton choix.</p></div>
+      <div class="zq-arrival-group-choice" role="group" aria-label="Choisir la vue du cours">
+        <span>QUI EST PRÉSENT ?</span>
+        <div>
+          <button type="button" class="active" data-zq-arrival-group="all">👥 Classe entière</button>
+          <button type="button" data-zq-arrival-group="g1">1️⃣ Groupe 1</button>
+          <button type="button" data-zq-arrival-group="g2">2️⃣ Groupe 2</button>
+        </div>
+      </div>
+      <div class="zq-arrival-choice-actions">
+        <button type="button" id="zqArrivalClassic"><span>👋</span><strong>Accueil classique</strong><small>Consignes habituelles et chronomètre</small></button>
+        <button type="button" id="zqArrivalCustom"><span>📣</span><strong>Accueil personnalisé</strong><small>Choisir ou écrire un message</small></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal zq-v6-board-modal" id="boardModal">
+    <div class="modal-card zq-v6-board-shell" style="width:min(1200px,98vw);height:min(92vh,900px);max-height:94vh;overflow:hidden;padding:18px;position:relative">
+      <button type="button" id="boardGroupBackBtn" title="Changer la classe ou le groupe">← Groupe</button>
+      <button type="button" id="boardProjectionBtn" title="Ouvrir directement la projection">📺 Projection</button>
       <button id="welcomeConfigGear" title="Configurer l’accueil"
         style="display:none;position:absolute;right:64px;top:14px;z-index:80;width:38px;height:38px;border:0;border-radius:50%;background:rgba(255,255,255,.16);color:white;font-size:20px;cursor:pointer;backdrop-filter:blur(4px);box-shadow:0 3px 12px rgba(0,0,0,.16)">⚙️</button>
 
@@ -2737,7 +2895,8 @@ Noah"
       <button class="btn outline" id="closeBoardBtn" title="Fermer l’accueil et revenir à ZenQuest"
         style="position:absolute;right:14px;top:14px;z-index:90;opacity:.72;width:38px;height:38px;border-radius:50%;font-size:18px;padding:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.78);box-shadow:0 3px 12px rgba(0,0,0,.14)">✕</button>
 
-      <div id="boardDisplay" style="height:100%;border:0;border-radius:28px;padding:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:#f8fafc">
+      <div id="boardDisplay" class="zq-v6-board-display" style="height:100%;border:0;border-radius:28px;padding:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:#f8fafc">
+        <div class="zq-v6-board-landscape" aria-hidden="true"><i class="sun"></i><span class="cloud cloud-one">☁</span><span class="cloud cloud-two">☁</span><span class="bird">🕊️</span><span class="canoe">🛶</span><span class="leaf">🌿</span></div>
         <div id="flashQuestionOverlay">
           <div id="flashQuestionCounter">ZENQUEST • MODE ATTENTE</div>
           <div id="flashQuestionCard">
@@ -3373,13 +3532,13 @@ Noah"
       const all=(student?.periodScores||[]).map(x=>Number(typeof x==="number"?x:x.score)).filter(Number.isFinite), vals=all.slice(-5), t=engagementTrend(all), th=engagementIndexTheme(v);
       const dt=t.delta===null?"":`${t.delta>0?"+":""}${String(t.delta).replace(".",",")}`;
       const dots=vals.length?vals.map((x,i)=>`<span style="display:inline-flex;justify-content:center;align-items:center;min-width:34px;height:34px;padding:0 7px;border-radius:999px;background:${engagementIndexTheme(x).bg};border:${i===vals.length-1?2:1}px solid ${engagementIndexTheme(x).border};color:${engagementIndexTheme(x).color};font-weight:900">${String(x).replace(".",",")}</span>`).join(""):`<span class="muted">Pas encore de cours</span>`;
-      return `<div style="margin-top:12px">
-      <div style="height:8px;border-radius:999px;background:linear-gradient(90deg,#fee2e2 0 50%,#ffedd5 50% 65%,#fef9c3 65% 80%,#dcfce7 80% 100%);position:relative"><span style="position:absolute;left:calc(${Math.max(0,Math.min(100,(Number(v)||0)*5))}% - 7px);top:-4px;width:16px;height:16px;border-radius:50%;background:${th.color};border:3px solid white;box-shadow:0 1px 5px #0003"></span></div>
-      <div style="display:flex;justify-content:space-between;font-size:10px;color:#64748b"><span>0</span><span>10</span><span>13</span><span>16</span><span>20</span></div>
-      <div style="margin-top:10px"><small><b>5 DERNIERS COURS</b></small><div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:5px">${dots}</div></div>
-      <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:10px"><span style="padding:6px 9px;border:1px solid #e2e8f0;border-radius:999px"><b>${t.arrow} ${dt} ${t.label}</b></span><span style="padding:6px 9px;border:1px solid #fed7aa;background:#fff7ed;border-radius:999px"><b>🔥 Série : ${engagementStreak(student)} cours</b></span></div>
-      <div style="margin-top:8px;padding:9px;border:1px solid #e2e8f0;border-radius:11px"><b>🎯 Prochain objectif :</b> ${engagementNextObjective(v)}</div>
-      <div style="margin-top:7px;padding:9px;border:1px solid ${th.border};background:${th.bg};color:${th.color};border-radius:11px"><b>💬 Bilan :</b> ${engagementFeedback(v,t)}${(()=>{const r=eventReasonSummary(student);return r.negative?` <span style="display:block;margin-top:5px"><b>Point de vigilance récent :</b> ${r.negative}.</span>`:r.positive?` <span style="display:block;margin-top:5px"><b>Point fort récent :</b> ${r.positive}.</span>`:""})()}</div></div>`;
+      return `<div class="zq-v6-engagement-dashboard" style="margin-top:12px">
+      <div class="zq-v6-engagement-scale" style="height:8px;border-radius:999px;background:linear-gradient(90deg,#fee2e2 0 50%,#ffedd5 50% 65%,#fef9c3 65% 80%,#dcfce7 80% 100%);position:relative"><span style="position:absolute;left:calc(${Math.max(0,Math.min(100,(Number(v)||0)*5))}% - 7px);top:-4px;width:16px;height:16px;border-radius:50%;background:${th.color};border:3px solid white;box-shadow:0 1px 5px #0003"></span></div>
+      <div class="zq-v6-engagement-scale-labels" style="display:flex;justify-content:space-between;font-size:10px;color:#64748b"><span>0</span><span>10</span><span>13</span><span>16</span><span>20</span></div>
+      <div class="zq-v6-last-lessons" style="margin-top:10px"><small><b>5 DERNIERS COURS</b></small><div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:5px">${dots}</div></div>
+      <div class="zq-v6-engagement-badges" style="display:flex;gap:7px;flex-wrap:wrap;margin-top:10px"><span style="padding:6px 9px;border:1px solid #e2e8f0;border-radius:999px"><b>${t.arrow} ${dt} ${t.label}</b></span><span style="padding:6px 9px;border:1px solid #fed7aa;background:#fff7ed;border-radius:999px"><b>🔥 Série : ${engagementStreak(student)} cours</b></span></div>
+      <div class="zq-v6-next-objective" style="margin-top:8px;padding:9px;border:1px solid #e2e8f0;border-radius:11px"><b>🎯 Prochain objectif :</b> ${engagementNextObjective(v)}</div>
+      <div class="zq-v6-engagement-feedback" style="margin-top:7px;padding:9px;border:1px solid ${th.border};background:${th.bg};color:${th.color};border-radius:11px"><b>💬 Bilan :</b> ${engagementFeedback(v,t)}${(()=>{const r=eventReasonSummary(student);return r.negative?` <span style="display:block;margin-top:5px"><b>Point de vigilance récent :</b> ${r.negative}.</span>`:r.positive?` <span style="display:block;margin-top:5px"><b>Point fort récent :</b> ${r.positive}.</span>`:""})()}</div></div>`;
     }
 
     function weightedEngagementIndex(values){
@@ -5251,7 +5410,9 @@ Noah"
       currentClass().students.forEach(student=>{
         const selected=state.selectedStudentIds.includes(student.id);
         const card=document.createElement("div");
-        card.className=`card quick-student-card ${student.isAbsent?"absent":""} ${selected?"selected":""}`;
+        const scoreTone=student.points>=16?"score-strong":student.points>=13?"score-watch":student.points>=10?"score-alert":"score-danger";
+        card.className=`card quick-student-card ${scoreTone} ${student.isAbsent?"absent":""} ${selected?"selected":""}`;
+        card.style.setProperty("--zq-score-progress",`${Math.max(0,Math.min(100,Number(student.points||0)*5))}%`);
 
         let floating="";
         if(student.lastAction){
@@ -6486,7 +6647,7 @@ Noah"
                 ? `<div style="font-size:13px;font-weight:950;color:#0369a1;margin-top:3px">💎 x${diamondCount}</div>`
                 : `<div style="font-size:13px;font-weight:950;color:#92400e;margin-top:3px">${starCount?`${"⭐".repeat(Math.min(MAX_INDIVIDUAL_STARS,starCount))} ${starCount}/${MAX_INDIVIDUAL_STARS}`:`☆ 0/${MAX_INDIVIDUAL_STARS}`}</div>`;
 
-              return `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 10px;border-radius:12px;background:${th.bg};border:1px solid ${th.border};min-width:0">
+              return `<div class="zq-v6-end-score" style="--end-color:${th.color};--end-bg:${th.bg};--end-border:${th.border};display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 10px;border-radius:12px;background:${th.bg};border:1px solid ${th.border};min-width:0">
                 <span style="font-size:18px;font-weight:950;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;color:#0f172a">${escapeHTML(r.name)}</span>
                 <strong style="font-size:22px;color:${th.color};white-space:nowrap;margin-top:2px">${r.score}/20</strong>
                 <div style="font-size:12px;font-weight:900;color:#475569;margin-top:3px">Niv. ${Number(r.level||1)}</div>
@@ -8086,7 +8247,11 @@ Noah"
     }
 
     function showLogin(message=""){
-      document.getElementById("authScreen").style.display="grid";
+      delete document.body.dataset.zqRole;
+      const authScreen=document.getElementById("authScreen");
+      authScreen.style.display="grid";
+      authScreen.scrollTop=0;
+      window.scrollTo({top:0,left:0,behavior:"instant"});
       document.getElementById("mainApp").style.display="none";
       const studentApp=document.getElementById("studentApp"); if(studentApp) studentApp.style.display="none";
       document.getElementById("loginMessage").textContent=message;
@@ -8279,20 +8444,20 @@ Noah"
     function studentClassMessagesHTML(cls,seenSet=new Set()){
       const messages=(cls.classMessages||[]).filter(m=>m.type!=="election_event").slice().sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
       if(!messages.length) return `
-        <div class="box" style="margin-top:24px;border:1px dashed #cbd5e1">
+        <div class="box zq-v6-class-news zq-v6-class-news-empty" style="margin-top:24px;border:1px dashed #cbd5e1">
           <div style="font-size:18px;font-weight:900">📢 Infos de la classe</div>
           <div class="muted" style="margin-top:5px">Aucun message du professeur pour le moment.</div>
         </div>
       `;
 
       return `
-        <div class="box" style="margin-top:28px;border:1px solid #bfdbfe;background:#eff6ff">
-          <div style="font-size:20px;font-weight:900;margin-bottom:8px">📢 Infos de la classe</div>
-          <div style="display:grid;gap:9px">
+        <div class="box zq-v6-class-news" style="margin-top:28px;border:1px solid #bfdbfe;background:#eff6ff">
+          <div class="zq-v6-class-news-head"><span>📣</span><div><small>TABLEAU DE BORD</small><strong>Infos de la classe</strong></div><b>${messages.length} info${messages.length>1?"s":""}</b></div>
+          <div class="zq-v6-class-news-grid" style="display:grid;gap:9px">
             ${messages.map(m=>{
               const meta=CLASS_MESSAGE_META[m.type]||CLASS_MESSAGE_META.message;
               return `
-                <div class="student-class-message-card" data-message-id="${escapeHTML(m.id)}" style="background:white;border:${seenSet.has(String(m.id))?"1px solid #dbeafe":"2px solid #60a5fa"};border-radius:14px;padding:12px">
+                <div class="student-class-message-card zq-message-${escapeHTML(m.type)} ${seenSet.has(String(m.id))?"is-seen":"is-new"}" data-message-id="${escapeHTML(m.id)}" style="background:white;border:${seenSet.has(String(m.id))?"1px solid #dbeafe":"2px solid #60a5fa"};border-radius:14px;padding:12px">
                   <div class="row wrap" style="justify-content:space-between;gap:8px">
                     <strong>${meta.icon} ${meta.label}</strong>
                     ${m.dueDate?`<span class="toolbar-chip">📅 ${formatFrenchDate(m.dueDate)}</span>`:""}
@@ -8322,8 +8487,8 @@ Noah"
       const event=zqLatestStudentElectionEvent(classMessages);
       zqStudentElectionPayload=event||null;
       const normalizedClassName=String(studentClass?.name||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,"");
-      const forceCampaignClosed=normalizedClassName==="6b"||normalizedClassName==="6eb";
-      if(!event||event.hidden||forceCampaignClosed)return "";
+      const forceCampaignClosed=normalizedClassName==="6b"||normalizedClassName==="6eb"||normalizedClassName==="classetest"||normalizedClassName==="test";
+      if(!event||event.hidden||forceCampaignClosed){if(forceCampaignClosed)zqStudentElectionPayload=null;return "";}
 
       const section=(type,label,icon,color)=>{
         const apps=(event.applications||[]).filter(a=>a.type===type);
@@ -8729,7 +8894,38 @@ Noah"
       loadProjectionFiles();
       if(pdfDoc)renderPdfPage();
     }
-    function closePdfProjection(){document.getElementById("pdfProjectionModal").classList.remove("show");hidePdfZenOverlay();}
+    function renderPdfPointsDrawer(){
+      const cls=currentClass();
+      const wrap=document.getElementById("pdfPointsStudents");
+      const title=document.getElementById("pdfPointsClassName");
+      if(!wrap||!title)return;
+      title.textContent=cls?.name||"Classe active";
+      const students=(cls?.students||[]).filter(student=>!student.isAbsent);
+      wrap.innerHTML=students.length?students.map(student=>`
+        <div class="pdf-point-student" data-student-id="${escapeHTML(String(student.id))}">
+          <strong>${escapeHTML(student.name)}</strong>
+          <div>
+            <button type="button" class="pdf-point-minus" aria-label="Retirer un point à ${escapeHTML(student.name)}">−</button>
+            <button type="button" class="pdf-point-plus" aria-label="Ajouter un point à ${escapeHTML(student.name)}">+</button>
+          </div>
+        </div>`).join(""):'<div class="pdf-points-empty">Aucun élève présent dans cette classe.</div>';
+      wrap.querySelectorAll(".pdf-point-student").forEach(row=>{
+        const student=students.find(item=>String(item.id)===row.dataset.studentId);
+        if(!student)return;
+        row.querySelector(".pdf-point-minus").onclick=()=>openReasonPicker(student,"minus");
+        row.querySelector(".pdf-point-plus").onclick=()=>openReasonPicker(student,"plus");
+      });
+    }
+    function togglePdfPointsDrawer(force){
+      const drawer=document.getElementById("pdfPointsDrawer");
+      if(!drawer)return;
+      const show=force===undefined?!drawer.classList.contains("show"):!!force;
+      if(show)renderPdfPointsDrawer();
+      drawer.classList.toggle("show",show);
+      drawer.setAttribute("aria-hidden",String(!show));
+      document.getElementById("pdfPointsBtn")?.classList.toggle("active",show);
+    }
+    function closePdfProjection(){document.getElementById("pdfProjectionModal").classList.remove("show");togglePdfPointsDrawer(false);hidePdfZenOverlay();}
     async function loadLocalPdf(file){
       if(!file)return;
       try{
@@ -9783,6 +9979,74 @@ Noah"
 
     let authenticatedStudentActiveTab="current";
 
+    function setupStudentMobileLayout(){
+      const root=document.getElementById("authenticatedStudentView");
+      if(!root)return;
+      const content=root.querySelector(".zq-v6-engagement-content");
+      if(content&&!content.querySelector(".zq-mobile-detail-toggle")){
+        const scoreTiles=content.children[2];
+        const toggle=document.createElement("button");
+        toggle.type="button";
+        toggle.className="zq-mobile-detail-toggle";
+        toggle.setAttribute("aria-expanded","false");
+        toggle.innerHTML='<span>Voir le détail de mon implication</span><span class="zq-mobile-chevron">⌄</span>';
+        scoreTiles?.insertAdjacentElement("afterend",toggle);
+        toggle.addEventListener("click",()=>{
+          const expanded=content.classList.toggle("mobile-expanded");
+          toggle.setAttribute("aria-expanded",String(expanded));
+          toggle.querySelector("span:first-child").textContent=expanded?"Masquer le détail":"Voir le détail de mon implication";
+        });
+      }
+      const news=root.querySelector(".zq-v6-class-news");
+      const newsHead=news?.querySelector(".zq-v6-class-news-head");
+      if(news&&newsHead&&!newsHead.dataset.mobileToggle){
+        newsHead.dataset.mobileToggle="1";
+        newsHead.setAttribute("role","button");
+        newsHead.setAttribute("tabindex","0");
+        newsHead.setAttribute("aria-expanded","false");
+        const toggleNews=()=>{
+          if(!window.matchMedia("(max-width:720px)").matches)return;
+          const expanded=news.classList.toggle("mobile-expanded");
+          newsHead.setAttribute("aria-expanded",String(expanded));
+        };
+        newsHead.addEventListener("click",toggleNews);
+        newsHead.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggleNews();}});
+      }
+      const currentPanel=root.querySelector("#studentCurrentPeriodPanel");
+      if(currentPanel&&!currentPanel.querySelector(".zq-mobile-accordion")){
+        const direct=[...currentPanel.children];
+        const sectionTitles=direct.filter(el=>el.classList?.contains("zq-v6-student-section-title"));
+        const routeTitle=sectionTitles.find(el=>el.textContent.includes("CARNET DE ROUTE"));
+        const exploitsTitle=sectionTitles.find(el=>el.textContent.includes("MES EXPLOITS"));
+        const missionsTitle=sectionTitles.find(el=>el.textContent.includes("MES MISSIONS"));
+        const teamTitle=sectionTitles.find(el=>el.textContent.includes("AVENTURE COLLECTIVE"));
+        const equipmentTitle=sectionTitles.find(el=>el.textContent.includes("MON SAC D’EXPLORATEUR"));
+        const sliceBetween=(start,end)=>{const a=direct.indexOf(start),b=end?direct.indexOf(end):direct.length;return a>=0?direct.slice(a,b):[];};
+        const routeNodes=sliceBetween(routeTitle,exploitsTitle);
+        const exploitNodes=sliceBetween(exploitsTitle,missionsTitle);
+        const missionNodes=sliceBetween(missionsTitle,teamTitle);
+        const teamNodes=sliceBetween(teamTitle,equipmentTitle);
+        const equipmentNodes=sliceBetween(equipmentTitle,null);
+        const profileCard=currentPanel.querySelector(".zq-v6-profile-card");
+        if(profileCard)profileCard.remove();
+        const makeAccordion=(label,icon,nodes,before=null,theme="")=>{
+          if(!nodes.length&&!before)return null;
+          const shell=document.createElement("section");shell.className=`zq-mobile-accordion ${theme?`zq-accordion-${theme}`:""}`;
+          const button=document.createElement("button");button.type="button";button.className="zq-mobile-accordion-toggle";button.setAttribute("aria-expanded","false");button.innerHTML=`<span><b>${icon}</b>${label}</span><span class="zq-mobile-chevron">⌄</span>`;
+          const panel=document.createElement("div");panel.className="zq-mobile-accordion-content";
+          const anchor=nodes[0]||before;anchor?.parentNode?.insertBefore(shell,anchor);shell.append(button,panel);nodes.forEach(node=>panel.appendChild(node));
+          button.addEventListener("click",()=>{const expanded=shell.classList.toggle("mobile-expanded");button.setAttribute("aria-expanded",String(expanded));});
+          return shell;
+        };
+        const routeShell=makeAccordion("Carnet de route","📍",routeNodes,null,"route");
+        if(profileCard&&routeShell){const profileShell=makeAccordion("Profil ZenQuest","🎮",[],routeShell.nextSibling,"profile");profileShell.querySelector(".zq-mobile-accordion-content").appendChild(profileCard);routeShell.insertAdjacentElement("afterend",profileShell);}
+        makeAccordion("Mes exploits","🏆",exploitNodes,null,"exploits");
+        makeAccordion("Mes missions et trésors","🎒",missionNodes,null,"missions");
+        makeAccordion("Mon équipe","🤝",teamNodes,null,"team");
+        makeAccordion("Mes équipements","✨",equipmentNodes,null,"equipment");
+      }
+    }
+
     function renderAuthenticatedStudentDashboard(student,cls,currentPeriodName,periodAverage,lessonScores,remarks,classMessages=[],periodHistory=[],currentPeriod=null,homeworkChallenges=[],homeworkChallengeAttempts=[],homeworkChallengeRewards=[]){
       document.getElementById("studentClassPill").textContent=cls?.name||"Ma classe";
 
@@ -9921,6 +10185,18 @@ Noah"
       document.getElementById("authenticatedStudentView").innerHTML=`
         <div class="student-dashboard">
           ${lowScoreAlert}
+
+          ${(()=>{
+            const level=Math.max(1,Number(student.level||1)),stage=Math.min(4,Math.floor((level-1)/2)),routePct=Math.min(100,stage*25+Math.min(24,Number(student.progress||0)*8));
+            const stops=[{icon:"🏕️",name:"Campement",hint:"Le départ"},{icon:"🛶",name:"Grand fleuve",hint:"Garder le cap"},{icon:"🌿",name:"Canopée",hint:"Prendre de la hauteur"},{icon:"⛰️",name:"Sommet",hint:"Dépasser ses limites"},{icon:"🏆",name:"Trésor",hint:"La grande récompense"}];
+            return `<section class="zq-v6-student-world">
+              <div class="zq-v6-world-sky"><span class="zq-v6-world-sun"></span><span class="zq-v6-world-cloud c1">☁️</span><span class="zq-v6-world-cloud c2">☁️</span><span class="zq-v6-world-bird">🦜</span></div>
+              <div class="zq-v6-world-head"><div><span>MON EXPÉDITION</span><h2>${escapeHTML(student.name||"Explorateur")}, voici ton chemin</h2><p>Chaque effort fait avancer ton aventure ZenQuest.</p></div><div class="zq-v6-world-avatar">${escapeHTML(student.avatar||"🧑🏽‍🎓")}<b>Niv. ${level}</b></div></div>
+              <div class="zq-v6-world-stats"><span>⭐ <strong>${Number(student.stars||0)}</strong> étoiles</span><span>💎 <strong>${Number(student.diamonds||0)}</strong> diamants</span><span>🎒 <strong>${Number(student.homeworks||0)}</strong> devoirs</span><span>🎯 <strong>${Number(student.points||0)}/20</strong></span></div>
+              <div class="zq-v6-world-route"><div class="zq-v6-world-line"><i style="width:${routePct}%"></i></div>${stops.map((s,i)=>`<div class="zq-v6-world-stop ${i<stage?"done":i===stage?"current":"locked"}"><div>${s.icon}${i===stage?'<span class="zq-v6-you-are-here">ICI</span>':""}</div><strong>${s.name}</strong><small>${i<=stage?s.hint:"À découvrir"}</small></div>`).join("")}</div>
+              <div class="zq-v6-world-next"><span>🧭</span><div><strong>Prochaine étape</strong><p>${stage<4?`Continue tes efforts pour atteindre « ${stops[stage+1].name} ».`:"Tu as atteint le trésor ! Continue pour enrichir ta collection."}</p></div><div class="zq-v6-world-progress"><i style="width:${routePct}%"></i><b>${routePct}%</b></div></div>
+            </section>`;
+          })()}
 
           <div class="mode-switch" style="margin-bottom:16px;width:100%;display:flex;flex-wrap:wrap">
             <button type="button" id="studentCurrentTabBtn" class="active" style="flex:1;min-width:170px;position:relative">
@@ -10163,17 +10439,17 @@ Noah"
           ${(lessonScores||[]).length===0 ? `<div style="margin-bottom:14px;padding:12px 16px;border-radius:16px;background:#eef2ff;border:1px solid #c7d2fe;font-weight:900">
             🆕 Nouvelle période
           </div>` : ``}
-          <div class="student-hero">
-            <div class="student-big-avatar">${avatar}</div>
-            <div>
+          <div class="student-hero zq-v6-engagement-hero" style="--engagement-color:${isFreshPeriod?"#2563eb":engagementIndexTheme(engagementIndex).color};--engagement-bg:${isFreshPeriod?"#eff6ff":engagementIndexTheme(engagementIndex).bg}">
+            <div class="zq-v6-engagement-avatar"><div class="student-big-avatar">${avatar}</div><span>EXPLORATEUR</span></div>
+            <div class="zq-v6-engagement-content">
               <div class="muted">${escapeHTML(cls?.name||"")} • ${escapeHTML(currentPeriodName)}</div>
-              <div style="font-size:30px;font-weight:900">${escapeHTML(student.first_name||"Élève")}</div>
+              <div class="zq-v6-student-name-line"><strong>${escapeHTML(student.first_name||"Élève")}</strong><span class="zq-v6-student-wallet"><b>⭐ ${stars}</b><b>💎 ${diamonds}</b></span></div>
               <div style="display:flex;gap:14px;align-items:stretch;flex-wrap:wrap;margin-top:8px">
-                <div style="flex:1;min-width:150px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:12px">
+                <div class="zq-v6-score-tile" style="flex:1;min-width:150px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:12px">
                   <div class="muted" style="font-size:12px">🎯 SCORE ACTUEL</div>
                   <div style="font-size:34px;font-weight:950">${Number(student.points??15)} / 20</div>
                 </div>
-                <div style="flex:1.2;min-width:180px;background:${isFreshPeriod?"#eff6ff":engagementIndexTheme(engagementIndex).bg};border:2px solid ${isFreshPeriod?"#93c5fd":engagementIndexTheme(engagementIndex).border};border-radius:16px;padding:12px">
+                <div class="zq-v6-index-tile" style="flex:1.2;min-width:180px;background:${isFreshPeriod?"#eff6ff":engagementIndexTheme(engagementIndex).bg};border:2px solid ${isFreshPeriod?"#93c5fd":engagementIndexTheme(engagementIndex).border};border-radius:16px;padding:12px">
                   <div style="font-size:12px;font-weight:800;color:${isFreshPeriod?"#2563eb":engagementIndexTheme(engagementIndex).color}">📊 INDICE D’IMPLICATION</div>
                   <div style="font-size:${isFreshPeriod?22:36}px;font-weight:950;color:${isFreshPeriod?"#2563eb":engagementIndexTheme(engagementIndex).color}">${isFreshPeriod?"Nouvelle période ✨":avgDisplay+" / 20"}</div>
                 </div>
@@ -10191,10 +10467,7 @@ Noah"
               </button>
 
               <div class="row wrap" style="margin-top:12px">
-                <span class="toolbar-chip active">Score : ${Number(student.points??15)}/20</span>
                 <span class="toolbar-chip">${trend.emoji} ${trend.label}</span>
-                <span class="toolbar-chip">⭐ ${stars}</span>
-                <span class="toolbar-chip">💎 ${diamonds}</span>
               </div>
 
               <button class="btn primary" id="authenticatedStudentRulesBtn"
@@ -10207,28 +10480,29 @@ Noah"
           ${studentElectionEventHTML(classMessages,cls)}
           ${studentClassMessagesHTML({classMessages},classMessageSeenSet)}
 
-          <div class="box" style="border:2px solid #bfdbfe">
+          <div class="box zq-v6-student-note-card" style="border:2px solid #bfdbfe">
             <div style="font-size:20px;font-weight:900">💬 Remarques du professeur</div>
             <div class="muted" style="margin:4px 0 8px">Message personnel concernant le suivi de l’élève.</div>
             ${remarksHtml}
           </div>
 
-          <div class="student-kpis">
+          <div class="zq-v6-student-section-title"><span>📍 CARNET DE ROUTE</span><h3>Mes repères</h3></div>
+          <div class="student-kpis zq-v6-student-kpis">
             <div class="student-kpi"><span class="muted">Cours comptabilisés</span><br><strong>${scores.length}</strong></div>
             <div class="student-kpi"><span class="muted">Meilleur score</span><br><strong>${best===null?"—":best+"/20"}</strong></div>
             <div class="student-kpi"><span class="muted">Plus bas</span><br><strong>${worst===null?"—":worst+"/20"}</strong></div>
             <div class="student-kpi"><span class="muted">Travail maison</span><br><strong>📝 ${studentHomeworkDone}/${studentHomeworkTotal}</strong></div>
           </div>
 
-          <div class="student-columns">
-            <div class="box">
+          <div class="student-columns zq-v6-student-columns">
+            <div class="box zq-v6-progress-card">
               <div style="font-size:20px;font-weight:800">📈 Ma progression</div>
               <div class="muted" style="margin:4px 0 10px">Évolution de ton score d’implication à chaque fin de cours.</div>
               ${studentChart(scores)}
               <div class="row wrap" style="margin-top:10px">${scoreRows}</div>
             </div>
 
-            <div class="box">
+            <div class="box zq-v6-profile-card">
               <div style="font-size:20px;font-weight:800">🎮 Mon profil ZenQuest</div>
               <button type="button" class="level-detail-btn" data-level="${level}" data-stars="${stars}" data-progress="${progressStep}" data-diamonds="${diamonds}"
                 style="appearance:none;border:0;background:transparent;padding:0;cursor:pointer;font-size:25px;font-weight:900;margin-top:10px">
@@ -10248,14 +10522,15 @@ Noah"
             </div>
           </div>
 
-          ${roleLabels.length?`<div class="box" style="border:1px solid #ddd6fe;background:#faf5ff;margin-top:12px">
+          <div class="zq-v6-student-section-title zq-v6-exploits-title"><span>🏆 MES EXPLOITS</span><h3>Rôles et réussites</h3></div>
+          ${roleLabels.length?`<div class="box zq-v6-role-card" style="border:1px solid #ddd6fe;background:#faf5ff;margin-top:12px">
             <strong>🎖️ Mon rôle dans la classe</strong>
             <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px">
               ${roleLabels.map(role=>`<button type="button" class="student-role-info-btn" data-role="${escapeHTML(role.code)}"
                 style="border:1px solid #c4b5fd;background:white;border-radius:999px;padding:8px 11px;font-weight:900;cursor:pointer">${escapeHTML(role.label)} ⓘ</button>`).join("")}
             </div>
           </div>`:""}
-          <div class="box" style="border:2px solid #e2e8f0">
+          <div class="box zq-v6-merit-card" style="border:2px solid #e2e8f0">
             <div style="display:flex;align-items:center;gap:10px">
               <div style="font-size:30px">🏆</div>
               <div>
@@ -10272,11 +10547,12 @@ Noah"
                   </div>`}
             </div>
           </div>
-          <div class="box" style="margin-top:12px;border:2px solid #bbf7d0;background:linear-gradient(135deg,#f0fdf4,#ffffff)">
+          <div class="box zq-v6-success-vault" style="margin-top:12px;border:2px solid #bbf7d0;background:linear-gradient(135deg,#f0fdf4,#ffffff)">
             ${successCardCollectionHTML(successPortalStudent,true)}
           </div>
 
-          <div class="box" style="border:2px solid #bbf7d0;background:#f0fdf4">
+          <div class="zq-v6-student-section-title"><span>🎒 MES MISSIONS</span><h3>Travail et trésors</h3></div>
+          <div class="box zq-v6-homework-quest" style="border:2px solid #bbf7d0;background:#f0fdf4">
             <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
               <div style="font-size:20px;font-weight:900">📝 Mon travail maison</div>
               <div style="font-weight:950">🏅 Ma collection : ${studentHomeworkDone} badge${studentHomeworkDone>1?"s":""}</div>
@@ -10307,8 +10583,9 @@ Noah"
 
 
 
-          <div class="student-columns">
-            <div class="box">
+          <div class="zq-v6-student-section-title"><span>🤝 L’AVENTURE COLLECTIVE</span><h3>Mon équipe</h3></div>
+          <div class="student-columns zq-v6-team-columns">
+            <div class="box zq-v6-class-team-card">
               <div style="font-size:20px;font-weight:800">🏫 Ma classe</div>
               <div style="margin-top:8px"><strong>${escapeHTML(cls?.name||"Ma classe")}</strong></div>
               <div style="font-size:21px;margin:9px 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap">${starRow(classStars)} <span class="diamond-inline">💎 x${classDiamonds}</span></div>
@@ -10319,7 +10596,7 @@ Noah"
               </div>
             </div>
 
-            <div class="box">
+            <div class="box zq-v6-group-team-card">
               <div style="font-size:20px;font-weight:800">👥 Mon groupe</div>
               <div style="margin-top:8px"><strong>${groupName}</strong></div>
               ${group
@@ -10331,18 +10608,19 @@ Noah"
           </div>
 
           ${studentRepresentativesHTML(classMessages,student,cls)}
-          <div style="margin-top:18px">${collectionHTML(student,"auth-"+student.id)}</div>
+          <div class="zq-v6-student-section-title"><span>🎒 MON SAC D’EXPLORATEUR</span><h3>Ma collection</h3></div>
+          <div class="zq-v6-collection-zone">${collectionHTML(student,"auth-"+student.id)}</div>
           <div style="height:32px"></div>
           </div>
 
           <div id="studentResourcesPanel" style="display:none">
-            <div class="box" style="border:2px solid #bfdbfe;background:linear-gradient(135deg,#eff6ff,#fff)">
+            <div class="box zq-v6-panel-hero zq-v6-resources-hero" style="border:2px solid #bfdbfe;background:linear-gradient(135deg,#eff6ff,#fff)">
               <div style="font-size:25px;font-weight:1000">📚 Mes ressources</div>
               <div class="muted" style="margin-top:5px">Retrouve ici les ressources mises à disposition pour t’aider en mathématiques.</div>
             </div>
             <div style="display:grid;gap:10px">
               ${homeworkChallenges.length?`<div style="margin-bottom:16px"><div style="font-size:21px;font-weight:1000">🎁 Défis ZenQuest</div><div class="muted" style="margin-top:3px">Questions bonus indépendantes du travail à faire.</div><div style="display:grid;gap:8px;margin-top:10px">${homeworkChallenges.filter(c=>!c.resource_id).map(c=>{const aa=attemptsByChallenge.get(String(c.id))||[],rw=rewardByChallenge.get(String(c.id)),left=Math.max(0,2-aa.length);const status=rw?"✅ Réussi":left===0?"❌ Terminé":aa.length===1?"🟠 1 essai restant":"🎁 À découvrir";return `<button type="button" class="zq-open-student-challenge" data-challenge-id="${escapeHTML(c.id)}" style="width:100%;border:1px solid #fde68a;background:linear-gradient(135deg,#fffbeb,#fff);border-radius:15px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;cursor:pointer;color:inherit"><div style="min-width:0"><div style="font-size:17px;font-weight:1000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🎁 ${escapeHTML(c.title||"Défi ZenQuest")}</div><div class="muted" style="font-size:12px;font-weight:850;margin-top:2px">${status} • ${rw?"Trésor ouvert":left===0?"2 essais utilisés":`${left} essai${left>1?"s":""} disponible${left>1?"s":""}`}</div></div><span style="flex:none;font-weight:1000;color:#0f766e">Ouvrir ›</span></button>`}).join("")}</div></div>`:""}
-            ${resources.length?resources.map(r=>`<div class="box" style="margin:0">
+            ${resources.length?resources.map(r=>`<div class="box zq-v6-resource-card" style="margin:0">
                 <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
                   <div><div style="font-size:18px;font-weight:1000">${resourceIcon(r.type)} ${escapeHTML(r.title||"Ressource")}</div>
                   ${r.instruction?`<div style="margin-top:5px">${escapeHTML(r.instruction)}</div>`:""}
@@ -10356,11 +10634,11 @@ Noah"
           </div>
 
           <div id="studentMaterialsPanel" style="display:none">
-            <div class="box" style="border:2px solid #bfdbfe;background:linear-gradient(135deg,#eff6ff,#ffffff)">
+            <div class="box zq-v6-panel-hero zq-v6-materials-hero" style="border:2px solid #bfdbfe;background:linear-gradient(135deg,#eff6ff,#ffffff)">
               <div style="font-size:25px;font-weight:1000">🎒 Mon matériel scolaire</div>
               <div class="muted" style="margin-top:5px">Tout le matériel doit être présent dans le sac pour le cours de mathématiques.</div>
             </div>
-            <div class="box">
+            <div class="box zq-v6-materials-card">
 ${schoolMaterialsStudentHTML(remarks,remarks)}
             </div>
           </div>
@@ -10371,6 +10649,8 @@ ${schoolMaterialsStudentHTML(remarks,remarks)}
 
         </div>
       `;
+
+      setupStudentMobileLayout();
 
       document.querySelectorAll("[data-student-candidate-id]").forEach(btn=>btn.addEventListener("click",()=>zqOpenStudentCandidate(btn.dataset.studentCandidateId)));
       document.querySelector("[data-zq-student-rules]")?.addEventListener("click",zqOpenStudentElectionRules);
@@ -10402,6 +10682,9 @@ ${schoolMaterialsStudentHTML(remarks,remarks)}
         resourcesPanel.style.display=resourcesTab?"block":"none";
         materialsPanel.style.display=materials?"block":"none";
         parentsPanel.style.display=parents?"block":"none";
+        currentPanel.classList.toggle("is-active",current);
+        const activePanel=current?currentPanel:tracking?trackingPanel:history?historyPanel:resourcesTab?resourcesPanel:materials?materialsPanel:parentsPanel;
+        if(activePanel){activePanel.classList.remove("zq-v6-panel-enter");void activePanel.offsetWidth;activePanel.classList.add("zq-v6-panel-enter");}
         currentTabBtn.classList.toggle("active",current);
         trackingTabBtn.classList.toggle("active",tracking);
         historyTabBtn.classList.toggle("active",history);
@@ -10730,7 +11013,7 @@ ${schoolMaterialsStudentHTML(remarks,remarks)}
           btn.textContent="✓ Vu";
           btn.disabled=true;
           const card=btn.closest(".student-class-message-card");
-          if(card) card.style.border="1px solid #dbeafe";
+          if(card){card.style.border="1px solid #dbeafe";card.classList.remove("is-new");card.classList.add("is-seen");}
           const remaining=(classMessages||[]).filter(m=>m?.id&&!classMessageSeenSet.has(String(m.id))).length;
           const badge=document.getElementById("studentClassMessageNotifBadge");
           if(badge){
@@ -12537,6 +12820,7 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
           .maybeSingle();
 
         if(!establishmentError && establishmentAccess?.is_active){
+          document.body.dataset.zqRole="establishment";
           stopTeacherRealtime();
           stopBoardRemoteChannel();
           document.getElementById("mainApp").style.display="none";
@@ -12560,6 +12844,7 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
       document.getElementById("establishmentApp").style.display="none";
 
       if(profile.role==="teacher"){
+        document.body.dataset.zqRole="teacher";
         cachedTeacherUserId=session?.user?.id||cachedTeacherUserId;
         document.getElementById("studentApp").style.display="none";
         document.getElementById("establishmentApp").style.display="none";
@@ -12567,6 +12852,7 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
         document.getElementById("mainApp").style.display="block";
         try{
           await loadTeacherSupabaseData();
+          await zqCloseTestClassCampaign();
           render();
           startTeacherRealtime();
           startTeacherFallbackPolling();
@@ -12581,6 +12867,7 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
       }
 
       if(profile.role==="student"){
+        document.body.dataset.zqRole="student";
         stopTeacherRealtime();
         stopBoardRemoteChannel();
         document.getElementById("mainApp").style.display="none";
@@ -13132,6 +13419,8 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
     document.getElementById("pdfCloudBigBtn").onclick=()=>toggleProjectionCloudDrawer(true);
     document.getElementById("pdfCloudCloseBtn").onclick=()=>toggleProjectionCloudDrawer(false);
     document.getElementById("pdfCloudUploadBtn").onclick=()=>document.getElementById("pdfCloudFileInput").click();
+    document.getElementById("pdfPointsBtn").onclick=()=>togglePdfPointsDrawer();
+    document.getElementById("pdfPointsCloseBtn").onclick=()=>togglePdfPointsDrawer(false);
     document.getElementById("pdfCloudUploadBigBtn").onclick=()=>document.getElementById("pdfCloudFileInput").click();
     document.getElementById("pdfCloudFileInput").onchange=e=>uploadProjectionFile(e.target.files?.[0]);
     document.getElementById("pdfChooseBigBtn").onclick=()=>document.getElementById("pdfFileInput").click();
@@ -13247,6 +13536,8 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
           <strong style="font-size:20px;color:${th.color}">${score}/20</strong>
         </div>`;
       }).join("");
+
+      wrap.classList.toggle("dense",students.length>18);
 
       wrap.style.display=students.length?"block":"none";
     }
@@ -13409,6 +13700,27 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
       setWelcomeMainInstructionVisible(false);
       deactivateBoardDisplay();
       sendBoardCommand({action:"close"});
+    };
+
+    document.getElementById("boardProjectionBtn").onclick=()=>{
+      stopBoardTimer(false);
+      stopFlashQuestions(false);
+      document.getElementById("boardModal").classList.remove("show");
+      setWelcomeMainInstructionVisible(false);
+      deactivateBoardDisplay();
+      sendBoardCommand({action:"close"});
+      document.getElementById("zqV6ProjectionHub")?.classList.add("show");
+      document.querySelectorAll("[data-zq-v6-nav]").forEach(btn=>btn.classList.toggle("active",btn.dataset.zqV6Nav==="projection"));
+    };
+
+    document.getElementById("boardGroupBackBtn").onclick=()=>{
+      stopBoardTimer(false);
+      stopFlashQuestions(false);
+      document.getElementById("boardModal").classList.remove("show");
+      setWelcomeMainInstructionVisible(false);
+      deactivateBoardDisplay();
+      sendBoardCommand({action:"close"});
+      window.zqOpenArrivalGroupChoice?.();
     };
 
     document.querySelectorAll(".boardQuickBtn").forEach(btn=>btn.onclick=()=>sendQuickBoardCommand(btn.dataset.command));
@@ -13733,6 +14045,22 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
     // ===== ZenQuest — Élections des délégués et éco-délégués =====
     const ZQ_ELECTION_PREFIX="zenquest_election_v1_";
     let zqElection=null,zqElectionActiveTab="rules",zqElectionSyncTimer=null,zqElectionLastPublicState="";
+    async function zqCloseTestClassCampaign(){
+      const testClass=(state?.classes||[]).find(c=>String(c?.name||"").trim().toLowerCase().includes("test"));
+      if(!testClass?.id||!supabaseClient)return;
+      const closedAt=new Date().toISOString();
+      const {error:campaignError}=await supabaseClient.from("election_campaigns").update({status:"closed",closed_at:closedAt}).eq("class_id",testClass.id).eq("status","active");
+      if(campaignError){console.warn("Fermeture campagne classe test",campaignError);return;}
+      const {data:message,error:messageError}=await supabaseClient.from("class_messages").select("id,text").eq("class_id",testClass.id).like("text","[ZQELECTION]%").order("created_at",{ascending:false}).limit(1).maybeSingle();
+      if(messageError||!message?.id||!message?.text)return;
+      try{
+        const payload=JSON.parse(message.text.slice(13));
+        payload.hidden=true;
+        payload.updatedAt=closedAt;
+        if(payload.campaign)payload.campaign={...payload.campaign,status:"closed",closed_at:closedAt};
+        await supabaseClient.from("class_messages").update({text:"[ZQELECTION] "+JSON.stringify(payload)}).eq("id",message.id);
+      }catch(err){console.warn("Masquage campagne classe test",err);}
+    }
     function zqElectionKey(type,clsId){ return `${ZQ_ELECTION_PREFIX}${clsId}_${type}`; }
     function zqElectionStudents(){ return [...(currentClass()?.students||[])].sort((a,b)=>(a.name||"").localeCompare(b.name||"","fr")); }
     function zqElectionLoad(type){
@@ -14223,9 +14551,131 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
     document.getElementById("zqElectionToolBtn").onclick=zqOpenElection;
 </script>
 
+<script>
+  (()=>{
+    const $=id=>document.getElementById(id);
+    const navButtons=()=>[...document.querySelectorAll("[data-zq-v6-nav]")];
+    function setActive(name){navButtons().forEach(b=>b.classList.toggle("active",b.dataset.zqV6Nav===name));}
+    function goTo(id,name){const target=$(id);if(target){setActive(name);target.scrollIntoView({behavior:"smooth",block:"start"});}}
+    function clickExisting(id){const el=$(id);if(el){el.click();return true;}return false;}
+    function v6Class(){try{return typeof currentClass==="function"?currentClass():null;}catch{return null;}}
+    function v6Classes(){try{return Array.isArray(state?.classes)?state.classes:[];}catch{return [];}}
+    function safe(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+    const classColors=["#14b8a6","#38bdf8","#f59e0b","#8b5cf6","#fb7185","#22c55e"];
+    function renderV6ClassDeck(){
+      const wrap=$("zqV6ClassCards"),current=v6Class();if(!wrap)return;
+      const classes=v6Classes();
+      wrap.innerHTML=classes.length?classes.map((cls,i)=>{const students=Array.isArray(cls.students)?cls.students:[],scores=students.map(s=>Number(s.points)).filter(Number.isFinite),avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length*10)/10:null;return `<button type="button" class="zq-v6-class-card ${String(cls.id)===String(current?.id)?"active":""}" data-zq-class-id="${safe(cls.id)}" style="--class-accent:${classColors[i%classColors.length]}"><span class="class-icon">${["🛶","🗺️","⛰️","🌿","🧭","🏕️"][i%6]}</span><strong>${safe(cls.name||"Classe")}</strong><span>${students.length} élève${students.length>1?"s":""}</span><small>${avg===null?"Pas encore de note":`Moyenne ${avg.toLocaleString("fr-FR")}/20`}</small></button>`;}).join(""):'<div class="muted">Aucune classe disponible.</div>';
+    }
+    function renderV6StudentExplorer(){
+      const cls=v6Class(),wrap=$("zqV6StudentCards"),label=$("zqV6ExplorerClass");if(!wrap)return;
+      const students=Array.isArray(cls?.students)?cls.students:[];if(label)label.textContent=cls?`${cls.name} • ${students.length} élève${students.length>1?"s":""}`:"Aucune classe sélectionnée";
+      wrap.innerHTML=students.length?students.map((s,i)=>`<button type="button" class="zq-v6-student-pick" data-zq-student-id="${safe(s.id)}" style="animation-delay:${Math.min(i,12)*.035}s"><span class="student-avatar">${safe(s.avatar||"🧑🏽‍🎓")}</span><strong>${safe(s.name||"Élève")}</strong><span>${Number(s.points||0)}/20</span><small>${Number(s.stars||0)} ⭐ • ${Number(s.diamonds||0)} 💎</small></button>`).join(""):'<div class="muted">Aucun élève dans cette classe.</div>';
+    }
+    function chooseV6Class(id){const select=$("classSelect");if(!select)return;select.value=String(id);select.dispatchEvent(new Event("change",{bubbles:true}));setTimeout(()=>{renderV6Home();renderV6StudentExplorer();},160);}
+    function chooseV6Student(id){
+      $("zqV6StudentExplorer")?.classList.remove("show");clickExisting("studentModeBtn");
+      setTimeout(()=>{const select=$("studentPreviewSelect");if(!select)return;select.value=String(id);select.dispatchEvent(new Event("change",{bubbles:true}));select.scrollIntoView({behavior:"smooth",block:"center"});},180);
+    }
+    function renderV6Home(){
+      const cls=v6Class(),students=Array.isArray(cls?.students)?cls.students:[],scores=students.map(s=>Number(s.points)).filter(Number.isFinite),alerts=students.filter(s=>Number(s.points)<10);
+      if($("zqV6ClassName")) $("zqV6ClassName").textContent=cls?.name||"Aucune classe";
+      if($("zqV6StudentCount")) $("zqV6StudentCount").textContent=`${students.length} élève${students.length>1?"s":""}`;
+      if($("zqV6Average")) $("zqV6Average").textContent=scores.length?(Math.round(scores.reduce((a,b)=>a+b,0)/scores.length*10)/10).toLocaleString("fr-FR"):"—";
+      if($("zqV6AlertCount")) $("zqV6AlertCount").textContent=String(alerts.length);
+      if($("zqV6HomeSubtitle")) $("zqV6HomeSubtitle").textContent=cls?`${cls.name} • ${students.length} élève${students.length>1?"s":""} • ${cls.currentPeriodName||"période en cours"}`:"Sélectionne une classe pour préparer la séance.";
+      const badge=$("zqV6FollowupBadge");if(badge){badge.textContent=String(alerts.length);badge.classList.toggle("show",alerts.length>0);}
+      const syncText=$("realtimeSyncText")?.textContent?.trim()||"Connexion…";if($("zqV6SyncState")) $("zqV6SyncState").textContent=/direct|synchronis|connect/i.test(syncText)?"En direct":syncText.replace("…","");
+      renderV6ClassDeck();
+    }
+    const ZQ_ARRIVAL_HIDDEN_CLASSES_KEY="zenquest_arrival_hidden_classes_v1";
+    function arrivalHiddenClassIds(){try{return new Set(JSON.parse(localStorage.getItem(ZQ_ARRIVAL_HIDDEN_CLASSES_KEY)||"[]").map(String))}catch{return new Set()}}
+    function saveArrivalHiddenClassIds(ids){localStorage.setItem(ZQ_ARRIVAL_HIDDEN_CLASSES_KEY,JSON.stringify([...ids]));}
+    function renderArrivalClasses(){
+      const wrap=$("zqArrivalClasses");if(!wrap)return;
+      const current=v6Class(),hidden=arrivalHiddenClassIds(),classes=v6Classes().filter(cls=>!hidden.has(String(cls.id)));
+      wrap.innerHTML=classes.length?classes.map((cls,i)=>{const students=Array.isArray(cls.students)?cls.students:[],scores=students.map(s=>Number(s.points)).filter(Number.isFinite),avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length*10)/10:null;return `<button type="button" data-zq-arrival-class="${safe(cls.id)}" class="${String(cls.id)===String(current?.id)?"active":""}" style="--arrival-accent:${classColors[i%classColors.length]}"><span>${["🛶","🗺️","⛰️","🌿","🧭","🏕️"][i%6]}</span><strong>${safe(cls.name||"Classe")}</strong><small>${students.length} élève${students.length>1?"s":""}</small><em>${avg===null?"Pas encore de moyenne":`Moyenne ${avg.toLocaleString("fr-FR")}/20`}</em></button>`;}).join(""):'<div class="muted">Aucune classe affichée. Utilise « Classes affichées » pour en remettre une.</div>';
+    }
+    function renderArrivalClassManager(){
+      const wrap=$("zqArrivalManagerList");if(!wrap)return;
+      const hidden=arrivalHiddenClassIds();
+      wrap.innerHTML=v6Classes().map((cls,i)=>`<button type="button" data-zq-arrival-toggle-class="${safe(cls.id)}" class="${hidden.has(String(cls.id))?"hidden-class":""}" style="--arrival-accent:${classColors[i%classColors.length]}"><span>${hidden.has(String(cls.id))?"🙈":"👁"}</span><strong>${safe(cls.name||"Classe")}</strong><small>${hidden.has(String(cls.id))?"Masquée dans le sas":"Visible dans le sas"}</small></button>`).join("");
+    }
+    function openArrivalClassManager(){renderArrivalClassManager();$("zqArrivalClassManager")?.classList.add("show");$("zqArrivalClassManager")?.setAttribute("aria-hidden","false");}
+    function closeArrivalClassManager(){$("zqArrivalClassManager")?.classList.remove("show");$("zqArrivalClassManager")?.setAttribute("aria-hidden","true");renderArrivalClasses();}
+    function toggleArrivalClassVisibility(id){const hidden=arrivalHiddenClassIds(),key=String(id);if(hidden.has(key))hidden.delete(key);else hidden.add(key);saveArrivalHiddenClassIds(hidden);renderArrivalClassManager();renderArrivalClasses();}
+    let arrivalClassId=null,arrivalViewMode="all";
+    function setArrivalGroup(mode="all"){
+      arrivalViewMode=["all","g1","g2"].includes(mode)?mode:"all";
+      document.querySelectorAll("[data-zq-arrival-group]").forEach(btn=>btn.classList.toggle("active",btn.dataset.zqArrivalGroup===arrivalViewMode));
+    }
+    function openArrival(){
+      arrivalClassId=null;renderArrivalClasses();
+      $("zqArrivalChoice")?.classList.remove("show");
+      $("zqArrivalModal")?.classList.add("show");
+      $("zqArrivalModal")?.setAttribute("aria-hidden","false");
+    }
+    function closeArrival(){
+      $("zqArrivalModal")?.classList.remove("show");
+      $("zqArrivalModal")?.setAttribute("aria-hidden","true");
+      $("zqArrivalChoice")?.classList.remove("show");arrivalClassId=null;
+    }
+    function chooseArrivalClass(id){
+      arrivalClassId=String(id);const cls=v6Classes().find(c=>String(c.id)===arrivalClassId);if(!cls)return;
+      setArrivalGroup("all");
+      $("zqArrivalChoiceTitle").textContent=`Lancer ${cls.name||"la classe"}`;
+      $("zqArrivalChoice")?.classList.add("show");
+      $("zqArrivalChoice")?.setAttribute("aria-hidden","false");
+    }
+    function activateArrivalClass(){if(!arrivalClassId)return false;chooseV6Class(arrivalClassId);if(typeof setTeacherGroupView==="function")setTeacherGroupView(arrivalViewMode,true);return true;}
+    function reopenArrivalGroupChoice(){
+      const cls=v6Class();if(!cls)return;
+      arrivalClassId=String(cls.id);renderArrivalClasses();setArrivalGroup(state.viewMode||"all");
+      $("zqArrivalChoiceTitle").textContent=`Lancer ${cls.name||"la classe"}`;
+      $("zqArrivalModal")?.classList.add("show");$("zqArrivalModal")?.setAttribute("aria-hidden","false");
+      $("zqArrivalChoice")?.classList.add("show");$("zqArrivalChoice")?.setAttribute("aria-hidden","false");
+    }
+    function runAction(action){
+      if(action==="home")goTo("zqV6HomeDashboard","home");
+      if(action==="course")goTo("studentsGrid","course");
+      if(action==="followup")goTo("zqStudentFollowupPanel","followup");
+      if(action==="projection"){setActive("projection");$("zqV6ProjectionHub")?.classList.add("show");}
+      if(action==="classlife"){setActive("classlife");clickExisting("zqPPOpenBtn");}
+      if(action==="tools"){setActive("tools");clickExisting("teacherToolsBtn");}
+      if(action==="student"){setActive("student");renderV6StudentExplorer();$("zqV6StudentExplorer")?.classList.add("show");}
+      if(["arrival","welcome","custom","notebooks","pdf","classreport","end"].includes(action))$("zqV6ProjectionHub")?.classList.remove("show");
+      if(action==="arrival")openArrival();
+      if(action==="welcome")clickExisting("boardBtn");
+      if(action==="custom")clickExisting("customWelcomeBtn");
+      if(action==="notebooks"){if(typeof launchWelcome==="function")launchWelcome("📒 Sortez vos cahiers et préparez votre matériel.");else clickExisting("boardBtn");}
+      if(action==="pdf")clickExisting("pdfProjectionBtn");
+      if(action==="classreport"){clickExisting("zqPPOpenBtn");setTimeout(()=>clickExisting("zqPPOpenFullAnalytics"),220);}
+      if(action==="end")clickExisting("endLessonBtn");
+      if(action==="sync")goTo("supabaseTeacherStatus","home");
+    }
+    document.addEventListener("click",e=>{const arrivalToggle=e.target.closest("[data-zq-arrival-toggle-class]");if(arrivalToggle){toggleArrivalClassVisibility(arrivalToggle.dataset.zqArrivalToggleClass);return;}const arrivalGroup=e.target.closest("[data-zq-arrival-group]");if(arrivalGroup){setArrivalGroup(arrivalGroup.dataset.zqArrivalGroup);return;}const arrival=e.target.closest("[data-zq-arrival-class]");if(arrival){chooseArrivalClass(arrival.dataset.zqArrivalClass);return;}const classCard=e.target.closest("[data-zq-class-id]");if(classCard){chooseV6Class(classCard.dataset.zqClassId);return;}const student=e.target.closest("[data-zq-student-id]");if(student){chooseV6Student(student.dataset.zqStudentId);return;}const nav=e.target.closest("[data-zq-v6-nav]");if(nav){runAction(nav.dataset.zqV6Nav);return;}const action=e.target.closest("[data-zq-v6-action]");if(action)runAction(action.dataset.zqV6Action);});
+    $("studentArrivalBtn")?.addEventListener("click",openArrival);
+    $("zqArrivalClose")?.addEventListener("click",closeArrival);
+    $("zqArrivalChoiceBack")?.addEventListener("click",()=>{$("zqArrivalChoice")?.classList.remove("show");arrivalClassId=null;});
+    $("zqArrivalManageClasses")?.addEventListener("click",openArrivalClassManager);
+    $("zqArrivalManagerClose")?.addEventListener("click",closeArrivalClassManager);
+    $("zqArrivalManagerDone")?.addEventListener("click",closeArrivalClassManager);
+    $("zqArrivalClassic")?.addEventListener("click",()=>{if(!activateArrivalClass())return;closeArrival();setTimeout(()=>typeof launchWelcome==="function"&&launchWelcome(""),220);});
+    $("zqArrivalCustom")?.addEventListener("click",()=>{if(!activateArrivalClass())return;closeArrival();setTimeout(()=>{const modal=$("welcomeConfigModal");if(!modal)return;const input=$("zqClassAnnouncementInput");if(input)input.value="";if(typeof renderWelcomePresets==="function")renderWelcomePresets();modal.classList.add("show");},220);});
+    $("zqV6CloseProjection")?.addEventListener("click",()=>$("zqV6ProjectionHub")?.classList.remove("show"));
+    $("zqV6CloseStudentExplorer")?.addEventListener("click",()=>$("zqV6StudentExplorer")?.classList.remove("show"));
+    $("classSelect")?.addEventListener("change",()=>setTimeout(renderV6Home,120));
+    const grid=$("studentsGrid");if(grid)new MutationObserver(()=>renderV6Home()).observe(grid,{childList:true,subtree:true,characterData:true});
+    const sync=$("realtimeSyncText");if(sync)new MutationObserver(()=>renderV6Home()).observe(sync,{childList:true,subtree:true,characterData:true});
+    window.zqV6RenderHome=renderV6Home;
+    window.zqOpenArrivalGroupChoice=reopenArrivalGroupChoice;
+    renderV6Home();setTimeout(renderV6Home,700);
+  })();
+</script>
+
   <footer class="zenquest-footer-fixed">
     <strong>ZenQuest</strong> • Année scolaire 2026–2027<br>
-    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• v5.26.4</span>.
+    © 2026 ZenQuest — Tous droits réservés <span style="opacity:.55;font-size:.92em">• base 5.26.4 • prototype v6.0-test</span>.
   </footer>
 
 <button type="button" id="zqUndoFloatingBtn" title="Actions récentes"
