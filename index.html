@@ -6,7 +6,7 @@
   <meta http-equiv="Expires" content="0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZenQuest</title>
+  <title>ZenQuest V6 TEST</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230f766e'/%3E%3Cpath d='M18 19h30L24 45h25' fill='none' stroke='white' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <style>
     :root{
@@ -15,7 +15,7 @@
       --text:#24323a; --muted:#64748b; --shadow: 0 10px 30px rgba(88,130,126,.12);
     }
     *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);background:linear-gradient(180deg,var(--bg1) 0%,var(--bg2) 34%,var(--bg3) 68%,var(--bg4) 100%);min-height:100vh}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);background:linear-gradient(180deg,var(--bg1) 0%,var(--bg2) 34%,var(--bg3) 68%,var(--bg4) 100%);min-height:100vh;padding-top:38px}
     .zq-v6-test-banner{position:fixed;inset:0 0 auto 0;z-index:6000000;min-height:38px;display:flex;align-items:center;justify-content:center;gap:10px;padding:7px 14px;background:linear-gradient(90deg,#7c3aed,#2563eb,#0891b2);color:#fff;font-size:13px;font-weight:950;letter-spacing:.04em;text-align:center;box-shadow:0 5px 18px rgba(37,99,235,.25)}
     .zq-v6-test-banner span{padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3)}
     .wrap{max-width:1720px;margin:0 auto;padding:20px}
@@ -334,6 +334,39 @@
     /* v5.0.5 — le récap de fin de cours passe au-dessus de la projection PDF */
     #summaryModal{z-index:2000000!important;}
     #pdfProjectionModal{z-index:100000!important;}
+    #zqLessonModeModal{z-index:3000000!important;}
+
+    /* Fin d'heure compacte : conserver les scores visibles sans faire défiler. */
+    #summaryModal .zq-v6-summary-shell{padding:12px 14px!important;max-height:98vh!important}
+    #summaryModal #endLessonCelebration{height:112px!important;min-height:0!important;box-sizing:border-box;padding:6px 12px!important;margin-bottom:4px;border-radius:16px;overflow:hidden}
+    #summaryModal .end-lesson-with-qr{grid-template-columns:minmax(0,1fr) 88px;gap:10px}
+    #summaryModal .end-lesson-emoji{font-size:34px;margin:0 8px 0 0;vertical-align:middle}
+    #summaryModal .end-lesson-main>div:nth-child(2){display:inline-block!important;font-size:clamp(27px,3vw,40px)!important;vertical-align:middle}
+    #summaryModal #endLessonRotatingMessage{min-height:30px;font-size:clamp(16px,1.7vw,22px);margin-top:2px}
+    #summaryModal .end-lesson-qr-block{width:88px;padding:4px;border-radius:12px}
+    #summaryModal .end-lesson-qr{width:58px;height:58px;padding:1px}
+    #summaryModal .end-lesson-qr-title{font-size:9px;margin-top:2px}
+    #summaryModal .end-lesson-qr-sub{display:none}
+    #summaryModal .zq-v6-end-score{
+      position:relative;overflow:hidden;height:112px!important;min-height:0!important;box-sizing:border-box;
+      padding:6px 8px!important;border-width:2px!important;border-top-width:6px!important;
+      box-shadow:0 8px 18px rgba(15,23,42,.09);
+      animation:zqScoreArrive .55s cubic-bezier(.2,.85,.25,1.2) both,zqScoreFloat 4s ease-in-out infinite;
+      animation-delay:calc(var(--end-i,0) * 45ms),calc(.75s + var(--end-i,0) * 65ms);
+    }
+    #summaryModal .zq-v6-end-score::after{
+      content:"";position:absolute;inset:-80% -45%;pointer-events:none;
+      background:linear-gradient(105deg,transparent 42%,rgba(255,255,255,.72) 50%,transparent 58%);
+      transform:translateX(-55%) rotate(8deg);animation:zqScoreShine 5.5s ease-in-out infinite;
+      animation-delay:calc(1s + var(--end-i,0) * 80ms);
+    }
+    @keyframes zqScoreArrive{from{opacity:0;transform:translateY(18px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}
+    @keyframes zqScoreFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+    @keyframes zqScoreShine{0%,72%{transform:translateX(-65%) rotate(8deg);opacity:0}80%{opacity:.75}92%,100%{transform:translateX(65%) rotate(8deg);opacity:0}}
+    #summaryModal .zq-v6-end-score>span{font-size:15px!important}
+    #summaryModal .zq-v6-end-score>strong{font-size:19px!important;margin-top:0!important}
+    #summaryModal .zq-v6-end-score>div{font-size:10px!important;margin-top:1px!important}
+    #summaryModal #summaryContent+div{margin-top:8px!important}
 
     #welcomeConfigGear{opacity:.42;transition:opacity .15s ease,background .15s ease,transform .15s ease}
     #welcomeConfigGear:hover{opacity:1;background:rgba(255,255,255,.28)!important;transform:scale(1.05)}
@@ -1127,6 +1160,7 @@
 <link rel="stylesheet" href="./v6.css">
 </head>
 <body>
+  <div class="zq-v6-test-banner" role="status"><span>🧪 V6 TEST</span> Copie privée connectée à Supabase — utiliser uniquement les classes test</div>
 <div id="zqTeacherEventToastStack"></div>
 <!-- ZenQuest v5.9.0 — contrôle technique avant mise en production école.
      Vérifications: portée classe des ressources/messages/rôles, syntaxe JS,
@@ -1281,6 +1315,7 @@
         <div class="zq-v6-class-deck-head"><div><span class="zq-v6-eyebrow">MES CLASSES</span><h3>Choisis ton expédition</h3></div><span id="zqV6ClassDeckHint">Clique sur une classe pour l’ouvrir</span></div>
         <div class="zq-v6-class-cards" id="zqV6ClassCards"></div>
       </div>
+      <div class="zq-climate-history-panel" id="zqClimateHistoryPanel"></div>
       <div class="zq-v6-launchpad">
         <div><span class="zq-v6-eyebrow">LANCER LE COURS</span><h3>Choisis ton écran d’accueil</h3></div>
         <div class="zq-v6-launch-actions">
@@ -1423,9 +1458,22 @@
         <button type="button" data-zq-v6-action="custom"><span>📣</span><strong>Accueil personnalisé</strong><small>Annonce particulière</small></button>
         <button type="button" data-zq-v6-action="notebooks"><span>📒</span><strong>Sortez vos cahiers</strong><small>Lancer immédiatement le rituel</small></button>
         <button type="button" data-zq-v6-action="pdf"><span>📄</span><strong>Projection PDF</strong><small>Leçons, exercices et documents</small></button>
+        <button type="button" data-zq-v6-action="lesson"><span>📖</span><strong>Partie Leçon</strong><small>Faire regarder le tableau derrière</small></button>
         <button type="button" data-zq-v6-action="classreport"><span>📊</span><strong>Bilan de la classe</strong><small>Graphiques et évolution collective</small></button>
         <button type="button" data-zq-v6-action="end"><span>🏁</span><strong>Fin d’heure</strong><small>Résultats et récompenses</small></button>
       </div>
+    </div>
+  </div>
+
+  <div class="modal zq-lesson-mode-modal" id="zqLessonModeModal" aria-hidden="true">
+    <button type="button" class="zq-lesson-close" id="zqLessonModeClose" aria-label="Fermer">✕</button>
+    <div class="zq-lesson-mode-card">
+      <div class="zq-lesson-book" aria-hidden="true">📖</div>
+      <div class="zq-lesson-kicker">ZENQUEST · MODE LEÇON</div>
+      <h2>Partie Leçon !</h2>
+      <p>Derrière à l’envers !</p>
+      <strong>C’est parti !</strong>
+      <div class="zq-lesson-arrows" aria-hidden="true"><span>↶</span><span>↷</span></div>
     </div>
   </div>
 
@@ -2757,6 +2805,7 @@ Noah"
         <button class="btn outline" id="pdfCloudUploadBtn" style="background:white">＋ Enregistrer</button>
         <input id="pdfFileInput" type="file" accept="application/pdf,.pdf" style="display:none">
         <button class="btn outline" id="pdfPointsBtn" style="background:#fef3c7;color:#78350f;border-color:#fbbf24">👥 Points</button>
+        <button class="btn outline" id="pdfLessonBtn" style="background:#ecfdf5;color:#065f46;border-color:#34d399">📖 Partie Leçon</button>
         <input id="pdfCloudFileInput" type="file" accept="application/pdf,.pdf" style="display:none">
         <b id="pdfFileName">Aucun PDF</b><span style="flex:1"></span>
         <button class="btn outline" id="pdfPrevBtn" style="background:white">⬅️</button>
@@ -2845,6 +2894,7 @@ Noah"
     <button type="button" id="zqArrivalClose" class="zq-arrival-close" aria-label="Fermer">✕</button>
     <main class="zq-arrival-content">
       <div class="zq-arrival-kicker">ZENQUEST · AVANT LE COURS</div>
+      <div class="zq-screen-date" id="zqArrivalDate"></div>
       <h1>Bonjour <span class="zq-arrival-wave" aria-hidden="true">👋</span></h1>
       <p class="zq-arrival-lead">Entre calmement. Prépare-toi pour le cours.</p>
       <div class="zq-arrival-rules">
@@ -2896,6 +2946,7 @@ Noah"
         style="position:absolute;right:14px;top:14px;z-index:90;opacity:.72;width:38px;height:38px;border-radius:50%;font-size:18px;padding:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.78);box-shadow:0 3px 12px rgba(0,0,0,.14)">✕</button>
 
       <div id="boardDisplay" class="zq-v6-board-display" style="height:100%;border:0;border-radius:28px;padding:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:#f8fafc">
+        <div class="zq-screen-date zq-board-date" id="zqBoardDate"></div>
         <div class="zq-v6-board-landscape" aria-hidden="true"><i class="sun"></i><span class="cloud cloud-one">☁</span><span class="cloud cloud-two">☁</span><span class="bird">🕊️</span><span class="canoe">🛶</span><span class="leaf">🌿</span></div>
         <div id="flashQuestionOverlay">
           <div id="flashQuestionCounter">ZENQUEST • MODE ATTENTE</div>
@@ -5051,6 +5102,8 @@ Noah"
           student.lostThisLesson=true;
           const actualLoss=Math.max(0,prev-next);
           student.pointsLostThisLesson+=actualLoss;
+          student.climateEventsThisLesson=Array.isArray(student.climateEventsThisLesson)?student.climateEventsThisLesson:[];
+          student.climateEventsThisLesson.push({code,label,points:actualLoss});
           student.totalPointsLost+=actualLoss;
           if(prev>=10&&next<10&&student.stars>0&&!student.lostStarThisLesson){
             const nextStars=Math.max(0,student.stars-1);
@@ -6628,6 +6681,56 @@ Noah"
       }
     }
 
+    function climateReasonCategory(code,label=""){
+      const normalized=String(label||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+      if(code==="materiel")return "material";
+      if(code==="custom"&&/(toilet|wc|infirmer|sortie|boire|eau)/.test(normalized))return "movement";
+      if(code==="bavardage")return "talk";
+      if(code==="concentration")return "focus";
+      if(code==="travail")return "work";
+      if(code==="consigne")return "instruction";
+      return "behavior";
+    }
+
+    function classClimateFromStudents(students=[]){
+      const present=(students||[]).filter(s=>!s.isAbsent);
+      const reasons={talk:0,focus:0,work:0,instruction:0,behavior:0,material:0,movement:0};
+      const behaviorLosses=present.map(s=>{
+        const events=Array.isArray(s.climateEventsThisLesson)?s.climateEventsThisLesson:[];
+        if(!events.length)return Math.max(0,Number(s.pointsLostThisLesson||0));
+        return events.reduce((sum,e)=>{const category=climateReasonCategory(e.code,e.label),points=Math.max(0,Number(e.points||1));reasons[category]=(reasons[category]||0)+points;return sum+(category==="material"||category==="movement"?0:points);},0);
+      });
+      const totalPoints=behaviorLosses.reduce((a,b)=>a+b,0);
+      const affectedStudents=behaviorLosses.filter(n=>n>0).length;
+      const maxIndividualLoss=behaviorLosses.length?Math.max(...behaviorLosses):0;
+      const strongLosses=behaviorLosses.filter(n=>n>=3);
+      const concentrated=strongLosses.length>0&&strongLosses.length<=3&&strongLosses.reduce((a,b)=>a+b,0)>=totalPoints*.6;
+      let level="calm",label="Calme",emoji="🌿",color="#16a34a",bg="#dcfce7";
+      if(maxIndividualLoss>=3&&concentrated){level="localized";label=strongLosses.length===1?"Un perturbateur":"Quelques perturbateurs";emoji="⚠️";color="#b45309";bg="#fef3c7";}
+      else if(totalPoints>=9){level="very-agitated";label="Très agité";emoji="🔴";color="#b91c1c";bg="#fee2e2";}
+      else if(totalPoints>=6){level="agitated";label="Agité";emoji="🟠";color="#c2410c";bg="#ffedd5";}
+      else if(totalPoints>=1){level="watch";label="Quelques perturbations";emoji="🟡";color="#a16207";bg="#fef9c3";}
+      const behaviorReasons=Object.entries(reasons).filter(([k])=>!["material","movement"].includes(k)).sort((a,b)=>b[1]-a[1]);
+      const reasonLabels={talk:"Principalement lié au bavardage",focus:"Rappels à la concentration",work:"Travail insuffisant",instruction:"Consignes non respectées",behavior:"Incidents de comportement"};
+      const dominant=behaviorReasons[0]?.[1]>0?reasonLabels[behaviorReasons[0][0]]:"";
+      const notes=[];
+      if(dominant)notes.push(dominant);
+      if(reasons.material)notes.push(`${reasons.material} point${reasons.material>1?"s":""} lié${reasons.material>1?"s":""} au matériel`);
+      if(reasons.movement)notes.push(`${reasons.movement} sortie${reasons.movement>1?"s":""} ou déplacement${reasons.movement>1?"s":""}`);
+      return {id:uid(),level,label,emoji,color,bg,score:totalPoints,totalPoints,affectedStudents,maxIndividualLoss,classSize:present.length,reasons,detail:notes.join(" · "),createdAt:new Date().toISOString()};
+    }
+
+    async function persistClassClimate(cls,climate,anchorStudent){
+      if(!cls?.id||!anchorStudent?.id)return;
+      const teacher_id=await currentTeacherId();
+      const payload={...climate,classId:cls.id,className:cls.name,viewMode:state.viewMode||"all"};
+      const {data,error}=await supabaseClient.from("teacher_remarks").insert({teacher_id,student_id:anchorStudent.id,remark:encodeZQData("class_climate",payload)}).select("id,created_at").single();
+      if(error)throw error;
+      payload.dbId=data?.id||null;payload.createdAt=data?.created_at||payload.createdAt;
+      cls.climateHistory=Array.isArray(cls.climateHistory)?cls.climateHistory:[];
+      cls.climateHistory.unshift(payload);cls.climateHistory=cls.climateHistory.slice(0,40);
+    }
+
     function showSummary(summary){
       // Fin de cours must always be visible above an open PDF projection.
       const summaryLayer=document.getElementById("summaryModal") || document.getElementById("endLessonSummaryModal") || document.getElementById("lessonSummaryModal");
@@ -6635,10 +6738,10 @@ Noah"
 
       const scoreRows=Array.isArray(summary.scoreRows)?summary.scoreRows:[];
       const scoreGrid=scoreRows.length?`
-        <div style="margin-top:12px">
-          <div style="font-size:19px;font-weight:950;margin-bottom:8px;text-align:center">📊 Scores de fin de cours</div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));justify-content:center;gap:7px">
-            ${scoreRows.map(r=>{
+        <div style="margin-top:6px">
+          <div style="font-size:16px;font-weight:950;margin-bottom:5px;text-align:center">📊 Scores de fin de cours</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));justify-content:center;gap:5px">
+            ${scoreRows.map((r,index)=>{
               const th=engagementIndexTheme(Number(r.score));
               const starCount=Math.max(0,Number(r.stars||0));
               const diamondCount=Math.max(0,Number(r.diamonds||0));
@@ -6647,7 +6750,7 @@ Noah"
                 ? `<div style="font-size:13px;font-weight:950;color:#0369a1;margin-top:3px">💎 x${diamondCount}</div>`
                 : `<div style="font-size:13px;font-weight:950;color:#92400e;margin-top:3px">${starCount?`${"⭐".repeat(Math.min(MAX_INDIVIDUAL_STARS,starCount))} ${starCount}/${MAX_INDIVIDUAL_STARS}`:`☆ 0/${MAX_INDIVIDUAL_STARS}`}</div>`;
 
-              return `<div class="zq-v6-end-score" style="--end-color:${th.color};--end-bg:${th.bg};--end-border:${th.border};display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 10px;border-radius:12px;background:${th.bg};border:1px solid ${th.border};min-width:0">
+              return `<div class="zq-v6-end-score" style="--end-i:${index};--end-color:${th.color};--end-bg:${th.bg};--end-border:${th.border};display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 10px;border-radius:16px;background:linear-gradient(145deg,#fff 0%,${th.bg} 58%,${th.bg} 100%);border:1px solid ${th.border};min-width:0">
                 <span style="font-size:18px;font-weight:950;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;color:#0f172a">${escapeHTML(r.name)}</span>
                 <strong style="font-size:22px;color:${th.color};white-space:nowrap;margin-top:2px">${r.score}/20</strong>
                 <div style="font-size:12px;font-weight:900;color:#475569;margin-top:3px">Niv. ${Number(r.level||1)}</div>
@@ -6672,8 +6775,12 @@ Noah"
             </div>
           </div>
         </div>
+        ${summary.climate?`<div class="zq-climate-summary" style="display:flex;align-items:center;justify-content:center;gap:10px;width:max-content;max-width:calc(100% - 24px);margin:4px auto;padding:7px 16px;border:2px solid ${summary.climate.color};border-radius:999px;background:${summary.climate.bg};color:${summary.climate.color};font-size:clamp(17px,2vw,24px);font-weight:1000;line-height:1.1">
+          <span aria-hidden="true">${summary.climate.emoji}</span>
+          <span>${escapeHTML(summary.climate.label)} · ${summary.climate.totalPoints} point${summary.climate.totalPoints>1?"s":""} perdu${summary.climate.totalPoints>1?"s":""}</span>
+        </div>`:""}
         ${zqClassAnnouncement()?`<div style="margin:12px auto;padding:15px 20px;border-radius:18px;background:#fff7ed;border:3px solid #fb923c;color:#9a3412;text-align:center;font-size:clamp(20px,2.7vw,32px);font-weight:1000;line-height:1.2;white-space:pre-wrap">📣 ${escapeHTML(zqClassAnnouncement())}</div>`:""}
-        <div style="padding:8px 10px;border-radius:12px;background:#eff6ff;border:1px solid #bfdbfe;text-align:center;font-weight:900;margin-bottom:10px">
+        <div style="padding:6px 10px;border-radius:12px;background:#eff6ff;border:1px solid #bfdbfe;text-align:center;font-weight:900;margin-bottom:5px">
           📱 Vous retrouverez votre score et son évolution dans votre espace élève.
         </div>
         ${scoreGrid}
@@ -6817,18 +6924,10 @@ Noah"
 
         const ownScores=scores.filter(x=>x.student_id===s.id);
         const ownRemarks=remarks.filter(x=>x.student_id===s.id);
-        const latestScoreAt=ownScores.reduce((max,x)=>{
-          const t=x.created_at?new Date(x.created_at).getTime():0;
-          return Math.max(max,t||0);
-        },0);
-        const minusAfterLastCourse=ownRemarks.filter(x=>{
-          const ev=parseZQEventRemark(x.remark);
-          if(ev?.type!=="minus") return false;
-          const t=x.created_at?new Date(x.created_at).getTime():0;
-          return t>latestScoreAt;
-        });
-        s.lostThisLesson=minusAfterLastCourse.length>0;
-        s.pointsLostThisLesson=minusAfterLastCourse.length;
+        const lessonState=lessonLossStateFromRows(ownRemarks,ownScores);
+        s.lostThisLesson=lessonState.lostThisLesson;
+        s.pointsLostThisLesson=lessonState.pointsLostThisLesson;
+        s.climateEventsThisLesson=lessonState.climateEventsThisLesson;
       });
     }
 
@@ -6889,6 +6988,10 @@ Noah"
         }
 
         let presentStudents=cls.students.filter(s=>!s.isAbsent);
+        const lessonClimate=classClimateFromStudents(presentStudents);
+        lessonClimate.classId=cls.id;
+        lessonClimate.className=cls.name;
+        lessonClimate.viewMode=state.viewMode||"all";
 
         // Snapshot BEFORE end-of-lesson mutations. Includes all students because
         // "Classe entière" may have been selected accidentally.
@@ -6995,6 +7098,9 @@ Noah"
           var undoCreatedLessonScoreIds=[];
         }
 
+        try{await persistClassClimate(cls,lessonClimate,presentStudents[0]);}
+        catch(climateErr){console.error("CLIMATE HISTORY ERROR",climateErr);showEndLessonStatus("⚠️ Cours enregistré, mais le climat n’a pas pu être archivé : "+climateErr.message,"error",false);}
+
         // Puis on reflète le résultat dans l'interface.
         for(const u of updates){
           const s=u.student;
@@ -7031,6 +7137,7 @@ Noah"
           s.lostThisLesson=false;
           s.lostStarThisLesson=false;
           s.pointsLostThisLesson=0;
+          s.climateEventsThisLesson=[];
           s.homeworkAddedThisLesson=false;
         }
 
@@ -7079,7 +7186,7 @@ Noah"
           id:uid(),
           date:new Date().toLocaleString(),
           perfectNames,bonusPointNames,stayedAt20,levelUps,starNames,
-          everyonePerfect,groupTarget:state.viewMode
+          everyonePerfect,groupTarget:state.viewMode,climate:lessonClimate
         });
         cls.history=cls.history.slice(0,15);
 
@@ -7091,6 +7198,7 @@ Noah"
         const lessonSummary={
           perfectNames,bonusPointNames,stayedAt20,levelUps,starNames,
           classStarGained:everyonePerfect,
+          climate:lessonClimate,
           scoreRows:cls.students
             .filter(s=>!s.isAbsent)
             .map(s=>({
@@ -8925,7 +9033,12 @@ Noah"
       drawer.setAttribute("aria-hidden",String(!show));
       document.getElementById("pdfPointsBtn")?.classList.toggle("active",show);
     }
-    function closePdfProjection(){document.getElementById("pdfProjectionModal").classList.remove("show");togglePdfPointsDrawer(false);hidePdfZenOverlay();}
+    function closePdfProjection(){
+      document.getElementById("pdfProjectionModal").classList.remove("show");
+      togglePdfPointsDrawer(false);hidePdfZenOverlay();
+      document.getElementById("zqV6ProjectionHub")?.classList.add("show");
+      document.querySelectorAll("[data-zq-v6-nav]").forEach(btn=>btn.classList.toggle("active",btn.dataset.zqV6Nav==="projection"));
+    }
     async function loadLocalPdf(file){
       if(!file)return;
       try{
@@ -9201,8 +9314,12 @@ Noah"
 
     function openBoard(reset=true){
       if(reset) setBoardPreset(BOARD_DEFAULTS.welcome);
+      updateZenQuestScreenDates();
       document.getElementById("boardModal").classList.add("show");
     }
+
+    function zenQuestLongDate(){return new Intl.DateTimeFormat("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"America/Cayenne"}).format(new Date()).replace(/^./,c=>c.toUpperCase());}
+    function updateZenQuestScreenDates(){const text=zenQuestLongDate();["zqArrivalDate","zqBoardDate"].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=text;});}
 
     function updateBoardTimer(){
       if(boardTimerRunning && boardTimerEndAt){
@@ -11121,16 +11238,30 @@ ${schoolMaterialsStudentHTML(remarks,remarks)}
         const t=r?.created_at?new Date(r.created_at).getTime():0;
         return Math.max(max,Number.isFinite(t)?t:0);
       },0);
-      const minusEvents=(remarkRows||[])
+      const lessonEvents=(remarkRows||[])
         .map(r=>({row:r,event:parseZQEventRemark(r.remark)}))
-        .filter(x=>x.event?.type==="minus")
+        .filter(x=>x.event?.type==="minus"||x.event?.type==="plus")
         .filter(x=>{
           const t=x.row?.created_at?new Date(x.row.created_at).getTime():0;
           return t>latestScoreAt;
-        });
+        })
+        .sort((a,b)=>new Date(a.row.created_at)-new Date(b.row.created_at));
+      const latestScore=(scoreRows||[]).slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)).at(-1);
+      let running=Number(latestScore?.score),pointsLost=0;
+      const climateEventsThisLesson=[];
+      lessonEvents.forEach(x=>{
+        const after=Number(x.event.scoreAfter);
+        if(x.event.type==="minus"){
+          const points=Number.isFinite(running)&&Number.isFinite(after)?Math.max(1,running-after):1;
+          pointsLost+=points;
+          climateEventsThisLesson.push({code:x.event.code||"",label:x.event.label||"",points});
+        }
+        if(Number.isFinite(after)) running=after;
+      });
       return {
-        lostThisLesson:minusEvents.length>0,
-        pointsLostThisLesson:minusEvents.length
+        lostThisLesson:pointsLost>0,
+        pointsLostThisLesson:pointsLost,
+        climateEventsThisLesson
       };
     }
 
@@ -11150,6 +11281,7 @@ ${schoolMaterialsStudentHTML(remarks,remarks)}
         lostThisLesson:!!row._lostThisLesson,
         lostStarThisLesson:false,
         pointsLostThisLesson:Number(row._pointsLostThisLesson||0),
+        climateEventsThisLesson:Array.isArray(row._climateEventsThisLesson)?row._climateEventsThisLesson:[],
         homeworkAddedThisLesson:false,
         totalLessons:0,
         perfectLessons:0,
@@ -11174,7 +11306,11 @@ ${schoolMaterialsStudentHTML(remarks,remarks)}
       };
     }
 
-    function mapSupabaseClass(row,students=[],classMessages=[]){
+    function mapSupabaseClass(row,students=[],classMessages=[],classRemarks=[]){
+      const climateHistory=(classRemarks||[]).map(r=>({row:r,event:parseZQEventRemark(r.remark)}))
+        .filter(x=>x.event?.type==="class_climate"&&String(x.event.data?.classId||"")===String(row.id))
+        .map(x=>({...x.event.data,dbId:x.row.id,createdAt:x.event.data?.createdAt||x.row.created_at}))
+        .sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
       return {
         id:row.id,
         name:row.name||"Classe",
@@ -11194,6 +11330,7 @@ ${schoolMaterialsStudentHTML(remarks,remarks)}
         currentPeriodCreatedAt:row.currentPeriodCreatedAt||null,
         periodArchive:[],
         history:[],
+        climateHistory,
         classMessages:classMessages.map(mapSupabaseClassMessage),
         boardPresets:[],
         fromSupabase:true
@@ -11303,6 +11440,13 @@ ${schoolMaterialsStudentHTML(remarks,remarks)}
             .select("id,student_id,remark,created_at")
             .in("student_id",allStudentIds)
             .order("created_at",{ascending:true});
+          // Les remarques générales peuvent dépasser la limite de réponse Supabase.
+          // On charge donc les climats séparément afin que les plus récents ne disparaissent jamais de l'accueil.
+          const climatesPromise=supabaseClient.from("teacher_remarks")
+            .select("id,student_id,remark,created_at")
+            .in("student_id",allStudentIds)
+            .like("remark","ZQDATA|class_climate|%")
+            .order("created_at",{ascending:false});
 
           const scoresPromise=currentPeriodIds.length
             ? supabaseClient.from("lesson_scores")
@@ -11315,11 +11459,13 @@ ${schoolMaterialsStudentHTML(remarks,remarks)}
             .select("student_id,period_id,average,lesson_count,best_score,worst_score,final_level,final_stars,final_diamonds,homeworks,created_at")
             .in("student_id",allStudentIds)
             .order("created_at",{ascending:true});
-          const [remarksRes,scoresRes,periodResultsRes]=await Promise.all([remarksPromise,scoresPromise,periodResultsPromise]);
+          const [remarksRes,climatesRes,scoresRes,periodResultsRes]=await Promise.all([remarksPromise,climatesPromise,scoresPromise,periodResultsPromise]);
           if(remarksRes.error) throw new Error("Impossible de charger les remarques : "+remarksRes.error.message);
+          if(climatesRes.error) throw new Error("Impossible de charger les climats : "+climatesRes.error.message);
           if(scoresRes.error) throw new Error("Impossible de charger les scores : "+scoresRes.error.message);
           if(periodResultsRes.error) throw new Error("Impossible de charger les anciennes périodes : "+periodResultsRes.error.message);
-          zqAllRemarks=remarksRes.data||[];
+          const remarksById=new Map([...(remarksRes.data||[]),...(climatesRes.data||[])].map(r=>[String(r.id),r]));
+          zqAllRemarks=[...remarksById.values()];
           zqAllScores=scoresRes.data||[];
           zqAllPeriodResults=periodResultsRes.data||[];
         }
@@ -11355,6 +11501,7 @@ ${schoolMaterialsStudentHTML(remarks,remarks)}
           const lessonLoss=lessonLossStateFromRows(s._teacherRemarks||[],s._currentScores||[]);
           s._lostThisLesson=lessonLoss.lostThisLesson;
           s._pointsLostThisLesson=lessonLoss.pointsLostThisLesson;
+          s._climateEventsThisLesson=lessonLoss.climateEventsThisLesson;
           s._archivedPeriods=(periods||[]).filter(p=>!p.is_current).map(p=>{
             const vals=allLessonScores.filter(x=>x.student_id===s.id&&x.period_id===p.id).map(x=>Number(x.score)).filter(Number.isFinite);
             const archivedResult=zqAllPeriodResults.find(r=>String(r.student_id)===String(s.id)&&String(r.period_id)===String(p.id))||null;
@@ -11382,7 +11529,7 @@ ${schoolMaterialsStudentHTML(remarks,remarks)}
           currentPeriodId:currentPeriod?.id||null,
           currentPeriodName:currentPeriod?.name||"Période en cours",
           currentPeriodCreatedAt:currentPeriod?.created_at||null
-        },studentsWithRemarks,classMessages||[]);
+        },studentsWithRemarks,classMessages||[],teacherRemarks);
 
         mappedClass.students.forEach(s=>{
           const old=transientByStudent.get(String(s.id));
@@ -13420,6 +13567,10 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
     document.getElementById("pdfCloudCloseBtn").onclick=()=>toggleProjectionCloudDrawer(false);
     document.getElementById("pdfCloudUploadBtn").onclick=()=>document.getElementById("pdfCloudFileInput").click();
     document.getElementById("pdfPointsBtn").onclick=()=>togglePdfPointsDrawer();
+    document.getElementById("pdfLessonBtn").onclick=()=>{
+      document.getElementById("zqLessonModeModal")?.classList.add("show");
+      document.getElementById("zqLessonModeModal")?.setAttribute("aria-hidden","false");
+    };
     document.getElementById("pdfPointsCloseBtn").onclick=()=>togglePdfPointsDrawer(false);
     document.getElementById("pdfCloudUploadBigBtn").onclick=()=>document.getElementById("pdfCloudFileInput").click();
     document.getElementById("pdfCloudFileInput").onchange=e=>uploadProjectionFile(e.target.files?.[0]);
@@ -14562,10 +14713,11 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
     function v6Classes(){try{return Array.isArray(state?.classes)?state.classes:[];}catch{return [];}}
     function safe(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
     const classColors=["#14b8a6","#38bdf8","#f59e0b","#8b5cf6","#fb7185","#22c55e"];
+    function recentClassClimate(cls){const rows=(cls?.climateHistory||[]).slice(0,5);if(!rows.length)return {label:"Pas encore de climat",emoji:"⚪",color:"#64748b",bg:"#f1f5f9"};const avg=rows.reduce((n,x)=>n+Number(x.score||0),0)/rows.length;if(avg===0)return {label:"Calme",emoji:"🌿",color:"#16a34a",bg:"#dcfce7"};if(avg<=5)return {label:"Quelques perturbations",emoji:"🟡",color:"#a16207",bg:"#fef9c3"};if(avg<=8)return {label:"Agité",emoji:"🟠",color:"#c2410c",bg:"#ffedd5"};return {label:"Très agité",emoji:"🔴",color:"#b91c1c",bg:"#fee2e2"};}
     function renderV6ClassDeck(){
       const wrap=$("zqV6ClassCards"),current=v6Class();if(!wrap)return;
       const classes=v6Classes();
-      wrap.innerHTML=classes.length?classes.map((cls,i)=>{const students=Array.isArray(cls.students)?cls.students:[],scores=students.map(s=>Number(s.points)).filter(Number.isFinite),avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length*10)/10:null;return `<button type="button" class="zq-v6-class-card ${String(cls.id)===String(current?.id)?"active":""}" data-zq-class-id="${safe(cls.id)}" style="--class-accent:${classColors[i%classColors.length]}"><span class="class-icon">${["🛶","🗺️","⛰️","🌿","🧭","🏕️"][i%6]}</span><strong>${safe(cls.name||"Classe")}</strong><span>${students.length} élève${students.length>1?"s":""}</span><small>${avg===null?"Pas encore de note":`Moyenne ${avg.toLocaleString("fr-FR")}/20`}</small></button>`;}).join(""):'<div class="muted">Aucune classe disponible.</div>';
+      wrap.innerHTML=classes.length?classes.map((cls,i)=>{const students=Array.isArray(cls.students)?cls.students:[],scores=students.map(s=>Number(s.points)).filter(Number.isFinite),avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length*10)/10:null,cl=recentClassClimate(cls);return `<button type="button" class="zq-v6-class-card ${String(cls.id)===String(current?.id)?"active":""}" data-zq-class-id="${safe(cls.id)}" style="--class-accent:${classColors[i%classColors.length]}"><span class="class-icon">${["🛶","🗺️","⛰️","🌿","🧭","🏕️"][i%6]}</span><strong>${safe(cls.name||"Classe")}</strong><span>${students.length} élève${students.length>1?"s":""}</span><small>${avg===null?"Pas encore de note":`Moyenne ${avg.toLocaleString("fr-FR")}/20`}</small><em class="zq-climate-badge" style="--badge-color:${cl.color};--badge-bg:${cl.bg}">${cl.emoji} ${safe(cl.label)}</em></button>`;}).join(""):'<div class="muted">Aucune classe disponible.</div>';
     }
     function renderV6StudentExplorer(){
       const cls=v6Class(),wrap=$("zqV6StudentCards"),label=$("zqV6ExplorerClass");if(!wrap)return;
@@ -14587,14 +14739,16 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
       const badge=$("zqV6FollowupBadge");if(badge){badge.textContent=String(alerts.length);badge.classList.toggle("show",alerts.length>0);}
       const syncText=$("realtimeSyncText")?.textContent?.trim()||"Connexion…";if($("zqV6SyncState")) $("zqV6SyncState").textContent=/direct|synchronis|connect/i.test(syncText)?"En direct":syncText.replace("…","");
       renderV6ClassDeck();
+      renderClimateHistory(cls);
     }
+    function renderClimateHistory(cls){const box=$("zqClimateHistoryPanel");if(!box)return;const rows=(cls?.climateHistory||[]).slice(0,5),recent=recentClassClimate(cls);box.innerHTML=`<div class="zq-climate-history-head"><div><span class="zq-v6-eyebrow">CLIMAT DE CLASSE</span><h3>${safe(cls?.name||"Classe")} · suivi récent</h3></div><b class="zq-climate-badge" style="--badge-color:${recent.color};--badge-bg:${recent.bg}">${recent.emoji} ${safe(recent.label)}</b></div><div class="zq-climate-history-list">${rows.length?rows.map(x=>{const d=x.createdAt?new Date(x.createdAt).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"}):"—",group=x.viewMode==="g1"?"Groupe 1":x.viewMode==="g2"?"Groupe 2":"Classe entière";return `<div><span>${x.emoji||"⚪"}</span><strong>${safe(x.label||"Climat")}</strong><small>${d} · ${group}</small><em>${Number(x.totalPoints||0)} pt${Number(x.totalPoints||0)>1?"s":""} · ${Number(x.affectedStudents||0)} élève${Number(x.affectedStudents||0)>1?"s":""}</em></div>`;}).join(""):'<p class="muted">Le suivi apparaîtra après la prochaine fin d’heure.</p>'}</div>`;}
     const ZQ_ARRIVAL_HIDDEN_CLASSES_KEY="zenquest_arrival_hidden_classes_v1";
     function arrivalHiddenClassIds(){try{return new Set(JSON.parse(localStorage.getItem(ZQ_ARRIVAL_HIDDEN_CLASSES_KEY)||"[]").map(String))}catch{return new Set()}}
     function saveArrivalHiddenClassIds(ids){localStorage.setItem(ZQ_ARRIVAL_HIDDEN_CLASSES_KEY,JSON.stringify([...ids]));}
     function renderArrivalClasses(){
       const wrap=$("zqArrivalClasses");if(!wrap)return;
       const current=v6Class(),hidden=arrivalHiddenClassIds(),classes=v6Classes().filter(cls=>!hidden.has(String(cls.id)));
-      wrap.innerHTML=classes.length?classes.map((cls,i)=>{const students=Array.isArray(cls.students)?cls.students:[],scores=students.map(s=>Number(s.points)).filter(Number.isFinite),avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length*10)/10:null;return `<button type="button" data-zq-arrival-class="${safe(cls.id)}" class="${String(cls.id)===String(current?.id)?"active":""}" style="--arrival-accent:${classColors[i%classColors.length]}"><span>${["🛶","🗺️","⛰️","🌿","🧭","🏕️"][i%6]}</span><strong>${safe(cls.name||"Classe")}</strong><small>${students.length} élève${students.length>1?"s":""}</small><em>${avg===null?"Pas encore de moyenne":`Moyenne ${avg.toLocaleString("fr-FR")}/20`}</em></button>`;}).join(""):'<div class="muted">Aucune classe affichée. Utilise « Classes affichées » pour en remettre une.</div>';
+      wrap.innerHTML=classes.length?classes.map((cls,i)=>{const students=Array.isArray(cls.students)?cls.students:[],scores=students.map(s=>Number(s.points)).filter(Number.isFinite),avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length*10)/10:null,cl=recentClassClimate(cls);return `<button type="button" data-zq-arrival-class="${safe(cls.id)}" class="${String(cls.id)===String(current?.id)?"active":""}" style="--arrival-accent:${classColors[i%classColors.length]}"><span>${["🛶","🗺️","⛰️","🌿","🧭","🏕️"][i%6]}</span><strong>${safe(cls.name||"Classe")}</strong><small>${students.length} élève${students.length>1?"s":""}</small><em>${avg===null?"Pas encore de moyenne":`Moyenne ${avg.toLocaleString("fr-FR")}/20`}</em><b class="zq-climate-badge" style="--badge-color:${cl.color};--badge-bg:${cl.bg}">${cl.emoji} ${safe(cl.label)}</b></button>`;}).join(""):'<div class="muted">Aucune classe affichée. Utilise « Classes affichées » pour en remettre une.</div>';
     }
     function renderArrivalClassManager(){
       const wrap=$("zqArrivalManagerList");if(!wrap)return;
@@ -14610,7 +14764,7 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
       document.querySelectorAll("[data-zq-arrival-group]").forEach(btn=>btn.classList.toggle("active",btn.dataset.zqArrivalGroup===arrivalViewMode));
     }
     function openArrival(){
-      arrivalClassId=null;renderArrivalClasses();
+      arrivalClassId=null;renderArrivalClasses();if(typeof updateZenQuestScreenDates==="function")updateZenQuestScreenDates();
       $("zqArrivalChoice")?.classList.remove("show");
       $("zqArrivalModal")?.classList.add("show");
       $("zqArrivalModal")?.setAttribute("aria-hidden","false");
@@ -14643,12 +14797,13 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
       if(action==="classlife"){setActive("classlife");clickExisting("zqPPOpenBtn");}
       if(action==="tools"){setActive("tools");clickExisting("teacherToolsBtn");}
       if(action==="student"){setActive("student");renderV6StudentExplorer();$("zqV6StudentExplorer")?.classList.add("show");}
-      if(["arrival","welcome","custom","notebooks","pdf","classreport","end"].includes(action))$("zqV6ProjectionHub")?.classList.remove("show");
+      if(["arrival","welcome","custom","notebooks","pdf","lesson","classreport","end"].includes(action))$("zqV6ProjectionHub")?.classList.remove("show");
       if(action==="arrival")openArrival();
       if(action==="welcome")clickExisting("boardBtn");
       if(action==="custom")clickExisting("customWelcomeBtn");
       if(action==="notebooks"){if(typeof launchWelcome==="function")launchWelcome("📒 Sortez vos cahiers et préparez votre matériel.");else clickExisting("boardBtn");}
       if(action==="pdf")clickExisting("pdfProjectionBtn");
+      if(action==="lesson"){$("zqLessonModeModal")?.classList.add("show");$("zqLessonModeModal")?.setAttribute("aria-hidden","false");}
       if(action==="classreport"){clickExisting("zqPPOpenBtn");setTimeout(()=>clickExisting("zqPPOpenFullAnalytics"),220);}
       if(action==="end")clickExisting("endLessonBtn");
       if(action==="sync")goTo("supabaseTeacherStatus","home");
@@ -14663,6 +14818,7 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
     $("zqArrivalClassic")?.addEventListener("click",()=>{if(!activateArrivalClass())return;closeArrival();setTimeout(()=>typeof launchWelcome==="function"&&launchWelcome(""),220);});
     $("zqArrivalCustom")?.addEventListener("click",()=>{if(!activateArrivalClass())return;closeArrival();setTimeout(()=>{const modal=$("welcomeConfigModal");if(!modal)return;const input=$("zqClassAnnouncementInput");if(input)input.value="";if(typeof renderWelcomePresets==="function")renderWelcomePresets();modal.classList.add("show");},220);});
     $("zqV6CloseProjection")?.addEventListener("click",()=>$("zqV6ProjectionHub")?.classList.remove("show"));
+    $("zqLessonModeClose")?.addEventListener("click",()=>{$("zqLessonModeModal")?.classList.remove("show");$("zqLessonModeModal")?.setAttribute("aria-hidden","true");});
     $("zqV6CloseStudentExplorer")?.addEventListener("click",()=>$("zqV6StudentExplorer")?.classList.remove("show"));
     $("classSelect")?.addEventListener("change",()=>setTimeout(renderV6Home,120));
     const grid=$("studentsGrid");if(grid)new MutationObserver(()=>renderV6Home()).observe(grid,{childList:true,subtree:true,characterData:true});
