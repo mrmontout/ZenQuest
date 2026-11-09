@@ -14713,7 +14713,7 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
     function v6Classes(){try{return Array.isArray(state?.classes)?state.classes:[];}catch{return [];}}
     function safe(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
     const classColors=["#14b8a6","#38bdf8","#f59e0b","#8b5cf6","#fb7185","#22c55e"];
-    function recentClassClimate(cls){const rows=(cls?.climateHistory||[]).slice(0,5);if(!rows.length)return {label:"Pas encore de climat",emoji:"⚪",color:"#64748b",bg:"#f1f5f9"};const avg=rows.reduce((n,x)=>n+Number(x.score||0),0)/rows.length;if(avg===0)return {label:"Calme",emoji:"🌿",color:"#16a34a",bg:"#dcfce7"};if(avg<=5)return {label:"Quelques perturbations",emoji:"🟡",color:"#a16207",bg:"#fef9c3"};if(avg<=8)return {label:"Agité",emoji:"🟠",color:"#c2410c",bg:"#ffedd5"};return {label:"Très agité",emoji:"🔴",color:"#b91c1c",bg:"#fee2e2"};}
+    function recentClassClimate(cls){const latest=(cls?.climateHistory||[])[0];if(!latest)return {label:"Pas encore de climat",emoji:"⚪",color:"#64748b",bg:"#f1f5f9"};if(latest.label&&latest.color&&latest.bg)return {label:latest.label,emoji:latest.emoji||"🌿",color:latest.color,bg:latest.bg};const score=Number(latest.score||0);if(score===0)return {label:"Calme",emoji:"🌿",color:"#16a34a",bg:"#dcfce7"};if(score<=5)return {label:"Quelques perturbations",emoji:"🟡",color:"#a16207",bg:"#fef9c3"};if(score<=8)return {label:"Agité",emoji:"🟠",color:"#c2410c",bg:"#ffedd5"};return {label:"Très agité",emoji:"🔴",color:"#b91c1c",bg:"#fee2e2"};}
     function renderV6ClassDeck(){
       const wrap=$("zqV6ClassCards"),current=v6Class();if(!wrap)return;
       const classes=v6Classes();
