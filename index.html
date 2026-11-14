@@ -2966,6 +2966,8 @@ Noah"
           <div class="welcome-main-sub">🤫 Installe-toi calmement.</div>
         </div>
 
+        <div id="zqWelcomeLastLesson" class="zq-welcome-last-lesson" style="display:none"></div>
+
         <div id="zqWelcomeAnnouncement" style="display:none;width:min(980px,92%);margin-top:18px;padding:14px 22px;border-radius:20px;background:#fff7ed;border:3px solid #fb923c;color:#9a3412;font-size:clamp(22px,3vw,38px);font-weight:1000;line-height:1.18;box-shadow:0 10px 28px rgba(154,52,18,.18);white-space:pre-wrap"></div>
 
         <div id="welcomeFixedScores" style="display:none;margin-top:16px;width:min(1120px,94%);text-align:center">
@@ -6777,6 +6779,11 @@ Noah"
           <span aria-hidden="true">${summary.climate.emoji}</span>
           <span>${escapeHTML(summary.climate.label)} · ${summary.climate.totalPoints} point${summary.climate.totalPoints>1?"s":""} perdu${summary.climate.totalPoints>1?"s":""}</span>
         </div>`:""}
+        <div class="zq-collective-star-result ${summary.classStarGained?"won":"missed"}">
+          <span aria-hidden="true">${summary.classStarGained?"⭐":"☆"}</span>
+          <strong>Étoile collective ${summary.classStarGained?"gagnée":"non gagnée"}</strong>
+          ${summary.classStarGained?'<i aria-hidden="true">✨</i>':""}
+        </div>
         ${zqClassAnnouncement()?`<div style="margin:12px auto;padding:15px 20px;border-radius:18px;background:#fff7ed;border:3px solid #fb923c;color:#9a3412;text-align:center;font-size:clamp(20px,2.7vw,32px);font-weight:1000;line-height:1.2;white-space:pre-wrap">📣 ${escapeHTML(zqClassAnnouncement())}</div>`:""}
         <div style="padding:6px 10px;border-radius:12px;background:#eff6ff;border:1px solid #bfdbfe;text-align:center;font-weight:900;margin-bottom:5px">
           📱 Vous retrouverez votre score et son évolution dans votre espace élève.
@@ -7005,6 +7012,9 @@ Noah"
         if(endBtn) endBtn.textContent="⏳ Enregistrement…";
 
         const everyonePerfect=presentStudents.every(s=>!s.lostThisLesson);
+        // Conserver le résultat collectif avec le climat permet de le retrouver
+        // sur les cartes et l'accueil après un rechargement.
+        lessonClimate.collectiveStarGained=everyonePerfect;
         const perfectNames=[], bonusPointNames=[], stayedAt20=[], levelUps=[], starNames=[];
         const updates=[];
 
@@ -8547,11 +8557,9 @@ Noah"
       return d.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric"});
     }
 
-    function studentClassMessagesHTML(cls,seenSet=new Set()){
-      const messages=(cls.classMessages||[]).filter(m=>m.type!=="election_event").slice().sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
-      if(!messages.length) return `
-        <div class="box zq-v6-class-news zq-v6-class-news-empty" style="margin-top:24px;border:1px dashed #cbd5e1">
-          <div style="font-size:18px;font-weight:900">📢 Infos de la classe</div>
+    function studentClassMessagesHTML
+... 363 bytes omitted ...
+8px;font-weight:900">📢 Infos de la classe</div>
           <div class="muted" style="margin-top:5px">Aucun message du professeur pour le moment.</div>
         </div>
       `;
@@ -13664,6 +13672,8 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
       if(box) box.style.display="none";
       const scores=document.getElementById("welcomeFixedScores");
       if(scores) scores.style.display="none";
+      const lastLesson=document.getElementById("zqWelcomeLastLesson");
+      if(lastLesson) lastLesson.style.display="none";
     }
 
     function renderWelcomeFixedScores(){
@@ -13739,6 +13749,7 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
     function startWelcomeTicker(){
       stopWelcomeTicker();
       setWelcomeMainInstructionVisible(true);
+      if(typeof renderWelcomeLastLesson==="function")renderWelcomeLastLesson();
       renderWelcomeFixedScores();
 
       welcomeTickerPhase="setup";
@@ -14712,10 +14723,13 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
     function safe(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
     const classColors=["#14b8a6","#38bdf8","#f59e0b","#8b5cf6","#fb7185","#22c55e"];
     function recentClassClimate(cls){const latest=(cls?.climateHistory||[])[0];if(!latest)return {label:"Pas encore de climat",emoji:"⚪",color:"#64748b",bg:"#f1f5f9"};if(latest.label&&latest.color&&latest.bg)return {label:latest.label,emoji:latest.emoji||"🌿",color:latest.color,bg:latest.bg};const score=Number(latest.score||0);if(score===0)return {label:"Calme",emoji:"🌿",color:"#16a34a",bg:"#dcfce7"};if(score<=5)return {label:"Quelques perturbations",emoji:"🟡",color:"#a16207",bg:"#fef9c3"};if(score<=8)return {label:"Agité",emoji:"🟠",color:"#c2410c",bg:"#ffedd5"};return {label:"Très agité",emoji:"🔴",color:"#b91c1c",bg:"#fee2e2"};}
+    function recentCollectiveStar(cls){const latest=(cls?.climateHistory||[])[0];if(!latest||typeof latest.collectiveStarGained!=="boolean")return null;return latest.collectiveStarGained;}
+    function collectiveStarBadge(cls){const won=recentCollectiveStar(cls);if(won===null)return "";return `<em class="zq-collective-star-badge ${won?"won":"missed"}">${won?"⭐":"☆"} Étoile ${won?"gagnée":"non gagnée"}</em>`;}
+    function renderWelcomeLastLesson(){const box=$("zqWelcomeLastLesson"),cls=v6Class();if(!box)return;const star=recentCollectiveStar(cls);if(!cls||star===null){box.style.display="none";box.innerHTML="";return;}const climate=recentClassClimate(cls);box.innerHTML=`<span class="zq-welcome-climate" style="--badge-color:${climate.color};--badge-bg:${climate.bg}">${climate.emoji} ${safe(climate.label)}</span><span class="zq-welcome-star ${star?"won":"missed"}">${star?"⭐":"☆"} Étoile collective ${star?"gagnée":"non gagnée"}</span>`;box.style.display="flex";}
     function renderV6ClassDeck(){
       const wrap=$("zqV6ClassCards"),current=v6Class();if(!wrap)return;
       const classes=v6Classes();
-      wrap.innerHTML=classes.length?classes.map((cls,i)=>{const students=Array.isArray(cls.students)?cls.students:[],scores=students.map(s=>Number(s.points)).filter(Number.isFinite),avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length*10)/10:null,cl=recentClassClimate(cls);return `<button type="button" class="zq-v6-class-card ${String(cls.id)===String(current?.id)?"active":""}" data-zq-class-id="${safe(cls.id)}" style="--class-accent:${classColors[i%classColors.length]}"><span class="class-icon">${["🛶","🗺️","⛰️","🌿","🧭","🏕️"][i%6]}</span><strong>${safe(cls.name||"Classe")}</strong><span>${students.length} élève${students.length>1?"s":""}</span><small>${avg===null?"Pas encore de note":`Moyenne ${avg.toLocaleString("fr-FR")}/20`}</small><em class="zq-climate-badge" style="--badge-color:${cl.color};--badge-bg:${cl.bg}">${cl.emoji} ${safe(cl.label)}</em></button>`;}).join(""):'<div class="muted">Aucune classe disponible.</div>';
+      wrap.innerHTML=classes.length?classes.map((cls,i)=>{const students=Array.isArray(cls.students)?cls.students:[],scores=students.map(s=>Number(s.points)).filter(Number.isFinite),avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length*10)/10:null,cl=recentClassClimate(cls);return `<button type="button" class="zq-v6-class-card ${String(cls.id)===String(current?.id)?"active":""}" data-zq-class-id="${safe(cls.id)}" style="--class-accent:${classColors[i%classColors.length]}"><span class="class-icon">${["🛶","🗺️","⛰️","🌿","🧭","🏕️"][i%6]}</span><strong>${safe(cls.name||"Classe")}</strong><span>${students.length} élève${students.length>1?"s":""}</span><small>${avg===null?"Pas encore de note":`Moyenne ${avg.toLocaleString("fr-FR")}/20`}</small><span class="zq-card-result-row"><em class="zq-climate-badge" style="--badge-color:${cl.color};--badge-bg:${cl.bg}">${cl.emoji} ${safe(cl.label)}</em>${collectiveStarBadge(cls)}</span></button>`;}).join(""):'<div class="muted">Aucune classe disponible.</div>';
     }
     function renderV6StudentExplorer(){
       const cls=v6Class(),wrap=$("zqV6StudentCards"),label=$("zqV6ExplorerClass");if(!wrap)return;
@@ -14739,14 +14753,14 @@ ${schoolMaterialsStudentHTML(fake.teacherRemarks||[],fake)}
       renderV6ClassDeck();
       renderClimateHistory(cls);
     }
-    function renderClimateHistory(cls){const box=$("zqClimateHistoryPanel");if(!box)return;const rows=(cls?.climateHistory||[]).slice(0,5),recent=recentClassClimate(cls);box.innerHTML=`<div class="zq-climate-history-head"><div><span class="zq-v6-eyebrow">CLIMAT DE CLASSE</span><h3>${safe(cls?.name||"Classe")} · suivi récent</h3></div><b class="zq-climate-badge" style="--badge-color:${recent.color};--badge-bg:${recent.bg}">${recent.emoji} ${safe(recent.label)}</b></div><div class="zq-climate-history-list">${rows.length?rows.map(x=>{const d=x.createdAt?new Date(x.createdAt).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"}):"—",group=x.viewMode==="g1"?"Groupe 1":x.viewMode==="g2"?"Groupe 2":"Classe entière";return `<div><span>${x.emoji||"⚪"}</span><strong>${safe(x.label||"Climat")}</strong><small>${d} · ${group}</small><em>${Number(x.totalPoints||0)} pt${Number(x.totalPoints||0)>1?"s":""} · ${Number(x.affectedStudents||0)} élève${Number(x.affectedStudents||0)>1?"s":""}</em></div>`;}).join(""):'<p class="muted">Le suivi apparaîtra après la prochaine fin d’heure.</p>'}</div>`;}
+    function renderClimateHistory(cls){const box=$("zqClimateHistoryPanel");if(!box)return;const rows=(cls?.climateHistory||[]).slice(0,5),recent=recentClassClimate(cls);box.innerHTML=`<div class="zq-climate-history-head"><div><span class="zq-v6-eyebrow">CLIMAT DE CLASSE</span><h3>${safe(cls?.name||"Classe")} · suivi récent</h3></div><span class="zq-history-current"><b class="zq-climate-badge" style="--badge-color:${recent.color};--badge-bg:${recent.bg}">${recent.emoji} ${safe(recent.label)}</b>${collectiveStarBadge(cls)}</span></div><div class="zq-climate-history-list">${rows.length?rows.map(x=>{const d=x.createdAt?new Date(x.createdAt).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"}):"—",group=x.viewMode==="g1"?"Groupe 1":x.viewMode==="g2"?"Groupe 2":"Classe entière",star=typeof x.collectiveStarGained==="boolean"?` · ${x.collectiveStarGained?"⭐ gagnée":"☆ non gagnée"}`:"";return `<div><span>${x.emoji||"⚪"}</span><strong>${safe(x.label||"Climat")}</strong><small>${d} · ${group}${star}</small><em>${Number(x.totalPoints||0)} pt${Number(x.totalPoints||0)>1?"s":""} · ${Number(x.affectedStudents||0)} élève${Number(x.affectedStudents||0)>1?"s":""}</em></div>`;}).join(""):'<p class="muted">Le suivi apparaîtra après la prochaine fin d’heure.</p>'}</div>`;}
     const ZQ_ARRIVAL_HIDDEN_CLASSES_KEY="zenquest_arrival_hidden_classes_v1";
     function arrivalHiddenClassIds(){try{return new Set(JSON.parse(localStorage.getItem(ZQ_ARRIVAL_HIDDEN_CLASSES_KEY)||"[]").map(String))}catch{return new Set()}}
     function saveArrivalHiddenClassIds(ids){localStorage.setItem(ZQ_ARRIVAL_HIDDEN_CLASSES_KEY,JSON.stringify([...ids]));}
     function renderArrivalClasses(){
       const wrap=$("zqArrivalClasses");if(!wrap)return;
       const current=v6Class(),hidden=arrivalHiddenClassIds(),classes=v6Classes().filter(cls=>!hidden.has(String(cls.id)));
-      wrap.innerHTML=classes.length?classes.map((cls,i)=>{const students=Array.isArray(cls.students)?cls.students:[],scores=students.map(s=>Number(s.points)).filter(Number.isFinite),avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length*10)/10:null,cl=recentClassClimate(cls);return `<button type="button" data-zq-arrival-class="${safe(cls.id)}" class="${String(cls.id)===String(current?.id)?"active":""}" style="--arrival-accent:${classColors[i%classColors.length]}"><span>${["🛶","🗺️","⛰️","🌿","🧭","🏕️"][i%6]}</span><strong>${safe(cls.name||"Classe")}</strong><small>${students.length} élève${students.length>1?"s":""}</small><em>${avg===null?"Pas encore de moyenne":`Moyenne ${avg.toLocaleString("fr-FR")}/20`}</em><b class="zq-climate-badge" style="--badge-color:${cl.color};--badge-bg:${cl.bg}">${cl.emoji} ${safe(cl.label)}</b></button>`;}).join(""):'<div class="muted">Aucune classe affichée. Utilise « Classes affichées » pour en remettre une.</div>';
+      wrap.innerHTML=classes.length?classes.map((cls,i)=>{const students=Array.isArray(cls.students)?cls.students:[],scores=students.map(s=>Number(s.points)).filter(Number.isFinite),avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length*10)/10:null,cl=recentClassClimate(cls);return `<button type="button" data-zq-arrival-class="${safe(cls.id)}" class="${String(cls.id)===String(current?.id)?"active":""}" style="--arrival-accent:${classColors[i%classColors.length]}"><span>${["🛶","🗺️","⛰️","🌿","🧭","🏕️"][i%6]}</span><strong>${safe(cls.name||"Classe")}</strong><small>${students.length} élève${students.length>1?"s":""}</small><em>${avg===null?"Pas encore de moyenne":`Moyenne ${avg.toLocaleString("fr-FR")}/20`}</em><span class="zq-card-result-row"><b class="zq-climate-badge" style="--badge-color:${cl.color};--badge-bg:${cl.bg}">${cl.emoji} ${safe(cl.label)}</b>${collectiveStarBadge(cls)}</span></button>`;}).join(""):'<div class="muted">Aucune classe affichée. Utilise « Classes affichées » pour en remettre une.</div>';
     }
     function renderArrivalClassManager(){
       const wrap=$("zqArrivalManagerList");if(!wrap)return;
