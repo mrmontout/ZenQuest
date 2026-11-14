@@ -392,5 +392,33 @@ input:focus,textarea:focus,select:focus{border-color:#34d399!important;box-shado
 .zq-arrival-manager-done{display:block;width:100%;margin-top:17px;padding:13px;border:0;border-radius:15px;background:#0f766e;color:#fff;font:inherit;font-size:17px;font-weight:1000;cursor:pointer}
 @media(max-width:800px){.zq-arrival-dock-tools small{display:none}.zq-arrival-dock-tools button{padding:8px 10px;font-size:11px}.zq-arrival-manager-list{grid-template-columns:1fr}.zq-arrival-manager-card{padding:18px}.zq-arrival-manager-head strong{font-size:24px}}
 
+/* V6.1.8 — résultat collectif compact, motivant et mémorisé avec le climat */
+.zq-card-result-row{display:flex!important;align-items:center;gap:5px;flex-wrap:wrap;margin-top:7px!important}
+.zq-card-result-row .zq-climate-badge{margin-top:0!important}
+.zq-collective-star-badge{display:inline-flex!important;align-items:center;justify-content:center;width:max-content;max-width:100%;padding:5px 9px;border:1px solid #cbd5e1;border-radius:999px;background:#f8fafc;color:#64748b;font-size:11px!important;font-style:normal;font-weight:1000!important;white-space:nowrap}
+.zq-collective-star-badge.won{border-color:#fbbf24;background:#fff7cc;color:#92400e;box-shadow:0 3px 10px #f59e0b22}
+.zq-collective-star-badge.missed{border-color:#cbd5e1;background:#f8fafc;color:#64748b}
+.zq-v6-class-card{min-height:152px}
+.zq-arrival-classes button{min-height:150px!important}
+.zq-arrival-classes .zq-card-result-row{grid-column:1/-1}
+.zq-history-current{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+
+.zq-welcome-last-lesson{flex:none;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;width:max-content;max-width:94%;margin:9px auto 0;font-size:clamp(14px,1.35vw,19px);font-weight:1000}
+.zq-welcome-last-lesson>span{display:inline-flex;align-items:center;padding:6px 12px;border-radius:999px;white-space:nowrap;box-shadow:0 5px 15px #0f403e16}
+.zq-welcome-climate{border:1px solid var(--badge-color);background:var(--badge-bg);color:var(--badge-color)}
+.zq-welcome-star{border:1px solid #cbd5e1;background:#ffffffdd;color:#64748b}
+.zq-welcome-star.won{border-color:#fbbf24;background:#fff7cc;color:#92400e}
+
+.zq-collective-star-result{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;width:max-content;max-width:calc(100% - 24px);margin:4px auto;padding:7px 16px;border:2px solid #cbd5e1;border-radius:999px;background:#f8fafc;color:#64748b;font-size:clamp(17px,2vw,24px);font-weight:1000;line-height:1.1}
+.zq-collective-star-result.won{border-color:#f59e0b;background:linear-gradient(120deg,#fff7cc,#fef3c7,#fff);color:#92400e;box-shadow:0 8px 22px #f59e0b2c;animation:zqCollectiveStarWin .7s cubic-bezier(.2,.9,.3,1.25) both}
+.zq-collective-star-result.won>span{animation:zqCollectiveStarTwinkle 1.7s ease-in-out infinite}
+.zq-collective-star-result.won>i{font-style:normal;animation:zqCollectiveSparkle 1.25s ease-in-out infinite}
+@keyframes zqCollectiveStarWin{from{opacity:0;transform:translateY(10px) scale(.86)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes zqCollectiveStarTwinkle{50%{transform:rotate(10deg) scale(1.22);filter:drop-shadow(0 0 8px #f59e0b)}}
+@keyframes zqCollectiveSparkle{50%{transform:translateY(-3px) scale(1.18);opacity:.62}}
+@media(max-height:780px){.zq-welcome-last-lesson{margin-top:5px}.zq-welcome-last-lesson>span{padding:4px 9px}}
+@media(max-width:800px){.zq-v6-class-card{min-height:142px}.zq-arrival-classes button{min-height:138px!important}.zq-card-result-row{align-items:flex-start}.zq-history-current{justify-content:flex-start}}
+@media(prefers-reduced-motion:reduce){.zq-collective-star-result.won,.zq-collective-star-result.won>span,.zq-collective-star-result.won>i{animation:none!important}}
+
 /* Version officielle : aucun bandeau de test ni espace réservé en haut. */
 @media(max-width:720px){body{padding-top:0!important}.zq-v6-main-nav{top:0!important}}
